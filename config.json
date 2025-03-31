@@ -20,5 +20,5 @@
     "personal": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Owner.Name LIKE '%{engineer_name}%' ORDER BY CreatedDate DESC"
   },
   "poll_interval": 5,
-  "debug": true
+  "debug": false
 }
