@@ -8,12 +8,13 @@
     "API Manager": false,
     "API Gateway": false,
     "eInvoicing": false,
-    "Activator": true,
+    "Activator": false,
     "Sentinel": false,
     "CSOS": false,
-    "B2Bi": true,
+    "B2Bi": false,
     "Transfer CFT": false,
-    "MFT": false
+    "MFT": false,
+    "Flow Manager": false
   },
   "queries": {
     "team": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Product__r.Name IN ({product_name}) AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') ORDER BY CreatedDate DESC",
