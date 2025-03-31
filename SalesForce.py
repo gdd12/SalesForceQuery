@@ -69,7 +69,7 @@ def http_handler(api_url, username, password, query, debug):
 
   if response.status_code == 200:
     DEBUG(debug, f'{func}: HTTP {response.status_code}')
-    return response.json().get('records', []) and DEBUG(debug, f'{func}: Finished')
+    return response.json().get('records', [])
   if response.status_code in [401, 400]:
     DEBUG(debug, f'{func}: HTTP {response.status_code}. Exiting due to credentials errors.')
     print(f"HTTP Error: {response.status_code} credential issue. Update username/password in config.json")
@@ -101,12 +101,12 @@ def fetch_team_cases(api_url, username, password, supported_products_dict, query
   query = query.format(product_name=product_list)
 
   DEBUG(debug, f'{func}: Calling the HTTP handler function')
-  return http_handler(api_url, username, password, query, debug) and DEBUG(debug, f'{func}: Finished')
+  return http_handler(api_url, username, password, query, debug)
 
 def fetch_personal_cases(api_url, username, password, query, debug):
   func = "fetch_personal_cases()"
   DEBUG(debug, f'{func}: Calling the HTTP handler function')
-  return http_handler(api_url, username, password, query, debug) and DEBUG(debug, f'{func}: Finished')
+  return http_handler(api_url, username, password, query, debug)
 
 def display_team(cases):
   if not cases:
