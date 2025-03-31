@@ -1,0 +1,24 @@
+{
+  "supported_products": {
+    "Axway Cloud eInvoicing Multi-Tenant": false,
+    "Amplify API Platform": false,
+    "Decision Insight": false,
+    "SecureTransport": false,
+    "Track and Trace": false,
+    "API Manager": false,
+    "API Gateway": false,
+    "eInvoicing": false,
+    "Activator": true,
+    "Sentinel": false,
+    "CSOS": false,
+    "B2Bi": true,
+    "Transfer CFT": false,
+    "MFT": false
+  },
+  "queries": {
+    "team": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Product__r.Name IN ({product_name}) AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') ORDER BY CreatedDate DESC",
+    "personal": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Owner.Name LIKE '%{engineer_name}%' ORDER BY CreatedDate DESC"
+  },
+  "poll_interval": 5,
+  "debug": true
+}
