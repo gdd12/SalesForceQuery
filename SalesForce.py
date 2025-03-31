@@ -58,7 +58,7 @@ def http_handler(api_url, username, password, query, debug):
   if response.status_code == 200:
     debug_log(debug, f'{func}: HTTP {response.status_code}')
     return response.json().get('records', []) and debug_log(debug, f'{func}: Finished')
-  if response.status_code == 401:
+  if response.status_code == 401 or 400:
     debug_log(debug, f'{func}: HTTP {response.status_code}. Exiting due to credentials errors.')
     print(f"HTTP Error: {response.status_code} credential issue. Update username/password in config.json")
     debug_log(debug, f'{func}: Finished')
