@@ -121,7 +121,7 @@ def display_team(cases):
     for product, count in product_count.items():
       print(f"  {count} new {product} case(s)")
   else:
-    print(" No cases in the queue")
+    print("  No cases in the queue")
 
 def display_personal(cases):
   if not cases:
@@ -139,8 +139,8 @@ def display_personal(cases):
       InSupport += 1
     if status == "New":
       New += 1
-  print("\n")
   if InSupport > 0:
+    print()
     print(f"  {InSupport} case(s) are In Support")
   if New > 0:
     print(f"  {New} case(s) need an IC")
@@ -192,12 +192,12 @@ def main():
       personal_cases = fetch_personal_cases(api_url, username, password, personal_query, debug)
 
       if not team_cases:
-        print(" No cases in the queue")
+        print("  No cases in the queue")
       else:
         display_team(team_cases)
 
       if not personal_cases:
-        print(" You have no assigned cases")
+        print("  You have no assigned cases")
       else:
         display_personal(personal_cases)
 
