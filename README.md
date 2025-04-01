@@ -27,7 +27,7 @@ git clone https://github.com/gdd12/SalesForceQuery.git
 
 Navigate to the root directory and run the script.
 ```bash
-cd SalesForceQuery
+cd SalesForceQuery/src
 python3 SalesForce.py
 ```
 
