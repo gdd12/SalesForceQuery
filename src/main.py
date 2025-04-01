@@ -1,7 +1,7 @@
 import signal
 import time
 import sys
-from config import load_configuration, DEBUG, ConfigurationError
+from config import load_configuration, DEBUG, request_password, ConfigurationError
 from api import http_handler, APIError
 from display import clear_screen, handle_shutdown, display_personal, display_team
 from datetime import datetime
@@ -13,9 +13,9 @@ def main():
 
     DEBUG(debug, f'{func}: Started')
     DEBUG(debug, f'{func}: Destructuring the SalesForce config to validate the values')
+
     api_url = salesforce_config.get("url")
     username = salesforce_config.get("username")
-    password = salesforce_config.get("password")
     engineer_name = salesforce_config.get("engineer_name")
     team_query = queries["team"]
     personal_query = queries["personal"]
@@ -23,13 +23,15 @@ def main():
     if not api_url:
       DEBUG(debug, f'{func}: api_url is set to "{api_url}" which is not an allowed value')
       raise ConfigurationError("Missing Salesforce API in the configuration file.")
-    if not username or not password:
-      raise ConfigurationError("Missing username/password in the configuration file.")
+    if not username:
+      raise ConfigurationError("Missing username in the configuration file.")
     if not engineer_name:
       raise ConfigurationError("Missing engineer name in the configuration file.")
     DEBUG(debug, f'{func}: Setting the loaded engineer_name of "{engineer_name}" to the personal_query')
     personal_query = personal_query.format(engineer_name=engineer_name)
 
+    password = request_password(debug)
+    DEBUG(debug, f'{func}: Received password')
     while True:
       if not debug:
         clear_screen()
