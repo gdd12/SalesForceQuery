@@ -28,7 +28,7 @@ git clone https://github.com/gdd12/SalesForceQuery.git
 Navigate to the root directory and run the script.
 ```bash
 cd SalesForceQuery/src
-python3 SalesForce.py
+python3 main.py
 ```
 
 The program will start and run a validation check for the existance of the credentials.json file. Since the first startup will not have this file, the program will exit and you can manually enter the credentials in the credentials.json file.
@@ -41,29 +41,32 @@ Example of credentials.json:
 {
   "url": "https://SalesForce-api.com/query",
   "username": "JohnDoe@Company.com",
-  "password": "SecretPassword123",
   "engineer_name": "John Doe"
 }
 ```
 
 ### 4. Start the program
 
-Start the program by running the below command, you should now see relevant information in your terminal for the team queue and your personal queue.
+Start the program by running the below command. You will be prompted to enter your password and once complete, should now see relevant information in your terminal for the configured queries.
 
 ```bash
-python3 SalesForce.py
+python3 main.py
 ```
 
 You should see something like this:
 ```bash
 Fetching batch @ Mon Mar 31 08:46:26
 
+Team queue list:
   1 new Flow Manager case(s)
   3 new API Gateway case(s)
   1 new Transfer CFT case(s)
   1 new Amplify API Platform case(s)
 
+Personal queue list:
   4 case(s) are In Support
+  1 case(s) need an IC
+  2 case(s) need an update in 24 hours
 
 Next poll in 5 minutes...
 ```

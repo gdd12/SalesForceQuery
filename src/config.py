@@ -51,7 +51,7 @@ def load_configuration(config_path="../config.json", credentials_path="../creden
 def request_password(debug):
   func = "request_password()"
   DEBUG(debug, f'{func}: Requesting password')
-  password = getpass("Enter your secret input: ")
+  password = getpass("Password required for API: ")
   DEBUG(debug, f'{func}: Password entered, returning to main()')
   return password
 

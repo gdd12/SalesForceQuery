@@ -24,19 +24,20 @@ def display_team(cases, debug):
     product = case.get('Product__r', {}).get('Name', 'No Product')
     product_count[product] += 1
   if product_count:
+    if not debug: print(f"Team queue list:")
     for product, count in product_count.items():
-      DEBUG(debug, f'{func}: Total product count {product} is {count}')
+      DEBUG(debug, f'{func}: Total product count for {product} is {count}')
       if not debug:
         print(f"  {count} new {product} case(s)")
   else:
     print("  No cases in the queue")
+  DEBUG(debug, f'{func}: Finished')
 
 def display_personal(cases, debug):
   func = "display_personal()"
   DEBUG(debug, f'{func}: Started')
   if not cases:
     raise ValueError("No cases to display for personal.")
-  
   DEBUG(debug, f'{func}: Initializing product count')
   InSupport = 0
   New = 0
@@ -55,8 +56,10 @@ def display_personal(cases, debug):
   DEBUG(debug, f'{func}: InSupport count: {InSupport}')
   DEBUG(debug, f'{func}: New count: {New}')
   DEBUG(debug, f'{func}: NeedsCommitment count: {NeedsCommitment}')
+  if not debug: print(f"\nPersonal queue list:")
   if InSupport + New + NeedsCommitment == 0:
-    print(f"  No case updates")
+    if not debug: print(f"  No case updates")
+    else: DEBUG(debug, f"{func}: No cases require updates")
   if not debug:
     print()
   if InSupport > 0 and not debug:
