@@ -21,10 +21,10 @@ def http_handler(api_url, username, password, query, debug):
     DEBUG(debug, f'{func}: HTTP {response.status_code}. Exiting due to credentials errors.')
     print(f"HTTP Error: {response.status_code} credential issue. Update username/password in config.json")
     DEBUG(debug, f'{func}: Finished')
-    raise APIError(f"Error {response.status_code}. Fix your credentials")
+    raise APIError(f"HTTP {response.status_code}. Fix your credentials")
   elif response.status_code >= 500:
     DEBUG(debug, f'{func}: HTTP {response.status_code}. Server error.')
-    raise APIError(f"Error {response.status_code}. Server error.")
+    raise APIError(f"HTTP {response.status_code} server error.")
   else:
     print(f"Error fetching data from Salesforce: {response.status_code} - {response.text}")
     DEBUG(debug, f'{func}: Finished')

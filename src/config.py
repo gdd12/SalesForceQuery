@@ -26,20 +26,19 @@ def load_configuration(config_path="../config.json", credentials_path="../creden
       DEBUG(debug, f'{func}: Loaded debug value as {debug}')
 
       supported_products = config.get("supported_products", {})
-      DEBUG(debug, f'{func}: Loaded supported products from {config_path}')
+      DEBUG(debug, f'{func}: Loaded products from {config_path}')
 
       poll_interval = config.get("poll_interval", 5)
-      DEBUG(debug, f'{func}: Loaded polling interval from {config_path}')
+      DEBUG(debug, f'{func}: Loaded polling interval from {config_path} of "{poll_interval}" minutes')
 
       queries = config.get("queries", {})
       DEBUG(debug, f'{func}: Loaded Salesforce queries from {config_path}')
-
-      DEBUG(debug, f'{func}: Returning configuration to the main() function')
 
       with open(credentials_path, "r") as cred_file:
         salesforce_config = json.load(cred_file)
         DEBUG(debug, f'{func}: Loaded Salesforce credentials from {credentials_path}')
 
+      DEBUG(debug, f'{func}: Returning configuration to main()')
       return salesforce_config, supported_products, poll_interval, queries, debug
 
   except KeyError as e:
