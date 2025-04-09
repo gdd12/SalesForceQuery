@@ -9,9 +9,9 @@ class APIError(Exception):
 def http_handler(api_url, username, password, query, debug):
   func = "http_handler()"
   DEBUG(debug, f'{func}: Started')
-  DEBUG(debug, f'{func}: Setting up basic authentication string via Base64 encoding of Username:Password')
   auth = HTTPBasicAuth(username, password)
-  DEBUG(debug, f'{func}: Making HTTP request with query string {query}')
+  DEBUG(debug, f'{func}: Making HTTP request with query string:')
+  DEBUG(debug, f'{func}: {query}')
   response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query})
 
   if response.status_code == 200:

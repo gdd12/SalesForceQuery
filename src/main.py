@@ -32,7 +32,15 @@ def main():
     personal_query = personal_query.format(engineer_name=engineer_name)
 
     password = request_password(debug)
-    DEBUG(debug, f'{func}: Received password')
+    DEBUG(debug, f'{func}: The following has all been loaded into memory:')
+    DEBUG(debug, f'{func}:  - Supported products')
+    DEBUG(debug, f'{func}:  - Polling interval')
+    DEBUG(debug, f"{func}:  - Engineer's name")
+    DEBUG(debug, f'{func}:  - All queries')
+    DEBUG(debug, f'{func}:  - Debug value')
+    DEBUG(debug, f'{func}:  - Username')
+    DEBUG(debug, f'{func}:  - Password')
+    DEBUG(debug, f'{func}:  - API URL')
     while True:
       """
       This is the main looping function anything that needs to be called 
@@ -81,11 +89,9 @@ def fetch_cases(api_url, username, password, supported_products_dict, query, deb
     DEBUG(debug, f'{func}: No products in the configuration file were set to true. Exiting.')
     raise ConfigurationError(f"At least one product must be 'true' in the supported_products configuration.")
 
-  DEBUG(debug, f'{func}: Joining the supported products in a valid string for injection into the query')
+  DEBUG(debug, f'{func}: Joining the supported products in a valid string and injecting into the query')
   product_list = "', '".join(supported_products)
   product_list = f"'{product_list}'"
-
-  DEBUG(debug, f'{func}: Injecting valid product list into the query')
   query = query.format(product_name=product_list)
 
   DEBUG(debug, f'{func}: Calling the HTTP handler function')
