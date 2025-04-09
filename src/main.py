@@ -3,7 +3,7 @@ import time
 import sys
 from config import load_configuration, DEBUG, request_password, ConfigurationError
 from api import http_handler, APIError
-from display import clear_screen, handle_shutdown, display_personal, display_team
+from display import clear_screen, handle_shutdown, display_personal, display_team, display_opened_today
 from datetime import datetime
 
 def main():
@@ -19,6 +19,7 @@ def main():
     engineer_name = salesforce_config.get("engineer_name")
     team_query = queries["team"]
     personal_query = queries["personal"]
+    opened_today_query = queries["opened_today"]
 
     if not api_url:
       DEBUG(debug, f'{func}: api_url is set to "{api_url}" which is not an allowed value')
@@ -33,14 +34,20 @@ def main():
     password = request_password(debug)
     DEBUG(debug, f'{func}: Received password')
     while True:
+      """
+      This is the main looping function anything that needs to be called 
+      every polling interval needs to be in this loop.
+      """
       if not debug:
         clear_screen()
         print(f"Fetching batch @ {(datetime.now()).strftime('%a %b %d %H:%M:%S')}\n")
 
       DEBUG(debug, f'{func}: Calling the API for the configured TEAM query')
-      team_cases = fetch_team_cases(api_url, username, password, supported_products_dict, team_query, debug)
+      team_cases = fetch_cases(api_url, username, password, supported_products_dict, team_query, debug)
       DEBUG(debug, f'{func}: Calling the API for the configured PERSONAL query')
-      personal_cases = fetch_personal_cases(api_url, username, password, personal_query, debug)
+      personal_cases = fetch_cases(api_url, username, password, supported_products_dict, personal_query, debug)
+      DEBUG(debug, f'{func}: Calling the API for the configured OPENED_TODAY query')
+      opened_today_cases = fetch_cases(api_url, username, password, supported_products_dict, opened_today_query, debug)
 
       if not team_cases:
         print("  No cases in the queue")
@@ -49,6 +56,9 @@ def main():
 
       if personal_cases:
         display_personal(personal_cases, debug)
+
+      if opened_today_cases:
+        display_opened_today(opened_today_cases, debug)
 
       if not debug: print(f"\nNext poll in {poll_interval} minutes...")
       DEBUG(debug, f'{func}: Clock for {poll_interval} minutes has begun.')
@@ -62,12 +72,11 @@ def main():
     print(f"Unexpected Error: {e}")
     sys.exit(1)
 
-def fetch_team_cases(api_url, username, password, supported_products_dict, query, debug):
-  func = "fetch_team_cases()"
+def fetch_cases(api_url, username, password, supported_products_dict, query, debug):
+  func = "fetch_cases()"
   DEBUG(debug, f'{func}: Started')
-  DEBUG(debug, f'{func}: List comprehension started for the configured supported products')
-  supported_products = [product for product, is_supported in supported_products_dict.items() if is_supported]
 
+  supported_products = [product for product, is_supported in supported_products_dict.items() if is_supported]
   if not supported_products:
     DEBUG(debug, f'{func}: No products in the configuration file were set to true. Exiting.')
     raise ConfigurationError(f"At least one product must be 'true' in the supported_products configuration.")
@@ -79,11 +88,6 @@ def fetch_team_cases(api_url, username, password, supported_products_dict, query
   DEBUG(debug, f'{func}: Injecting valid product list into the query')
   query = query.format(product_name=product_list)
 
-  DEBUG(debug, f'{func}: Calling the HTTP handler function')
-  return http_handler(api_url, username, password, query, debug)
-
-def fetch_personal_cases(api_url, username, password, query, debug):
-  func = "fetch_personal_cases()"
   DEBUG(debug, f'{func}: Calling the HTTP handler function')
   return http_handler(api_url, username, password, query, debug)
 

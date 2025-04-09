@@ -60,12 +60,27 @@ def display_personal(cases, debug):
   if InSupport + New + NeedsCommitment == 0:
     if not debug: print(f"  No case updates")
     else: DEBUG(debug, f"{func}: No cases require updates")
-  if not debug:
-    print()
   if InSupport > 0 and not debug:
     print(f"  {InSupport} case(s) are In Support")
   if New > 0 and not debug:
     print(f"  {New} case(s) need an IC")
   if NeedsCommitment > 0 and not debug:
     print(f"  {NeedsCommitment} case(s) need an update in 24 hours")
+  DEBUG(debug, f'{func}: Finished')
+
+def display_opened_today(cases, debug):
+  func = "display_opened_today()"
+  DEBUG(debug, f'{func}: Started')
+  total_case = 0
+  if not debug: print('\nCases opened today:')
+  if not cases:
+    raise ValueError("No cases were created today")
+  else:
+    for case in cases:
+      case_num = case.get("CaseNumber")
+      product = case.get('Product__r', {}).get('Name', 'No Product')
+      total_case += 1
+      if not debug:
+        print(f'  {case_num} - {product}')
+  DEBUG(debug, f'{func}: Total cases created today = {total_case}')
   DEBUG(debug, f'{func}: Finished')
