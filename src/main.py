@@ -1,10 +1,11 @@
 import signal
 import time
 import sys
-from config import load_configuration, DEBUG, request_password, ConfigurationError
-from api import http_handler, APIError
+from config import load_configuration, DEBUG, request_password
+from api import http_handler
 from display import clear_screen, handle_shutdown, display_personal, display_team, display_opened_today
 from datetime import datetime
+from exceptions import APIError, ConfigurationError
 
 def main():
   func = 'main()'

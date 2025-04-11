@@ -2,10 +2,7 @@ import json
 import os
 import shutil
 from getpass import getpass
-
-class ConfigurationError(Exception):
-	"""Raised when there is an issue with the configuration."""
-	pass
+from exceptions import ConfigurationError
 
 def load_configuration(config_path="../config.json", credentials_path="../credentials.json"):
   func = "load_configuration()"

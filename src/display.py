@@ -1,7 +1,7 @@
 import sys
 import os
 from collections import defaultdict
-from config import load_configuration, DEBUG
+from config import DEBUG
 
 def clear_screen():
   if os.name == 'nt':
@@ -27,7 +27,7 @@ def display_team(cases, debug):
     product_count[product] += 1
 
   if product_count:
-    if not debug: print("\n=== Team Queue ===")
+    if not debug: print("=== Team Queue ===")
     for product, count in product_count.items():
       DEBUG(debug, f'{func}: Total product count for {product} is {count}')
       if not debug:
@@ -82,7 +82,7 @@ def display_personal(cases, debug):
   if NeedsCommitment > 0 and not debug:
     print(f"  {NeedsCommitment} case(s) need an update in 24 hours")
 
-  if not debug: print("="*20)
+  if not debug: print("="*22)
   DEBUG(debug, f'{func}: Finished')
 
 def display_opened_today(cases, debug):
@@ -101,7 +101,7 @@ def display_opened_today(cases, debug):
       total_case += 1
       if not debug:
         print(f'  {case_num} - {product}')
-    if not debug: print("="*20)
+    if not debug: print("="*26)
 
   DEBUG(debug, f'{func}: Total cases created today = {total_case}')
   DEBUG(debug, f'{func}: Finished')
