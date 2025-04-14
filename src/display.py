@@ -98,9 +98,10 @@ def display_opened_today(cases, debug):
     for case in cases:
       case_num = case.get("CaseNumber")
       product = case.get('Product__r', {}).get('Name', 'No Product')
+      engineer = case.get('Owner', {}).get('Name', 'n/a')
       total_case += 1
       if not debug:
-        print(f'  {case_num} - {product}')
+        print(f'  {case_num} - {product} w/ {engineer}')
     if not debug: print("="*26)
 
   DEBUG(debug, f'{func}: Total cases created today = {total_case}')
