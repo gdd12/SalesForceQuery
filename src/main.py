@@ -1,16 +1,18 @@
 import signal
 import time
 import sys
+import os
 from config import load_configuration, DEBUG, request_password
 from api import http_handler
 from display import clear_screen, handle_shutdown, display_personal, display_team, display_opened_today
 from datetime import datetime
 from exceptions import APIError, ConfigurationError
+from notification import notify
 
 def main():
   func = 'main()'
   try:
-    salesforce_config, supported_products_dict, poll_interval, queries, debug = load_configuration()
+    salesforce_config, supported_products_dict, poll_interval, queries, debug, send_notifications = load_configuration()
 
     DEBUG(debug, f'{func}: Started')
     DEBUG(debug, f'{func}: Destructuring the SalesForce config to validate the values')
@@ -42,6 +44,7 @@ def main():
     DEBUG(debug, f'{func}:  - Username')
     DEBUG(debug, f'{func}:  - Password')
     DEBUG(debug, f'{func}:  - API URL')
+    DEBUG(debug, f'{func}:  - Sending notification')
     while True:
       """
       This is the main looping function anything that needs to be called 
@@ -69,6 +72,8 @@ def main():
       if opened_today_cases:
         display_opened_today(opened_today_cases, debug)
 
+      if os.name != 'nt' and send_notifications:
+        notify(team_cases, debug)
       if not debug: print(f"\nNext poll in {poll_interval} minutes...")
       DEBUG(debug, f'{func}: Clock for {poll_interval} minutes has begun.')
       time.sleep(poll_interval * 60)

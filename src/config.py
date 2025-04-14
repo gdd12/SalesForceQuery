@@ -31,12 +31,15 @@ def load_configuration(config_path="../config.json", credentials_path="../creden
       queries = config.get("queries", {})
       DEBUG(debug, f'{func}: Reading Salesforce queries from {config_path}')
 
+      send_notifications = config.get("notifications", False)
+      DEBUG(debug, f'{func}: Reading Notification boolean of {send_notifications}')
+
       with open(credentials_path, "r") as cred_file:
         salesforce_config = json.load(cred_file)
         DEBUG(debug, f'{func}: Reading Salesforce credentials from {credentials_path}')
 
       DEBUG(debug, f'{func}: Returning all configuration values to main()')
-      return salesforce_config, supported_products, poll_interval, queries, debug
+      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications
 
   except KeyError as e:
     raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
