@@ -4,7 +4,7 @@ from config import DEBUG
 
 def notify(cases, debug):
   func = "notify()"
-
+  DEBUG(debug, f'{func}: Started')
   product_count = defaultdict(int)
 
   for case in cases:
@@ -19,3 +19,4 @@ def notify(cases, debug):
   message = "\n".join(message_parts)
   script = f'display notification "{message}" with title "New SalesForce Cases" sound name "Funk"'
   os.system(f"osascript -e '{script}'")
+  DEBUG(debug, f'{func}: Finished')

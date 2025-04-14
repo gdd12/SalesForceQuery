@@ -73,6 +73,7 @@ def main():
         display_opened_today(opened_today_cases, debug)
 
       if os.name != 'nt' and send_notifications:
+        DEBUG(debug, f'{func}: User is running {os.name} and sending notifcations is set to {send_notifications}. Calling notify()')
         notify(team_cases, debug)
       if not debug: print(f"\nNext poll in {poll_interval} minutes...")
       DEBUG(debug, f'{func}: Clock for {poll_interval} minutes has begun.')
