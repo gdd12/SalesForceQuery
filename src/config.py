@@ -6,15 +6,31 @@ from exceptions import ConfigurationError
 
 def load_configuration(config_path="../config.json", credentials_path="../credentials.json"):
   func = "load_configuration()"
+  missing_files = []
+
+  config_template = "../templates/config.json"
+  credentials_template = "../templates/credentials.json"
+
   if not os.path.exists(credentials_path):
-    template_path = "../templates/credentials.json"
-    if os.path.exists(template_path):
+    if os.path.exists(credentials_template):
       print(f"{func}: credentials.json not found. Copying from template.")
-      shutil.copy(template_path, credentials_path)
-      raise ConfigurationError("credentials.json file not found.")
+      shutil.copy(credentials_template, credentials_path)
+      missing_files.append('credentials')
     else:
-      print(f"{func}: Template file {template_path} not found.")
+      print(f"{func}: Template file {credentials_template} not found.")
       raise ConfigurationError(f"Missing {credentials_path} and no template available.")
+
+  if not os.path.exists(config_path):
+    if os.path.exists(config_template):
+      print(f"{func}: config.json not found. Copying from template.")
+      shutil.copy(config_template, config_path)
+      missing_files.append('config')
+    else:
+      print(f"{func}: Template file {config_template} not found.")
+      raise ConfigurationError(f"Missing {config_path} and no template available.")
+
+  if missing_files:
+    raise ConfigurationError(f"The following configuration files were created from templates: {', '.join(missing_files)}. Please update them and restart the application.")
 
   try:
     with open(config_path, "r") as config_file:
