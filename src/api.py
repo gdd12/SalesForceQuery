@@ -5,23 +5,34 @@ from exceptions import APIError
 
 def http_handler(api_url, username, password, query, debug):
   func = "http_handler()"
-  DEBUG(debug, f'{func}: Started')
+  def log(msg): DEBUG(debug, f"{func}: {msg}")
+
+  log("Started")
   auth = HTTPBasicAuth(username, password)
-  DEBUG(debug, f'{func}: Making HTTP request with query string:')
-  DEBUG(debug, f'{func}: {query}')
+  log("Making HTTP request with query string:")
+  log(query)
+
   response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query})
 
+  log(f"HTTP {response.status_code}")
+
   if response.status_code == 200:
-    DEBUG(debug, f'{func}: HTTP {response.status_code}')
     return response.json().get('records', [])
-  if response.status_code in [401, 400]:
-    DEBUG(debug, f'{func}: HTTP {response.status_code}. Exiting due to credentials errors.')
-    DEBUG(debug, f'{func}: Finished')
-    raise APIError(f"HTTP {response.status_code} {response.reason}. Username is incorrect in config.json or entered invalid password")
-  elif response.status_code >= 500:
-    DEBUG(debug, f'{func}: HTTP {response.status_code} {response.reason}. Server error.')
+
+  error_messages = {
+    400: f"Bad request. Query is possibly wrong or malformed. Using query '{query}'",
+    401: f"Exiting due to credentials errors. Username is incorrect in config.json or entered invalid password",
+  }
+
+  if response.status_code in error_messages:
+    log(error_messages[response.status_code])
+    log("Finished")
+    raise APIError(f"HTTP {response.status_code} {response.reason}. {error_messages[response.status_code]}")
+
+  if response.status_code >= 500:
+    log(f"{response.status_code} {response.reason}. Server error.")
     raise APIError(f"HTTP {response.status_code} server error.")
-  else:
-    print(f"Error fetching data from Salesforce: {response.status_code} {response.reason} - {response.text}")
-    DEBUG(debug, f'{func}: Finished')
-    raise APIError(f"Error {response.status_code} {response.reason}. Unable to fetch data.")
+
+  print(f"Error fetching data from Salesforce: {response.status_code} {response.reason} - {response.text}")
+  log("Finished")
+  raise APIError(f"Error {response.status_code} {response.reason}. Unable to fetch data.")

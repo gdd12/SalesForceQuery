@@ -14,8 +14,9 @@ def handle_shutdown(signum, frame):
 
 def display_team(cases, debug):
   func = "display_team()"
+  def log(msg): DEBUG(debug, f"{func}: {msg}")
 
-  DEBUG(debug, f'{func}: Started')
+  log("Started")
 
   if not cases:
     raise ValueError("No cases to display for the team.")
@@ -29,19 +30,20 @@ def display_team(cases, debug):
   if product_count:
     if not debug: print("=== Team Queue ===")
     for product, count in product_count.items():
-      DEBUG(debug, f'{func}: Total product count for {product} is {count}')
+      log(f"Total product count for {product} is {count}")
       if not debug:
         print(f"  {count} new {product} case(s)")
   else:
     print("  No cases in the queue")
 
   if not debug: print("="*20)
-  DEBUG(debug, f'{func}: Finished')
+  log("Finished")
 
 def display_personal(cases, debug):
   func = "display_personal()"
+  def log(msg): DEBUG(debug, f"{func}: {msg}")
 
-  DEBUG(debug, f'{func}: Started')
+  log("Started")
 
   if not cases:
     raise ValueError("No cases to display for personal.")
@@ -63,15 +65,17 @@ def display_personal(cases, debug):
     if status == "New":
       New += 1
 
-  DEBUG(debug, f'{func}: InSupport count: {InSupport}')
-  DEBUG(debug, f'{func}: New count: {New}')
-  DEBUG(debug, f'{func}: NeedsCommitment count: {NeedsCommitment}')
+  log(f'InSupport count: {InSupport}')
+  log(f'New count: {New}')
+  log(f'NeedsCommitment count: {NeedsCommitment}')
 
   if not debug: print("\n=== Personal Queue ===")
 
   if InSupport + New + NeedsCommitment == 0:
-    if not debug: print(f"  No case updates")
-    else: DEBUG(debug, f"{func}: Total is 0, no cases require updates")
+    if not debug:
+      print("  No case updates")
+    else:
+      log("Total is 0, no cases require updates")
 
   if InSupport > 0 and not debug:
     print(f"  {InSupport} case(s) are In Support")
@@ -83,26 +87,29 @@ def display_personal(cases, debug):
     print(f"  {NeedsCommitment} case(s) need an update in 24 hours")
 
   if not debug: print("="*22)
-  DEBUG(debug, f'{func}: Finished')
+  log("Finished")
 
 def display_opened_today(cases, debug):
   func = "display_opened_today()"
+  def log(msg): DEBUG(debug, f"{func}: {msg}")
 
-  DEBUG(debug, f'{func}: Started')
+  log("Started")
 
   total_case = 0
   if not debug: print("\n=== Cases Opened Today ===")
+
   if not cases:
     raise ValueError("No cases were created today")
-  else:
-    for case in cases:
-      case_num = case.get("CaseNumber")
-      product = case.get('Product__r', {}).get('Name', 'No Product')
-      engineer = case.get('Owner', {}).get('Name', 'n/a')
-      total_case += 1
-      if not debug:
-        print(f'  {case_num} - {product} w/ {engineer}')
-    if not debug: print("="*26)
 
-  DEBUG(debug, f'{func}: Total cases created today = {total_case}')
-  DEBUG(debug, f'{func}: Finished')
+  for case in cases:
+    case_num = case.get("CaseNumber")
+    product = case.get('Product__r', {}).get('Name', 'No Product')
+    engineer = case.get('Owner', {}).get('Name', 'n/a')
+    total_case += 1
+    if not debug:
+      print(f'  {case_num} - {product} w/ {engineer}')
+
+  if not debug: print("="*26)
+
+  log(f"Total cases created today = {total_case}")
+  log("Finished")

@@ -4,7 +4,9 @@ from config import DEBUG
 
 def notify(cases, debug):
   func = "notify()"
-  DEBUG(debug, f'{func}: Started')
+  def log(msg): DEBUG(debug, f"{func}: {msg}")
+
+  log("Started")
   product_count = defaultdict(int)
 
   for case in cases:
@@ -12,11 +14,9 @@ def notify(cases, debug):
     product_count[product] += 1
 
   if product_count:
-    message_parts = []
-    for product, count in product_count.items():
-      message_parts.append(f"{count} {product} Case(s)")
+    message_parts = [f"{count} {product} Case(s)" for product, count in product_count.items()]
+    message = "\n".join(message_parts)
+    script = f'display notification "{message}" with title "New SalesForce Cases" sound name "Funk"'
+    os.system(f"osascript -e '{script}'")
 
-  message = "\n".join(message_parts)
-  script = f'display notification "{message}" with title "New SalesForce Cases" sound name "Funk"'
-  os.system(f"osascript -e '{script}'")
-  DEBUG(debug, f'{func}: Finished')
+  log("Finished")
