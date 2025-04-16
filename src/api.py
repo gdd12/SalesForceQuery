@@ -21,7 +21,7 @@ def http_handler(api_url, username, password, query, debug):
 
   error_messages = {
     400: f"Bad request. Query is possibly wrong or malformed. Using query '{query}'",
-    401: f"Exiting due to credentials errors. Username is incorrect in config.json or entered invalid password",
+    401: f"Bad credentials",
   }
 
   if response.status_code in error_messages:
