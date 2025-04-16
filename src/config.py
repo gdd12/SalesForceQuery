@@ -67,7 +67,7 @@ def request_password(debug):
   func = "request_password()"
   DEBUG(debug, f'{func}: Requesting password')
   password = getpass("Password required for API: ")
-  DEBUG(debug, f'{func}: Password entered, returning to main()')
+  DEBUG(debug, f'{func}: Password entered')
   return password
 
 def DEBUG(debug, message):
