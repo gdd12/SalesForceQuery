@@ -4,17 +4,22 @@ import sys
 import os
 from config import load_configuration, DEBUG, request_password
 from api import http_handler
-from display import clear_screen, handle_shutdown, display_personal, display_team, display_opened_today
+from display import clear_screen, handle_shutdown, display_personal, display_team, display_opened_today, info_logger, title
 from datetime import datetime
 from exceptions import APIError, ConfigurationError
 from notification import notify
 
 def main():
+  args = info_logger()
   func = 'main()'
   try:
-    salesforce_config, supported_products_dict, poll_interval, queries, debug, send_notifications = load_configuration()
+    config = load_configuration()
+    salesforce_config, supported_products_dict, poll_interval, queries, config_debug, send_notifications = config
 
-    def log(msg): DEBUG(debug, f"{func}: {msg}")  # redefined here because 'debug' is now available
+    debug = args.debug if args.debug else config_debug
+    send_notification = args.notify if args.notify else send_notifications
+
+    def log(msg): DEBUG(debug, f"{func}: {msg}")
 
     log("Started")
     log("Destructuring the SalesForce config to validate the values")
@@ -47,7 +52,10 @@ def main():
     while True:
       if not debug:
         clear_screen()
-        print(f"Fetching batch @ {(datetime.now()).strftime('%a %b %d %H:%M:%S')}\n")
+        header = title()
+        print(header)
+        print(f"                  Fetching batch @ {(datetime.now()).strftime('%a %b %d %H:%M:%S')}")
+        print(f"                        Next poll in {poll_interval} minutes...")
 
       log("Calling the API for the configured TEAM query")
       team_cases = fetch_cases(api_url, username, password, supported_products_dict, team_query, debug)
@@ -56,10 +64,8 @@ def main():
       log("Calling the API for the configured OPENED_TODAY query")
       opened_today_cases = fetch_cases(api_url, username, password, supported_products_dict, opened_today_query, debug)
 
-      if not team_cases:
-        print("  No cases in the queue")
-      else:
-        display_team(team_cases, debug)
+      
+      display_team(team_cases, debug)
 
       if personal_cases:
         display_personal(personal_cases, debug)
@@ -67,12 +73,9 @@ def main():
       if opened_today_cases:
         display_opened_today(opened_today_cases, debug)
 
-      if os.name != 'nt' and send_notifications:
-        log(f"User is running {os.name} and sending notifications is set to {send_notifications}. Calling notify()")
+      if os.name != 'nt' and send_notification:
+        log(f"User is running {os.name} and sending notifications is set to {send_notification}. Calling notify()")
         notify(team_cases, debug)
-
-      if not debug:
-        print(f"\nNext poll in {poll_interval} minutes...")
 
       log(f"Clock for {poll_interval} minutes has begun.")
       time.sleep(poll_interval * 60)
@@ -95,7 +98,6 @@ def fetch_cases(api_url, username, password, supported_products_dict, query, deb
     log("No products in the configuration file were set to true. Exiting.")
     raise ConfigurationError("At least one product must be 'true' in the supported_products configuration.")
 
-  log("Joining the supported products in a valid string and injecting into the query")
   product_list = "', '".join(supported_products)
   product_list = f"'{product_list}'"
   query = query.format(product_name=product_list)

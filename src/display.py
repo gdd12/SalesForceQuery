@@ -1,7 +1,46 @@
+import argparse
 import sys
 import os
 from collections import defaultdict
 from config import DEBUG
+
+def info_logger():
+  text = title()
+  parser = argparse.ArgumentParser(
+        prog="python3 main.py",
+        description=f"""\
+        {text}
+--------------------------
+A CLI tool to view and monitor Salesforce cases from your terminal.
+
+Features:
+- Authenticated API queries to Salesforce via Axway credentials
+- Filters for team, personal, and newly opened cases
+- Optional CSV export for reporting (Not yet)
+- Configurable notifications (Only on Mac)
+
+""",
+        epilog="""\
+Examples:
+  python3 main.py --debug
+  python3 main.py --notify
+
+""",
+    formatter_class=argparse.RawDescriptionHelpFormatter
+  )
+
+  parser.add_argument(
+    "--debug",
+    action="store_true",
+    help="Enable verbose logging and show internal debug messages."
+  )
+  parser.add_argument(
+    "--notify",
+    action="store_true",
+    help="Force notifications to be sent, overriding the config.json. MacOS ONLY!"
+  )
+
+  return parser.parse_args()
 
 def clear_screen():
   if os.name == 'nt':
@@ -18,8 +57,9 @@ def display_team(cases, debug):
 
   log("Started")
 
+  if not debug: print("=== Team Queue ===")
   if not cases:
-    raise ValueError("No cases to display for the team.")
+    print("  No cases in the queue")
 
   product_count = defaultdict(int)
 
@@ -28,13 +68,10 @@ def display_team(cases, debug):
     product_count[product] += 1
 
   if product_count:
-    if not debug: print("=== Team Queue ===")
     for product, count in product_count.items():
       log(f"Total product count for {product} is {count}")
       if not debug:
         print(f"  {count} new {product} case(s)")
-  else:
-    print("  No cases in the queue")
 
   if not debug: print("="*20)
   log("Finished")
@@ -73,7 +110,7 @@ def display_personal(cases, debug):
 
   if InSupport + New + NeedsCommitment == 0:
     if not debug:
-      print("  No case updates")
+      print("   No case updates")
     else:
       log("Total is 0, no cases require updates")
 
@@ -113,3 +150,15 @@ def display_opened_today(cases, debug):
 
   log(f"Total cases created today = {total_case}")
   log("Finished")
+
+def title():
+  title = """\
+
+   _____       _           ______                            _____ _____ 
+  / ____|     | |         |  ____|                     /\   |  __ \_   _|
+ | (___   __ _| | ___  ___| |__ ___  _ __ ___ ___     /  \  | |__) || |  
+  \___ \ / _` | |/ _ \/ __|  __/ _ \| '__/ __/ _ \   / /\ \ |  ___/ | |  
+  ____) | (_| | |  __/\__ \ | | (_) | | | (_|  __/  / ____ \| |    _| |_ 
+ |_____/ \__,_|_|\___||___/_|  \___/|_|  \___\___| /_/    \_\_|   |_____|
+"""
+  return title
