@@ -45,22 +45,21 @@ def load_configuration(config_path="../config.json", credentials_path="../creden
       log = lambda msg: DEBUG(debug, f"{func}: {msg}")
 
       supported_products = config.get("supported_products", {})
-      log(f"Reading products from {config_path}")
+      log(f"Reading supported products")
 
       poll_interval = config.get("poll_interval", 5)
-      log(f'Reading polling interval from {config_path} of "{poll_interval}" minutes')
+      log(f'Reading polling interval of "{poll_interval}" minutes')
 
       queries = config.get("queries", {})
-      log(f"Reading Salesforce queries from {config_path}")
+      log(f"Reading Salesforce queries")
 
       send_notifications = config.get("notifications", False)
-      log(f"Reading Notification boolean of {send_notifications}")
+      log(f"Should notifications be sent: {send_notifications}")
 
       with open(credentials_path, "r") as cred_file:
         salesforce_config = json.load(cred_file)
-        log(f"Reading Salesforce credentials from {credentials_path}")
+        log(f"Reading Salesforce credentials")
 
-      log("Returning all configuration values to main()")
       return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications
 
   except KeyError as e:
