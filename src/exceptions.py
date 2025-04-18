@@ -5,3 +5,7 @@ class APIError(Exception):
 class ConfigurationError(Exception):
   """Raised when there is an issue with the configuration."""
   pass
+
+class BadQuery(Exception):
+  """Raised when there is an issue with the query input."""
+  pass

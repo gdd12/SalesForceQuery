@@ -1,5 +1,8 @@
+import signal
 from config import load_configuration, DEBUG, request_password
 from api import http_handler
+from helper import define_query_columns
+from display import handle_shutdown
 
 def simulate():
   func = "simulate()"
@@ -15,13 +18,21 @@ def simulate():
   log("Requesting query")
   query = input('Enter query: ')
 
+  columns = define_query_columns(query)
+  
+  if columns: print(f"Selected columns include: {columns}")
   if not debug: print(f'Using query: {query}')
-
   log("Calling HTTP handler with the following values")
   log(f'{func}: {api_url} :: {username} :: {debug}')
 
   response = http_handler(api_url,username,password,query,debug)
-  print(response)
+  for record in response:
+    print("----- Record -----")
+    for column in columns:
+        item = record.get(column)
+        print(f"{column}: {item}")
+
+signal.signal(signal.SIGINT, handle_shutdown)
 
 if __name__ == "__main__":
   simulate()
