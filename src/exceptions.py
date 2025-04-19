@@ -9,3 +9,7 @@ class ConfigurationError(Exception):
 class BadQuery(Exception):
   """Raised when there is an issue with the query input."""
   pass
+
+class UnsupportedRole(Exception):
+  """Rasied when there is an issue with the role configured in the config.json file"""
+  pass

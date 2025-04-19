@@ -23,5 +23,6 @@
   },
   "notifications": false,
   "poll_interval": 5,
-  "debug": false
+  "debug": false,
+  "role": "engineer"
 }

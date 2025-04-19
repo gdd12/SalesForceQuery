@@ -79,3 +79,16 @@ def request_password(debug):
 def DEBUG(debug, message):
   if debug:
     print(f"{message}")
+
+def user_role(config_path="../config.json"):
+  try:
+    with open(config_path, "r") as config_file:
+      config = json.load(config_file)
+      role = config.get("role", {})
+
+      return role
+  except KeyError as e:
+    raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
+  except Exception as e:
+    print(f"Error loading configuration: {e}")
+    raise
