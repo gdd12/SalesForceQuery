@@ -107,7 +107,7 @@ def fetch_cases_tse(api_url, username, password, supported_products_dict, query,
   supported_products = [product for product, is_supported in supported_products_dict.items() if is_supported]
   if not supported_products:
     log("No products in the configuration file were set to true. Exiting.")
-    raise ConfigurationError("At least one product must be 'true' in the supported_products configuration.")
+    raise ConfigurationError("Please update config.json. At least one product must be 'true' in the supported_products configuration.")
 
   product_list = "', '".join(supported_products)
   product_list = f"'{product_list}'"
