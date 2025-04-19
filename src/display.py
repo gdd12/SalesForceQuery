@@ -151,6 +151,25 @@ def display_opened_today(cases, debug):
   log(f"Total cases created today = {total_case}")
   log("Finished")
 
+def display_team_needs_commitment(cases, debug):
+  func = "display_team_needs_commitment()"
+  def log(msg): DEBUG(debug, f"{func}: {msg}")
+
+  log("Started")
+
+  if not debug: print("\n=== Cases Needing Commitment Within 1 Day ===")
+  for case in cases:
+    case_num = case.get("CaseNumber")
+    owner = case.get("Owner", {}).get("Name", "n/a")
+    next_update = case.get("Time_Before_Next_Update_Commitment__c")
+    print(f"Case: {case_num}")
+    print(f"Owner: {owner}")
+    print(f"Countdown: {next_update}")
+    print("-----------------")
+  if not cases and not debug: print("                     None")
+  if debug: log("Finished")
+  if not debug: print("="*45)
+
 def title():
   title = """\
 

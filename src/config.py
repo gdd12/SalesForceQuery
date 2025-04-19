@@ -56,11 +56,14 @@ def load_configuration(config_path="../config.json", credentials_path="../creden
       send_notifications = config.get("notifications", False)
       log(f"Should notifications be sent: {send_notifications}")
 
+      teams_list = config.get("teams_list", {})
+      log(f"Reading teams lists")
+
       with open(credentials_path, "r") as cred_file:
         salesforce_config = json.load(cred_file)
         log(f"Reading Salesforce credentials")
 
-      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications
+      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list
 
   except KeyError as e:
     raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
