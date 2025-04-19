@@ -2,11 +2,11 @@ import signal
 import time
 import sys
 import os
-from config import load_configuration, DEBUG, request_password
+from config import load_configuration, DEBUG, request_password, user_role
 from api import http_handler
 from display import clear_screen, handle_shutdown, display_personal, display_team, display_opened_today, info_logger, title
 from datetime import datetime
-from exceptions import APIError, ConfigurationError
+from exceptions import APIError, ConfigurationError, UnsupportedRole
 from notification import notify
 
 def main():
@@ -14,6 +14,7 @@ def main():
   func = 'main()'
   try:
     config = load_configuration()
+    role = user_role()
     salesforce_config, supported_products_dict, poll_interval, queries, config_debug, send_notifications = config
 
     debug = args.debug if args.debug else config_debug
@@ -45,7 +46,7 @@ def main():
     log("The following has all been loaded into memory:")
     for item in [
       "Supported products", "Polling interval", "Engineer's name", "All queries",
-      "Debug value", "Username", "Password", "API URL", "Sending notification"
+      "Debug value", "Username", "Password", "API URL", "Sending notification", "role"
     ]:
       log(f"  - {item}")
 
@@ -57,25 +58,12 @@ def main():
         print(f"                  Fetching batch @ {(datetime.now()).strftime('%a %b %d %H:%M:%S')}")
         print(f"                        Next poll in {poll_interval} minutes...")
 
-      log("Calling the API for the configured TEAM query")
-      team_cases = fetch_cases(api_url, username, password, supported_products_dict, team_query, debug)
-      log("Calling the API for the configured PERSONAL query")
-      personal_cases = fetch_cases(api_url, username, password, supported_products_dict, personal_query, debug)
-      log("Calling the API for the configured OPENED_TODAY query")
-      opened_today_cases = fetch_cases(api_url, username, password, supported_products_dict, opened_today_query, debug)
-
-      
-      display_team(team_cases, debug)
-
-      if personal_cases:
-        display_personal(personal_cases, debug)
-
-      if opened_today_cases:
-        display_opened_today(opened_today_cases, debug)
-
-      if os.name != 'nt' and send_notification:
-        log(f"User is running {os.name} and sending notifications is set to {send_notification}. Calling notify()")
-        notify(team_cases, debug)
+      if role.upper() == "ENGINEER":
+        run_queries_for_tse(api_url, username, password, supported_products_dict, team_query, personal_query, opened_today_query, send_notification, debug)
+      elif role.upper() == "MANAGER":
+        run_queries_for_manager()
+      else:
+        raise UnsupportedRole(f'Unsupported role: "{role}"')
 
       log(f"Clock for {poll_interval} minutes has begun.")
       time.sleep(poll_interval * 60)
@@ -84,6 +72,8 @@ def main():
     print(f"Configuration Error: {e}")
   except APIError as e:
     print(f"API Error: {e}")
+  except UnsupportedRole as e:
+    print(f"Role Error: {e}")
   except Exception as e:
     print(f"Unexpected Error: {e}")
     sys.exit(1)
@@ -104,6 +94,32 @@ def fetch_cases(api_url, username, password, supported_products_dict, query, deb
 
   log("Calling the HTTP handler function")
   return http_handler(api_url, username, password, query, debug)
+
+def run_queries_for_tse(api_url, username, password, supported_products_dict, team_query, personal_query, opened_today_query, send_notification, debug):
+  func = "run_queries_for_tse()"
+  def log(msg): DEBUG(debug, f"{func}: {msg}")
+  log("Calling the API for the configured TEAM query")
+  team_cases = fetch_cases(api_url, username, password, supported_products_dict, team_query, debug)
+  log("Calling the API for the configured PERSONAL query")
+  personal_cases = fetch_cases(api_url, username, password, supported_products_dict, personal_query, debug)
+  log("Calling the API for the configured OPENED_TODAY query")
+  opened_today_cases = fetch_cases(api_url, username, password, supported_products_dict, opened_today_query, debug)
+
+  display_team(team_cases, debug)
+
+  if personal_cases:
+    display_personal(personal_cases, debug)
+
+  if opened_today_cases:
+    display_opened_today(opened_today_cases, debug)
+
+  if os.name != 'nt' and send_notification:
+    log(f"User is running {os.name} and sending notifications is set to {send_notification}. Calling notify()")
+    notify(team_cases, debug)
+
+def run_queries_for_manager():
+  print('...Queries running for manager role')
+  return
 
 signal.signal(signal.SIGINT, handle_shutdown)
 

@@ -19,7 +19,9 @@
   "queries": {
     "team": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Product__r.Name IN ({product_name}) AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') ORDER BY CreatedDate DESC",
     "personal": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Owner.Name LIKE '%{engineer_name}%' ORDER BY CreatedDate DESC",
-    "opened_today": "SELECT CaseNumber, Product__r.Name, Owner.Name FROM Case WHERE CreatedDate = TODAY AND Product__r.Name IN ({product_name})"
+    "opened_today": "SELECT CaseNumber, Product__r.Name, Owner.Name FROM Case WHERE CreatedDate = TODAY AND Product__r.Name IN ({product_name})",
+    "commitments": "SELECT CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c FROM Case WHERE Status_Closed__c = FALSE  AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') AND Time_Before_Next_Update_Commitment__c <= 0.03125 ORDER BY Time_Before_Next_Update_Commitment__c DESC",
+    "team_next_commitment": "SELECT CaseNumber, Time_Before_Next_Update_Commitment__c, Status, Milestone_Target_Date__c FROM Case WHERE Owner.Name IN ({team_list}) AND Time_Before_Next_Update_Commitment__c <= 1 ORDER BY Time_Before_Next_Update_Commitment__c DESC"
   },
   "notifications": false,
   "poll_interval": 5,
