@@ -31,7 +31,7 @@ cd SalesForceQuery/src
 python3 main.py
 ```
 
-The program will start and run a validation check for the existance of the credentials.json file. Since the first startup will not have this file, the program will exit and you can manually enter the credentials in the credentials.json file.
+The program will start and run a validation check for the existance of the credentials.json and config.json file. Since the first startup will not have these files, the program will create them from a template.
 
 ### 3. First-Time Setup
 In the ```credentials.json``` file, fill out all fields with appropriate values.
@@ -41,9 +41,14 @@ Example of credentials.json:
 {
   "url": "https://SalesForce-api.com/query",
   "username": "JohnDoe@Company.com",
-  "engineer_name": "John Doe"
+  "engineer_name": "First Last"
 }
 ```
+In the ```config.json``` file, set the products you support to 'true'.
+
+If you are a manager, update the ```"role": "engineer"``` to ```"role": "manager"```
+
+If you are on Mac, update the ```"notifications": false``` to ```"notifications": true```. Or you can run the program with the --notify flag to override the value in the config.json. Ex ```python3 main.py --notify```
 
 ### 4. Start the program
 
@@ -55,18 +60,31 @@ python3 main.py
 
 You should see something like this:
 ```bash
-Fetching batch @ Mon Mar 31 08:46:26
+   _____       _           ______                            _____ _____ 
+  / ____|     | |         |  ____|                     /\   |  __ \_   _|
+ | (___   __ _| | ___  ___| |__ ___  _ __ ___ ___     /  \  | |__) || |  
+  \___ \ / _` | |/ _ \/ __|  __/ _ \| '__/ __/ _ \   / /\ \ |  ___/ | |  
+  ____) | (_| | |  __/\__ \ | | (_) | | | (_|  __/  / ____ \| |    _| |_ 
+ |_____/ \__,_|_|\___||___/_|  \___/|_|  \___\___| /_/    \_\_|   |_____|
+                  Fetching batch @ Fri Apr 18 12:36:34
+                        Next poll in 30 minutes...
 
-Team queue list:
+=== Team Queue === 
   1 new Flow Manager case(s)
   3 new API Gateway case(s)
-  1 new Transfer CFT case(s)
-  1 new Amplify API Platform case(s)
+  1 new B2Bi case(s)
+====================
 
-Personal queue list:
+=== Personal Queue ===
   4 case(s) are In Support
   1 case(s) need an IC
   2 case(s) need an update in 24 hours
+======================
 
-Next poll in 5 minutes...
+=== Cases Opened Today ===
+  01709039 - Flow Manager w/ Engineer Name
+  01709059 - API Gateway w/ Engineer Name
+  01709183 - API Gateway w/ Engineer Name
+  01709203 - B2Bi w/ Engineer Name
+==========================
 ```
