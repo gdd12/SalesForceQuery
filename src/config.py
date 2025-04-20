@@ -4,14 +4,16 @@ import shutil
 from getpass import getpass
 from exceptions import ConfigurationError
 
-def load_configuration(config_path="../config.json", credentials_path="../credentials.json"):
+config_path = "../config.json"
+credentials_path = "../credentials.json"
+config_template = "../templates/config.json"
+credentials_template = "../templates/credentials.json"
+
+def load_configuration():
   func = "load_configuration()"
   def log(msg): DEBUG(debug, f"{func}: {msg}") if 'debug' in locals() else print(f"{func}: {msg}")
 
   missing_files = []
-
-  config_template = "../templates/config.json"
-  credentials_template = "../templates/credentials.json"
 
   if not os.path.exists(credentials_path):
     if os.path.exists(credentials_template):
@@ -81,7 +83,7 @@ def DEBUG(debug, message):
   if debug:
     print(f"{message}")
 
-def user_role(config_path="../config.json"):
+def user_role():
   try:
     with open(config_path, "r") as config_file:
       config = json.load(config_file)
@@ -94,7 +96,7 @@ def user_role(config_path="../config.json"):
     print(f"Error loading configuration: {e}")
     raise
 
-def background_color(config_path="../config.json"):
+def background_color():
   acceptable_colors = ["black","red","green","yellow","blue","magenta","cyan","white","bright_black","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_white"]
   try:
     with open(config_path, "r") as config_file:
