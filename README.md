@@ -9,9 +9,10 @@ This project helps automate the process of fetching Salesforce cases. It is desi
 		```python3 --version```
 	- If you don’t have Python 3 installed, you can download it from the official [Python website](https://www.python.org/downloads/).
 
-2. **Dependencies**: You need the `requests` library to interact with the Salesforce API.
+2. **Dependencies**: You need the `requests` and `rich` library to interact with the Salesforce API.
 	- Install the necessary dependencies by running:
 		```pip3 install requests```
+    ```pip3 install rich```
 
 ## Installation and Setup
 

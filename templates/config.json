@@ -27,6 +27,7 @@
   "poll_interval": 30,
   "debug": false,
   "role": "engineer",
+  "background_color": "black",
   "teams_list": {
     "b2b": {
       "viewable": false,

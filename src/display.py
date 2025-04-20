@@ -2,7 +2,12 @@ import argparse
 import sys
 import os
 from collections import defaultdict
-from config import DEBUG
+from config import DEBUG, background_color
+from rich.console import Console
+from rich.panel import Panel
+from rich.align import Align
+
+console = Console()
 
 def info_logger():
   text = title()
@@ -54,33 +59,35 @@ def handle_shutdown(signum, frame):
 def display_team(cases, debug):
   func = "display_team()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-
   log("Started")
-
-  if not debug: print("=== Team Queue ===")
-  if not cases:
-    print("  No cases in the queue")
+  color = background_color()
 
   product_count = defaultdict(int)
-
   for case in cases:
     product = case.get('Product__r', {}).get('Name', 'No Product')
     product_count[product] += 1
 
-  if product_count:
-    for product, count in product_count.items():
-      log(f"Total product count for {product} is {count}")
-      if not debug:
-        print(f"  {count} new {product} case(s)")
+  if not debug:
+    if not cases:
+        panel = Panel("No cases in the queue", title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
+        console.print(Align.center(panel))
+    else:
+      lines = []
+      for product, count in product_count.items():
+        log(f"Total product count for {product} is {count}")
+        lines.append(f"[bold yellow]{count}[/bold yellow] new [bold]{product}[/bold] case(s)")
+      panel_content = "\n".join(lines)
+      panel = Panel(panel_content, title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
+      print('\n')
+      console.print(Align.center(panel))
 
-  if not debug: print("="*20)
   log("Finished")
 
 def display_personal(cases, debug):
   func = "display_personal()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-
   log("Started")
+  color = background_color()
 
   if not cases:
     raise ValueError("No cases to display for personal.")
@@ -106,47 +113,52 @@ def display_personal(cases, debug):
   log(f'New count: {New}')
   log(f'NeedsCommitment count: {NeedsCommitment}')
 
-  if not debug: print("\n=== Personal Queue ===")
-
-  if InSupport + New + NeedsCommitment == 0:
-    if not debug:
-      print("   No case updates")
+  if not debug:
+    if InSupport + New + NeedsCommitment == 0:
+      panel = Panel("No case updates", title=f"[bold {color}]Personal Queue[/bold {color}]", border_style=f"{color}")
     else:
-      log("Total is 0, no cases require updates")
+      lines = []
 
-  if InSupport > 0 and not debug:
-    print(f"  {InSupport} case(s) are In Support")
+      if InSupport > 0:
+        lines.append(f"[bold yellow]{InSupport}[/bold yellow] case(s) are [bold]In Support[/bold]")
 
-  if New > 0 and not debug:
-    print(f"  {New} case(s) need an IC")
+      if New > 0:
+        lines.append(f"[bold yellow]{New}[/bold yellow] case(s) need an [bold]IC[/bold]")
 
-  if NeedsCommitment > 0 and not debug:
-    print(f"  {NeedsCommitment} case(s) need an update in 24 hours")
+      if NeedsCommitment > 0:
+        lines.append(f"[bold yellow]{NeedsCommitment}[/bold yellow] case(s) need an [bold]update in 24 hours[/bold]")
 
-  if not debug: print("="*22)
+      panel_content = "\n".join(lines)
+      panel = Panel(panel_content, title=f"[bold {color}]Personal Queue[/bold {color}]", border_style=f"{color}")
+
+    console.print(Align.center(panel))
+
   log("Finished")
 
 def display_opened_today(cases, debug):
   func = "display_opened_today()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-
   log("Started")
+  color = background_color()
 
   total_case = 0
-  if not debug: print("\n=== Cases Opened Today ===")
-
   if not cases:
-    raise ValueError("No cases were created today")
+    panel = Panel("No cases created today", title=f"[bold {color}]Opened Today[/bold {color}]", border_style=f"{color}")
+
+  lines = []
 
   for case in cases:
     case_num = case.get("CaseNumber")
     product = case.get('Product__r', {}).get('Name', 'No Product')
     engineer = case.get('Owner', {}).get('Name', 'n/a')
     total_case += 1
-    if not debug:
-      print(f'  {case_num} - {product} w/ {engineer}')
+    lines.append(f"[bold yellow]{case_num}[/bold yellow] - {product} w/ {engineer}")
+  
+  panel_content = "\n".join(lines)
+  panel = Panel(panel_content, title=f"[bold {color}]Opened Today[/bold {color}]", border_style=f"{color}")
 
-  if not debug: print("="*26)
+  if not debug:
+    console.print(Align.center(panel))
 
   log(f"Total cases created today = {total_case}")
   log("Finished")
@@ -154,21 +166,23 @@ def display_opened_today(cases, debug):
 def display_team_needs_commitment(cases, debug):
   func = "display_team_needs_commitment()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-
   log("Started")
+  color = background_color()
 
-  if not debug: print("\n=== Cases Needing Commitment Within 1 Day ===")
+  lines = []
+
   for case in cases:
     case_num = case.get("CaseNumber")
     owner = case.get("Owner", {}).get("Name", "n/a")
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
-    print(f"Case: {case_num}")
-    print(f"Owner: {owner}")
-    print(f"Countdown: {next_update}")
-    print("-----------------")
-  if not cases and not debug: print("                     None")
-  if debug: log("Finished")
-  if not debug: print("="*45)
+    lines.append(f"[bold yellow]{case_num}[/bold yellow] w/ [bold]{owner}[/bold] in [bold]{next_update}[/bold]")
+  if not cases: lines.append(f"                  None")
+
+  panel_content = "\n".join(lines)
+  panel = Panel(panel_content, title=f"[bold {color}]Cases Needing Commitment Within 1 Day[/bold {color}]", border_style=f"{color}")
+  
+  if not debug: console.print('\n',Align.center(panel))
+  log("Finished") 
 
 def title():
   title = """\

@@ -62,14 +62,12 @@ def load_configuration(config_path="../config.json", credentials_path="../creden
       with open(credentials_path, "r") as cred_file:
         salesforce_config = json.load(cred_file)
         log(f"Reading Salesforce credentials")
-
+      
+      background_color()
       return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list
 
   except KeyError as e:
     raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
-  except Exception as e:
-    print(f"Error loading configuration: {e}")
-    raise
 
 def request_password(debug):
   func = "request_password()"
@@ -95,3 +93,18 @@ def user_role(config_path="../config.json"):
   except Exception as e:
     print(f"Error loading configuration: {e}")
     raise
+
+def background_color(config_path="../config.json"):
+  acceptable_colors = ["black","red","green","yellow","blue","magenta","cyan","white","bright_black","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_white"]
+  try:
+    with open(config_path, "r") as config_file:
+      config = json.load(config_file)
+      color = config.get("background_color")
+
+      if color not in acceptable_colors:
+        raise ConfigurationError(
+          f'Color "{color}" is not acceptable. Acceptable colors include: {", ".join(acceptable_colors)}'
+      )
+    return color
+  except KeyError as e:
+    raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
