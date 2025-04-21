@@ -131,7 +131,7 @@ def display_personal(cases, debug):
       panel_content = "\n".join(lines)
       panel = Panel(panel_content, title=f"[bold {color}]Personal Queue[/bold {color}]", border_style=f"{color}")
 
-    console.print(Align.center(panel))
+    console.print('\n',Align.center(panel))
 
   log("Finished")
 
