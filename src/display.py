@@ -1,6 +1,8 @@
 import argparse
+import shutil
 import sys
 import os
+from datetime import datetime
 from collections import defaultdict
 from config import DEBUG, background_color
 from rich.console import Console
@@ -47,6 +49,19 @@ Examples:
 
   return parser.parse_args()
 
+def display_header(polling_interval, debug):
+  func = "display_header()"
+  def log(msg): DEBUG(debug, f"{func}: {msg}")
+  log("Started")
+  terminal_width = shutil.get_terminal_size().columns
+
+  timestamp = f"Fetching batch @ {(datetime.now()).strftime('%a %b %H:%M')}"
+  polling_info = f"Next poll in {polling_interval} minutes..."
+
+  print(timestamp.center(terminal_width))
+  print(polling_info.center(terminal_width))
+  log("Finished")
+
 def clear_screen():
   if os.name == 'nt':
     os.system('cls')
@@ -70,7 +85,7 @@ def display_team(cases, debug):
   if not debug:
     if not cases:
         panel = Panel("No cases in the queue", title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
-        console.print(Align.center(panel))
+        console.print('\n',Align.center(panel))
     else:
       lines = []
       for product, count in product_count.items():
@@ -78,8 +93,7 @@ def display_team(cases, debug):
         lines.append(f"[bold yellow]{count}[/bold yellow] new [bold]{product}[/bold] case(s)")
       panel_content = "\n".join(lines)
       panel = Panel(panel_content, title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
-      print('\n')
-      console.print(Align.center(panel))
+      console.print('\n',Align.center(panel))
 
   log("Finished")
 
@@ -175,7 +189,7 @@ def display_team_needs_commitment(cases, debug):
     case_num = case.get("CaseNumber")
     owner = case.get("Owner", {}).get("Name", "n/a")
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
-    lines.append(f"[bold yellow]{case_num}[/bold yellow] w/ [bold]{owner}[/bold] in [bold]{next_update}[/bold]")
+    lines.append(f"[bold yellow]{case_num}[/bold yellow] w/ {owner} in [bold]{next_update}[/bold]")
   if not cases: lines.append(f"                  None")
 
   panel_content = "\n".join(lines)
@@ -197,11 +211,11 @@ def display_queue_needs_commitment(cases, debug):
     product = case.get('Product__r', {}).get('Name', 'No Product')
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
     lines.append(f"[bold yellow]{case_num}[/bold yellow] for [bold]{product}[/bold] in [bold]{next_update}[/bold]")
-  if not cases: lines.append(f"                       None")
+  if not cases: lines.append(f"                 None")
   panel_content = "\n".join(lines)
   panel = Panel(panel_content, title=f"[bold {color}]Queue commitments within 45 minutes[/bold {color}]", border_style=f"{color}")
 
-  if not debug: console.print('\n',Align.center(panel))
+  if not debug: console.print(Align.center(panel))
   log("Finished")
 
 def title():

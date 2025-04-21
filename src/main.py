@@ -16,11 +16,10 @@ from display import (
   display_team,
   display_opened_today,
   info_logger,
-  title,
+  display_header,
   display_team_needs_commitment,
   display_queue_needs_commitment
 )
-from datetime import datetime
 from exceptions import APIError, ConfigurationError, UnsupportedRole
 from notification import notify
 from helper import concat_team_list
@@ -75,10 +74,7 @@ def main():
     while True:
       if not debug:
         clear_screen()
-        header = title()
-        print(header)
-        print(f"                  Fetching batch @ {(datetime.now()).strftime('%a %b %d %H:%M:%S')}")
-        print(f"                        Next poll in {poll_interval} minutes...")
+        display_header(poll_interval, debug)
 
       if role.upper() == "ENGINEER":
         run_queries_for_tse(api_url, username, password, supported_products_dict, team_query, personal_query, opened_today_query, send_notification, debug)
