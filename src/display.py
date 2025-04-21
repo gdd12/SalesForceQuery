@@ -179,10 +179,30 @@ def display_team_needs_commitment(cases, debug):
   if not cases: lines.append(f"                  None")
 
   panel_content = "\n".join(lines)
-  panel = Panel(panel_content, title=f"[bold {color}]Cases Needing Commitment Within 1 Day[/bold {color}]", border_style=f"{color}")
+  panel = Panel(panel_content, title=f"[bold {color}]Team commitments within 1 Day[/bold {color}]", border_style=f"{color}")
   
   if not debug: console.print('\n',Align.center(panel))
-  log("Finished") 
+  log("Finished")
+
+def display_queue_needs_commitment(cases, debug):
+  func="display_queue_needs_commitment()"
+  def log(msg): DEBUG(debug, f"{func}: {msg}")
+  log("Started")
+  color = background_color()
+
+  lines = []
+
+  for case in cases:
+    case_num = case.get("CaseNumber")
+    product = case.get('Product__r', {}).get('Name', 'No Product')
+    next_update = case.get("Time_Before_Next_Update_Commitment__c")
+    lines.append(f"[bold yellow]{case_num}[/bold yellow] for [bold]{product}[/bold] in [bold]{next_update}[/bold]")
+  if not cases: lines.append(f"                       None")
+  panel_content = "\n".join(lines)
+  panel = Panel(panel_content, title=f"[bold {color}]Queue commitments within 45 minutes[/bold {color}]", border_style=f"{color}")
+
+  if not debug: console.print('\n',Align.center(panel))
+  log("Finished")
 
 def title():
   title = """\

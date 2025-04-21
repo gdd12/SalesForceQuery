@@ -17,7 +17,8 @@ from display import (
   display_opened_today,
   info_logger,
   title,
-  display_team_needs_commitment
+  display_team_needs_commitment,
+  display_queue_needs_commitment
 )
 from datetime import datetime
 from exceptions import APIError, ConfigurationError, UnsupportedRole
@@ -43,11 +44,11 @@ def main():
     api_url = salesforce_config.get("url")
     username = salesforce_config.get("username")
     engineer_name = salesforce_config.get("engineer_name")
-    team_query = queries["team_queue"]
-    personal_query = queries["personal_queue"]
-    opened_today_query = queries["opened_today"]
-    needs_commitment_query = queries["needs_commitment"]
-    team_needs_commitment_query = queries["team_needs_commitment"]
+    team_query = queries["EQ_team_queue"]
+    personal_query = queries["EQ_personal_queue"]
+    opened_today_query = queries["EQ_opened_today"]
+    queue_needs_commitment_query = queries["MQ_queue_needs_commitment"]
+    team_needs_commitment_query = queries["MQ_team_needs_commitment"]
 
     if role.upper() == "MANAGER":
       names = concat_team_list(teams_list)
@@ -82,7 +83,7 @@ def main():
       if role.upper() == "ENGINEER":
         run_queries_for_tse(api_url, username, password, supported_products_dict, team_query, personal_query, opened_today_query, send_notification, debug)
       elif role.upper() == "MANAGER":
-        run_queries_for_manager(api_url, username, password, team_needs_commitment_query, debug)
+        run_queries_for_manager(api_url, username, password, team_needs_commitment_query, queue_needs_commitment_query, debug)
       else:
         raise UnsupportedRole(f'Unsupported role: "{role}"')
 
@@ -146,14 +147,16 @@ def run_queries_for_tse(api_url, username, password, supported_products_dict, te
     log(f"User is running {os.name} and sending notifications is set to {send_notification}. Calling notify()")
     notify(team_cases, debug)
 
-def run_queries_for_manager(api_url, username, password, team_needs_commitment_query, debug):
+def run_queries_for_manager(api_url, username, password, team_needs_commitment_query, queue_needs_commitment_query, debug):
   func = "run_queries_for_manager()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
 
   log("Calling the API for the configured TEAM_NEEDS_COMMITMENT query")
-  needs_commitment = fetch_cases_manager(api_url, username, password, team_needs_commitment_query, debug)
+  team_needs_commitment = fetch_cases_manager(api_url, username, password, team_needs_commitment_query, debug)
+  queue_needs_commitment = fetch_cases_manager(api_url, username, password, queue_needs_commitment_query, debug)
 
-  display_team_needs_commitment(needs_commitment, debug)
+  display_team_needs_commitment(team_needs_commitment, debug)
+  display_queue_needs_commitment(queue_needs_commitment, debug)
 
 signal.signal(signal.SIGINT, handle_shutdown)
 
