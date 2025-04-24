@@ -13,7 +13,7 @@ from exceptions import ConfigurationError, UnsupportedRole
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):
-		self.config = config
+		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ = config
 		self.debug = debug
 		self.send_notification = send_notification
 
@@ -21,14 +21,9 @@ class EngineerHandler:
 		func = "EngineerHandler.run()"
 		def log(msg): DEBUG(self.debug, f"{func}: {msg}")
 
-		salesforce_config, supported_products_dict, poll_interval, queries, *_ = self.config
-		api_url = salesforce_config.get("url")
-		username = salesforce_config.get("username")
-		engineer_name = salesforce_config.get("engineer_name")
-
-		team_query = queries["EQ_team_queue"]
-		personal_query = queries["EQ_personal_queue"]
-		opened_today_query = queries["EQ_opened_today"]
+		api_url = self.salesforce_config.get("url")
+		username = self.salesforce_config.get("username")
+		engineer_name = self.salesforce_config.get("engineer_name")
 
 		if not api_url:
 			raise ConfigurationError("Missing Salesforce API in the configuration file.")
@@ -37,21 +32,21 @@ class EngineerHandler:
 		if not engineer_name:
 			raise ConfigurationError("Missing engineer name in the configuration file.")
 
-		supported_products = [p for p, is_supported in supported_products_dict.items() if is_supported]
+		supported_products = [p for p, is_supported in self.supported_products_dict.items() if is_supported]
 		if not supported_products:
 			raise ConfigurationError("At least one product must be true in supported_products.")
 
 		product_list = "', '".join(supported_products)
 		product_list = f"'{product_list}'"
 
-		team_query = team_query.format(product_name=product_list)
-		personal_query = personal_query.format(product_name=product_list, engineer_name=engineer_name)
-		opened_today_query = opened_today_query.format(product_name=product_list)
+		team_query = self.queries["EQ_team_queue"].format(product_name=product_list)
+		personal_query = self.queries["EQ_personal_queue"].format(product_name=product_list, engineer_name=engineer_name)
+		opened_today_query = self.queries["EQ_opened_today"].format(product_name=product_list)
 
 		while True:
 			if not self.debug:
 				clear_screen()
-				display_header(poll_interval, self.debug)
+				display_header(self.poll_interval, self.debug)
 
 			log("Fetching team cases")
 			team_cases = http_handler(api_url, username, self.config_password, team_query, self.debug)
@@ -71,15 +66,15 @@ class EngineerHandler:
 			if os.name != "nt" and self.send_notification:
 				notify(team_cases, self.debug)
 
-			log(f"Sleeping for {poll_interval} minutes...")
-			time.sleep(poll_interval * 60)
+			log(f"Sleeping for {self.poll_interval} minutes...")
+			time.sleep(self.poll_interval * 60)
 
 	def set_password(self, password):
 		self.config_password = password
 
 class ManagerHandler:
 	def __init__(self, config, debug, send_notification):
-		self.config = config
+		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.teams_list = config
 		self.debug = debug
 		self.send_notification = send_notification
 
@@ -87,21 +82,24 @@ class ManagerHandler:
 		func = "ManagerHandler.run()"
 		def log(msg): DEBUG(self.debug, f"{func}: {msg}")
 
-		salesforce_config, supported_products_dict, poll_interval, queries, config_debug, send_notifications, teams_list = self.config
+		api_url = self.salesforce_config.get("url")
+		username = self.salesforce_config.get("username")
 
-		api_url = salesforce_config.get("url")
-		username = salesforce_config.get("username")
+		if not api_url:
+			raise ConfigurationError("Missing Salesforce API in the configuration file.")
+		if not username:
+			raise ConfigurationError("Missing username in the configuration file.")
 
-		team_needs_commitment_query = queries["MQ_team_needs_commitment"]
-		queue_needs_commitment_query = queries["MQ_queue_needs_commitment"]
-		team_names = concat_team_list(teams_list)
+		team_needs_commitment_query = self.queries["MQ_team_needs_commitment"]
+		queue_needs_commitment_query = self.queries["MQ_queue_needs_commitment"]
+		team_names = concat_team_list(self.teams_list)
 
 		team_needs_commitment_query = team_needs_commitment_query.format(team_list=team_names)
 
 		while True:
 			if not self.debug:
 				clear_screen()
-				display_header(self.config[2], self.debug)
+				display_header(self.poll_interval, self.debug)
 
 			log("Fetching team needs commitment")
 			team_needs_commitment = http_handler(api_url, username, self.config_password, team_needs_commitment_query, self.debug)
@@ -112,8 +110,8 @@ class ManagerHandler:
 			display_team_needs_commitment(team_needs_commitment, self.debug)
 			display_queue_needs_commitment(queue_needs_commitment, self.debug)
 
-			log(f"Sleeping for {self.config[2]} minutes...")
-			time.sleep(self.config[2] * 60)
+			log(f"Sleeping for {self.poll_interval} minutes...")
+			time.sleep(self.poll_interval * 60)
 
 	def set_password(self, password):
 		self.config_password = password

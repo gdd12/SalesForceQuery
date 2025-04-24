@@ -42,23 +42,23 @@ def load_configuration():
   try:
     with open(config_path, "r") as config_file:
       config = json.load(config_file)
-      debug = config.get("debug", False)
+
+      configurable = config.get("CONFIGURABLE", {})
+      queries = config.get("DO_NOT_TOUCH", {}).get("queries", {})
+
+      debug = configurable.get("debug", False)
       log(f"Reading debug value as {debug}")
       log = lambda msg: DEBUG(debug, f"{func}: {msg}")
 
-      supported_products = config.get("supported_products", {})
+      supported_products = configurable.get("supported_products", {})
       log(f"Reading supported products")
-
-      poll_interval = config.get("poll_interval", 5)
+      poll_interval = configurable.get("poll_interval", 5)
       log(f'Reading polling interval of "{poll_interval}" minutes')
-
-      queries = config.get("queries", {})
+      queries = config.get("DO_NOT_TOUCH", {}).get("queries", {})
       log(f"Reading Salesforce queries")
-
-      send_notifications = config.get("notifications", False)
+      send_notifications = configurable.get("notifications", False)
       log(f"Should notifications be sent: {send_notifications}")
-
-      teams_list = config.get("teams_list", {})
+      teams_list = configurable.get("teams_list", {})
       log(f"Reading teams lists")
 
       with open(credentials_path, "r") as cred_file:
@@ -87,7 +87,7 @@ def user_role():
   try:
     with open(config_path, "r") as config_file:
       config = json.load(config_file)
-      role = config.get("role", {})
+      role = config.get("CONFIGURABLE", {}).get("role",)
 
       return role
   except KeyError as e:
@@ -101,7 +101,7 @@ def background_color():
   try:
     with open(config_path, "r") as config_file:
       config = json.load(config_file)
-      color = config.get("background_color")
+      color = config.get("CONFIGURABLE", {}).get("background_color", "black")
 
       if color not in acceptable_colors:
         raise ConfigurationError(

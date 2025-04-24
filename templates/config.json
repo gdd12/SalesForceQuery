@@ -1,49 +1,53 @@
 {
-  "supported_products": {
-    "Axway Cloud eInvoicing Multi-Tenant": false,
-    "Amplify API Platform": false,
-    "Decision Insight": false,
-    "SecureTransport": false,
-    "Track and Trace": false,
-    "API Manager": false,
-    "API Gateway": false,
-    "eInvoicing": false,
-    "Activator": false,
-    "Sentinel": false,
-    "CSOS": false,
-    "B2Bi": false,
-    "Transfer CFT": false,
-    "MFT": false,
-    "Flow Manager": false
+  "CONFIGURABLE": {
+    "supported_products": {
+      "Axway Cloud eInvoicing Multi-Tenant": false,
+      "Amplify API Platform": false,
+      "Decision Insight": false,
+      "SecureTransport": false,
+      "Track and Trace": false,
+      "API Manager": false,
+      "API Gateway": false,
+      "eInvoicing": false,
+      "Activator": false,
+      "Sentinel": false,
+      "CSOS": false,
+      "B2Bi": false,
+      "Transfer CFT": false,
+      "MFT": false,
+      "Flow Manager": false
+    },
+    "notifications": false,
+    "poll_interval": 30,
+    "debug": false,
+    "role": "engineer",
+    "background_color": "black",
+    "teams_list": {
+      "b2b": {
+        "viewable": false,
+        "list": "Enter first and last names separated by commas (with no spaces)"
+      },
+      "mft": {
+        "viewable": false,
+        "list": "Enter first and last names separated by commas (with no spaces)"
+      },
+      "api": {
+        "viewable": false,
+        "list": "Enter first and last names separated by commas (with no spaces)"
+      },
+      "cam": {
+        "viewable": false,
+        "list": "Enter first and last names separated by commas (with no spaces)"
+      }
+    }
   },
-  "queries": {
-    "EQ_team_queue": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Product__r.Name IN ({product_name}) AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') ORDER BY CreatedDate DESC",
-    "EQ_personal_queue": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Owner.Name LIKE '%{engineer_name}%' ORDER BY CreatedDate DESC",
-    "EQ_opened_today": "SELECT CaseNumber, Product__r.Name, Owner.Name FROM Case WHERE CreatedDate = TODAY AND Product__r.Name IN ({product_name})",
-    "MQ_queue_needs_commitment": "SELECT CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c FROM Case WHERE Status_Closed__c = FALSE  AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') AND Time_Before_Next_Update_Commitment__c <= 0.03125 ORDER BY Time_Before_Next_Update_Commitment__c ASC",
-    "MQ_team_needs_commitment": "SELECT CaseNumber, Time_Before_Next_Update_Commitment__c, Status, Milestone_Target_Date__c, Owner.Name FROM Case WHERE Owner.Name IN ({team_list}) AND Time_Before_Next_Update_Commitment__c > 0 AND Time_Before_Next_Update_Commitment__c <= 1 AND Status_Closed__c = FALSE ORDER BY Time_Before_Next_Update_Commitment__c ASC"
-  },
-  "notifications": false,
-  "poll_interval": 30,
-  "debug": false,
-  "role": "engineer",
-  "background_color": "black",
-  "teams_list": {
-    "b2b": {
-      "viewable": false,
-      "list": "Enter first and last names separated by commas (with no spaces)"
-    },
-    "mft": {
-      "viewable": false,
-      "list": "Enter first and last names separated by commas (with no spaces)"
-    },
-    "api": {
-      "viewable": false,
-      "list": "Enter first and last names separated by commas (with no spaces)"
-    },
-    "cam": {
-      "viewable": false,
-      "list": "Enter first and last names separated by commas (with no spaces)"
+  "DO_NOT_TOUCH": {
+    "queries": {
+      "EQ_team_queue": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Product__r.Name IN ({product_name}) AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') ORDER BY CreatedDate DESC",
+      "EQ_personal_queue": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Owner.Name LIKE '%{engineer_name}%' ORDER BY CreatedDate DESC",
+      "EQ_opened_today": "SELECT CaseNumber, Product__r.Name, Owner.Name FROM Case WHERE CreatedDate = TODAY AND Product__r.Name IN ({product_name})",
+      "MQ_queue_needs_commitment": "SELECT CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c FROM Case WHERE Status_Closed__c = FALSE  AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') AND Time_Before_Next_Update_Commitment__c <= 0.03125 ORDER BY Time_Before_Next_Update_Commitment__c ASC",
+      "MQ_team_needs_commitment": "SELECT CaseNumber, Time_Before_Next_Update_Commitment__c, Status, Milestone_Target_Date__c, Owner.Name FROM Case WHERE Owner.Name IN ({team_list}) AND Time_Before_Next_Update_Commitment__c > 0 AND Time_Before_Next_Update_Commitment__c <= 1 AND Status_Closed__c = FALSE ORDER BY Time_Before_Next_Update_Commitment__c ASC"
     }
   }
 }
