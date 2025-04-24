@@ -22,7 +22,7 @@ def load_configuration():
       missing_files.append('credentials')
     else:
       log(f"Template file {credentials_template} not found.")
-      raise ConfigurationError(f"Missing {credentials_path} and no template available.")
+      raise ConfigurationError(f"{func}; Missing {credentials_path} and no template available.")
 
   if not os.path.exists(config_path):
     if os.path.exists(config_template):
@@ -31,11 +31,11 @@ def load_configuration():
       missing_files.append('config')
     else:
       log(f"Template file {config_template} not found.")
-      raise ConfigurationError(f"Missing {config_path} and no template available.")
+      raise ConfigurationError(f"{func}; Missing {config_path} and no template available.")
 
   if missing_files:
     raise ConfigurationError(
-      f"The following configuration files were created from templates: {', '.join(missing_files)}. "
+      f"{func}; The following configuration files were created from templates: {', '.join(missing_files)}. "
       "Please update them and restart the application."
     )
 
@@ -69,7 +69,7 @@ def load_configuration():
       return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list
 
   except KeyError as e:
-    raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
+    raise ConfigurationError(f"{func}; Missing expected key in the configuration file: {e}")
 
 def request_password(debug):
   func = "request_password()"
@@ -84,6 +84,7 @@ def DEBUG(debug, message):
     print(f"{message}")
 
 def user_role():
+  func = "user_role()"
   try:
     with open(config_path, "r") as config_file:
       config = json.load(config_file)
@@ -91,12 +92,13 @@ def user_role():
 
       return role
   except KeyError as e:
-    raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
+    raise ConfigurationError(f"{func}; Missing expected key in the configuration file: {e}")
   except Exception as e:
     print(f"Error loading configuration: {e}")
     raise
 
 def background_color():
+  func = "background_color()"
   acceptable_colors = ["black","red","green","yellow","blue","magenta","cyan","white","bright_black","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_white"]
   try:
     with open(config_path, "r") as config_file:
@@ -105,8 +107,8 @@ def background_color():
 
       if color not in acceptable_colors:
         raise ConfigurationError(
-          f'Color "{color}" is not acceptable. Acceptable colors include: {", ".join(acceptable_colors)}'
+          f'{func}; Color "{color}" is not acceptable. Acceptable colors include: {", ".join(acceptable_colors)}'
       )
     return color
   except KeyError as e:
-    raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
+    raise ConfigurationError(f"{func}; Missing expected key in the configuration file: {e}")

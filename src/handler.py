@@ -26,11 +26,11 @@ class EngineerHandler:
 		engineer_name = self.salesforce_config.get("engineer_name")
 
 		if not api_url:
-			raise ConfigurationError("Missing Salesforce API in the configuration file.")
+			raise ConfigurationError(f"{func}; Missing Salesforce API in the configuration file.")
 		if not username:
-			raise ConfigurationError("Missing username in the configuration file.")
+			raise ConfigurationError(f"{func}; Missing username in the configuration file.")
 		if not engineer_name:
-			raise ConfigurationError("Missing engineer name in the configuration file.")
+			raise ConfigurationError(f"{func}; Missing engineer name in the configuration file.")
 
 		supported_products = [p for p, is_supported in self.supported_products_dict.items() if is_supported]
 		if not supported_products:
@@ -86,9 +86,9 @@ class ManagerHandler:
 		username = self.salesforce_config.get("username")
 
 		if not api_url:
-			raise ConfigurationError("Missing Salesforce API in the configuration file.")
+			raise ConfigurationError(f"{func}; Missing Salesforce API in the configuration file.")
 		if not username:
-			raise ConfigurationError("Missing username in the configuration file.")
+			raise ConfigurationError(f"{func}; Missing username in the configuration file.")
 
 		team_needs_commitment_query = self.queries["MQ_team_needs_commitment"]
 		queue_needs_commitment_query = self.queries["MQ_queue_needs_commitment"]
@@ -117,13 +117,14 @@ class ManagerHandler:
 		self.config_password = password
 
 def role_handler(role, debug, send_notification, config, password):
+	func = "role_handler()"
 	role = role.upper()
 	if role == "ENGINEER":
 		handler = EngineerHandler(config, debug, send_notification)
 	elif role == "MANAGER":
 		handler = ManagerHandler(config, debug, send_notification)
 	else:
-		raise UnsupportedRole(f'Unsupported role "{role.lower()}"')
+		raise UnsupportedRole(f'{func}; Unsupported role "{role.lower()}"')
 
 	handler.set_password(password)
 	handler.run()
