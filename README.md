@@ -58,34 +58,3 @@ Start the program by running the below command. You will be prompted to enter yo
 ```bash
 python3 main.py
 ```
-
-You should see something like this:
-```bash
-   _____       _           ______                            _____ _____ 
-  / ____|     | |         |  ____|                     /\   |  __ \_   _|
- | (___   __ _| | ___  ___| |__ ___  _ __ ___ ___     /  \  | |__) || |  
-  \___ \ / _` | |/ _ \/ __|  __/ _ \| '__/ __/ _ \   / /\ \ |  ___/ | |  
-  ____) | (_| | |  __/\__ \ | | (_) | | | (_|  __/  / ____ \| |    _| |_ 
- |_____/ \__,_|_|\___||___/_|  \___/|_|  \___\___| /_/    \_\_|   |_____|
-                  Fetching batch @ Fri Apr 18 12:36:34
-                        Next poll in 30 minutes...
-
-=== Team Queue === 
-  1 new Flow Manager case(s)
-  3 new API Gateway case(s)
-  1 new B2Bi case(s)
-====================
-
-=== Personal Queue ===
-  4 case(s) are In Support
-  1 case(s) need an IC
-  2 case(s) need an update in 24 hours
-======================
-
-=== Cases Opened Today ===
-  01709039 - Flow Manager w/ Engineer Name
-  01709059 - API Gateway w/ Engineer Name
-  01709183 - API Gateway w/ Engineer Name
-  01709203 - B2Bi w/ Engineer Name
-==========================
-```

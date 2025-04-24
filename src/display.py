@@ -8,6 +8,7 @@ from config import DEBUG, background_color
 from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
+from helper import convert_days_to_dhm
 
 console = Console()
 
@@ -129,7 +130,7 @@ def display_personal(cases, debug):
 
   if not debug:
     if InSupport + New + NeedsCommitment == 0:
-      panel = Panel("No case updates", title=f"[bold {color}]Personal Queue[/bold {color}]", border_style=f"{color}")
+      panel = Panel("No case updates", title=f"[bold {color}]Your Cases[/bold {color}]", border_style=f"{color}")
     else:
       lines = []
 
@@ -157,7 +158,7 @@ def display_opened_today(cases, debug):
 
   total_case = 0
   if not cases:
-    panel = Panel("No cases created today", title=f"[bold {color}]Opened Today[/bold {color}]", border_style=f"{color}")
+    panel = Panel("No cases created today", title=f"[bold {color}]Cases Opened Today[/bold {color}]", border_style=f"{color}")
 
   lines = []
 
@@ -189,7 +190,8 @@ def display_team_needs_commitment(cases, debug):
     case_num = case.get("CaseNumber")
     owner = case.get("Owner", {}).get("Name", "n/a")
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
-    lines.append(f"[bold yellow]{case_num}[/bold yellow] w/ {owner} in [bold]{next_update}[/bold]")
+    next_update_formated = convert_days_to_dhm(next_update)
+    lines.append(f"[bold yellow]{case_num}[/bold yellow] w/ {owner} in [bold]{next_update_formated}[/bold]")
   if not cases: lines.append(f"                  None")
 
   panel_content = "\n".join(lines)

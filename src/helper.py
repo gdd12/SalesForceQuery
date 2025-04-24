@@ -30,3 +30,22 @@ def concat_team_list(names_list):
 
 	name_string = ", ".join(f"'{name}'" for name in name_list)
 	return name_string
+
+def convert_days_to_dhm(day_value):
+	if day_value is None:
+		return "0M"
+	
+	total_minutes = int(round(day_value * 24 * 60))
+	days = total_minutes // (24 * 60)
+	hours = (total_minutes % (24 * 60)) // 60
+	minutes = total_minutes % 60
+
+	parts = []
+	if days:
+			parts.append(f"{days}D")
+	if hours:
+			parts.append(f"{hours}H")
+	if minutes or not parts:
+			parts.append(f"{minutes}M")
+
+	return " ".join(parts)
