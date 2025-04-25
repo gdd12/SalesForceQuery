@@ -25,28 +25,31 @@
     "teams_list": {
       "b2b": {
         "viewable": false,
-        "list": "Enter first and last names separated by commas (with no spaces)"
+        "list": "Enter first and last names separated by commas. Reach out to the developer for this info to copy/paste"
       },
       "mft": {
         "viewable": false,
-        "list": "Enter first and last names separated by commas (with no spaces)"
+        "list": "Enter first and last names separated by commas. Reach out to the developer for this info to copy/paste"
       },
       "api": {
         "viewable": false,
-        "list": "Enter first and last names separated by commas (with no spaces)"
+        "list": "Enter first and last names separated by commas. Reach out to the developer for this info to copy/paste"
       },
       "cam": {
         "viewable": false,
-        "list": "Enter first and last names separated by commas (with no spaces)"
+        "list": "Enter first and last names separated by commas. Reach out to the developer for this info to copy/paste"
+      },
+      "group": {
+        "list": "Support_Americas, Escalation_Group, MCS"
       }
     }
   },
   "DO_NOT_TOUCH": {
     "queries": {
-      "EQ_team_queue": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Product__r.Name IN ({product_name}) AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') ORDER BY CreatedDate DESC",
+      "EQ_team_queue": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_group}) ORDER BY CreatedDate DESC",
       "EQ_personal_queue": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Owner.Name LIKE '%{engineer_name}%' ORDER BY CreatedDate DESC",
-      "EQ_opened_today": "SELECT CaseNumber, Product__r.Name, Owner.Name FROM Case WHERE CreatedDate = TODAY AND Product__r.Name IN ({product_name})",
-      "MQ_queue_needs_commitment": "SELECT CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c FROM Case WHERE Status_Closed__c = FALSE  AND Owner.Name IN ('Support_Americas', 'Escalation_Group', 'MCS') AND Time_Before_Next_Update_Commitment__c <= 0.03125 ORDER BY Time_Before_Next_Update_Commitment__c ASC",
+      "EQ_opened_today": "SELECT CaseNumber, Product__r.Name, Owner.Name FROM Case WHERE CreatedDate = TODAY AND Product__r.Name IN ({product_name}) AND Owner.Name IN ({na_support_list})",
+      "MQ_queue_needs_commitment": "SELECT CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c FROM Case WHERE Status_Closed__c = FALSE  AND Owner.Name IN ({support_group}) AND Time_Before_Next_Update_Commitment__c <= 0.03125 ORDER BY Time_Before_Next_Update_Commitment__c ASC",
       "MQ_team_needs_commitment": "SELECT CaseNumber, Time_Before_Next_Update_Commitment__c, Status, Milestone_Target_Date__c, Owner.Name FROM Case WHERE Owner.Name IN ({team_list}) AND Time_Before_Next_Update_Commitment__c > 0 AND Time_Before_Next_Update_Commitment__c <= 1 AND Status_Closed__c = FALSE ORDER BY Time_Before_Next_Update_Commitment__c ASC"
     }
   }

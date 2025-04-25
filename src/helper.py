@@ -50,3 +50,23 @@ def convert_days_to_dhm(day_value):
 			parts.append(f"{minutes}M")
 
 	return " ".join(parts)
+
+def concat_group_list(teams_list):
+	group_list_raw = teams_list.get("group", {}).get("list", "")
+	group_names = group_list_raw.split(",")
+	quoted_group = [f"'{group.strip()}'" for group in group_names]
+	return ", ".join(quoted_group)
+
+def concat_na_support_list(teams_list):
+	group_list_raw = teams_list.get("group", {}).get("list", "")
+	group_names = group_list_raw.split(",")
+
+	other_names = []
+	for k, v in teams_list.items():
+		if k != "group":
+			names = v["list"].split(",")
+			other_names.extend(names)
+
+	all_names = group_names + other_names
+	quoted_names = [f"'{name.strip()}'" for name in all_names]
+	return ", ".join(quoted_names)

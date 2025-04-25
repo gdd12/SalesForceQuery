@@ -6,14 +6,16 @@ from display import (
 	display_opened_today, display_team_needs_commitment,
 	display_queue_needs_commitment
 )
-from helper import concat_team_list
+from helper import (
+  concat_team_list, concat_group_list, concat_na_support_list
+)
 from config import DEBUG
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):
-		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ = config
+		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.teams_list = config
 		self.debug = debug
 		self.send_notification = send_notification
 
@@ -39,9 +41,12 @@ class EngineerHandler:
 		product_list = "', '".join(supported_products)
 		product_list = f"'{product_list}'"
 
-		team_query = self.queries["EQ_team_queue"].format(product_name=product_list)
+		group_list = concat_group_list(self.teams_list)
+		na_support_list = concat_na_support_list(self.teams_list)
+
+		team_query = self.queries["EQ_team_queue"].format(product_name=product_list, support_group=group_list)
 		personal_query = self.queries["EQ_personal_queue"].format(product_name=product_list, engineer_name=engineer_name)
-		opened_today_query = self.queries["EQ_opened_today"].format(product_name=product_list)
+		opened_today_query = self.queries["EQ_opened_today"].format(product_name=product_list, na_support_list=na_support_list)
 
 		while True:
 			if not self.debug:
@@ -92,8 +97,11 @@ class ManagerHandler:
 
 		team_needs_commitment_query = self.queries["MQ_team_needs_commitment"]
 		queue_needs_commitment_query = self.queries["MQ_queue_needs_commitment"]
-		team_names = concat_team_list(self.teams_list)
 
+		team_names = concat_team_list(self.teams_list)
+		group_list = concat_group_list(self.teams_list)
+
+		queue_needs_commitment_query = queue_needs_commitment_query.format(support_group=group_list)
 		team_needs_commitment_query = team_needs_commitment_query.format(team_list=team_names)
 
 		while True:
