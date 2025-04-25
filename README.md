@@ -12,7 +12,7 @@ This project helps automate the process of fetching Salesforce cases. It is desi
 2. **Dependencies**: You need the `requests` and `rich` library to interact with the Salesforce API.
 	- Install the necessary dependencies by running:
 		```pip3 install requests```
-    ```pip3 install rich```
+    	```pip3 install rich```
 
 ## Installation and Setup
 
@@ -35,7 +35,7 @@ python3 main.py
 The program will start and run a validation check for the existance of the credentials.json and config.json file. Since the first startup will not have these files, the program will create them from a template.
 
 ### 3. First-Time Setup
-In the ```credentials.json``` file, fill out all fields with appropriate values.
+In the ```credentials.json``` file, fill out all fields with appropriate values. If you do not know the API URL, reach out to the creator of this program.
 
 Example of credentials.json:
 ```bash
