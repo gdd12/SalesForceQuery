@@ -40,7 +40,8 @@ def convert_days_to_dhm(day_value):
 	days = total_minutes // (24 * 60)
 	hours = (total_minutes % (24 * 60)) // 60
 	minutes = total_minutes % 60
-
+	if day_value < 0:
+		return 'Missed'
 	parts = []
 	if days:
 			parts.append(f"{days}D")
