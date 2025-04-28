@@ -7,7 +7,7 @@ from display import (
 	display_queue_needs_commitment
 )
 from helper import (
-  concat_team_list, concat_group_list, concat_na_support_list
+  concat_team_list, concat_group_list, concat_support_engineer_list
 )
 from config import DEBUG
 from notification import notify
@@ -42,11 +42,11 @@ class EngineerHandler:
 		product_list = f"'{product_list}'"
 
 		group_list = concat_group_list(self.teams_list)
-		na_support_list = concat_na_support_list(self.teams_list)
+		support_engineer_list = concat_support_engineer_list(self.teams_list)
 
 		team_query = self.queries["EQ_team_queue"].format(product_name=product_list, support_group=group_list)
 		personal_query = self.queries["EQ_personal_queue"].format(product_name=product_list, engineer_name=engineer_name)
-		opened_today_query = self.queries["EQ_opened_today"].format(product_name=product_list, na_support_list=na_support_list)
+		opened_today_query = self.queries["EQ_opened_today"].format(product_name=product_list, support_engineer_list=support_engineer_list)
 
 		while True:
 			if not self.debug:

@@ -58,7 +58,7 @@ def concat_group_list(teams_list):
 	quoted_group = [f"'{group.strip()}'" for group in group_names]
 	return ", ".join(quoted_group)
 
-def concat_na_support_list(teams_list):
+def concat_support_engineer_list(teams_list):
 	group_list_raw = teams_list.get("group", {}).get("list", "")
 	group_names = group_list_raw.split(",")
 

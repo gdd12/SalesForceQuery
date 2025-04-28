@@ -30,7 +30,6 @@ def main():
     debug = args.debug if args.debug else config_debug
     send_notification = args.notify if args.notify else send_notifications
 
-
     password = request_password(debug)
 
     log("The following has all been loaded into memory:")
