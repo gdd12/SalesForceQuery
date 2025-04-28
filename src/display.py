@@ -13,19 +13,18 @@ from helper import convert_days_to_dhm
 console = Console()
 
 def info_logger():
-  text = title()
   parser = argparse.ArgumentParser(
         prog="python3 main.py",
         description=f"""\
-        {text}
+SalesForce API Query Tool
 --------------------------
 A CLI tool to view and monitor Salesforce cases from your terminal.
 
 Features:
-- Authenticated API queries to Salesforce via Axway credentials
-- Filters for team, personal, and newly opened cases
-- Optional CSV export for reporting (Not yet)
-- Configurable notifications (Only on Mac)
+  Authenticated API queries to Salesforce via Axway credentials
+  Filters for team, personal, and newly opened cases
+  Optional CSV export for reporting (Not yet)
+  Configurable notifications (Only on Mac)
 
 """,
         epilog="""\
