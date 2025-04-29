@@ -56,8 +56,10 @@ def load_configuration():
       log(f'Reading polling interval of "{poll_interval}" minutes')
       queries = config.get("DO_NOT_TOUCH", {}).get("queries", {})
       log(f"Reading Salesforce queries")
-      send_notifications = configurable.get("notifications", False)
+      send_notifications = configurable.get("notifications", {}).get("send", False)
       log(f"Should notifications be sent: {send_notifications}")
+      sound_notifications = configurable.get("notifications", {}).get("sound", False)
+      log(f"Notification sound: {sound_notifications}")
       teams_list = configurable.get("teams_list", {})
       log(f"Reading teams lists")
 
@@ -66,7 +68,7 @@ def load_configuration():
         log(f"Reading Salesforce credentials")
       
       background_color()
-      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list
+      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications
 
   except KeyError as e:
     raise ConfigurationError(f"{func}; Missing expected key in the configuration file: {e}")

@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 from config import DEBUG
 
-def notify(cases, debug):
+def notify(cases, debug, sound):
   func = "notify()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
 
@@ -16,7 +16,12 @@ def notify(cases, debug):
   if product_count:
     message_parts = [f"{count} {product} Case(s)" for product, count in product_count.items()]
     message = "\n".join(message_parts)
-    script = f'display notification "{message}" with title "New SalesForce Cases" sound name "Funk"'
-    os.system(f"osascript -e '{script}'")
+    script = f'display notification "{message}" with title "New SalesForce Cases" sound name "{sound}"'
+
+    try:
+      os.system(f"osascript -e '{script}'")
+      log("Notification sent.")
+    except Exception as e:
+      log(f"Error sending notification: {e}")
 
   log("Finished")

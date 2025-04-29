@@ -17,7 +17,10 @@
       "MFT": false,
       "Flow Manager": false
     },
-    "notifications": false,
+    "notifications": {
+      "send": false,
+      "sound": "funk"
+    },
     "poll_interval": 30,
     "debug": false,
     "role": "engineer",

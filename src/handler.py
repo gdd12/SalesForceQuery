@@ -15,7 +15,7 @@ from exceptions import ConfigurationError, UnsupportedRole
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):
-		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.teams_list = config
+		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.teams_list, self.sound_notifications = config
 		self.debug = debug
 		self.send_notification = send_notification
 
@@ -69,7 +69,7 @@ class EngineerHandler:
 				display_opened_today(opened_today_cases, self.debug)
 
 			if os.name != "nt" and self.send_notification:
-				notify(team_cases, self.debug)
+				notify(team_cases, self.debug, self.sound_notifications)
 
 			log(f"Sleeping for {self.poll_interval} minutes...")
 			time.sleep(self.poll_interval * 60)
