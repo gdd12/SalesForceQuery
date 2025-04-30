@@ -156,21 +156,22 @@ def display_opened_today(cases, debug):
   color = background_color()
 
   total_case = 0
-  if not cases:
-    panel = Panel("No cases created today", title=f"[bold {color}]Cases Opened Today[/bold {color}]", border_style=f"{color}")
 
   lines = []
+  if cases:
+    for case in cases:
+      case_num = case.get("CaseNumber")
+      product = case.get('Product__r', {}).get('Name', 'No Product')
+      engineer = case.get('Owner', {}).get('Name', 'n/a')
+      total_case += 1
+      lines.append(f"[bold yellow]{case_num}[/bold yellow] - {product} w/ {engineer}")
 
-  for case in cases:
-    case_num = case.get("CaseNumber")
-    product = case.get('Product__r', {}).get('Name', 'No Product')
-    engineer = case.get('Owner', {}).get('Name', 'n/a')
-    total_case += 1
-    lines.append(f"[bold yellow]{case_num}[/bold yellow] - {product} w/ {engineer}")
-  
-  panel_content = "\n".join(lines)
+    panel_content = "\n".join(lines)
+    panel = Panel(panel_content, title=f"[bold {color}]Opened Today[/bold {color}]", border_style=f"{color}")
+  else:
+    panel_content = "No cases created today"
+
   panel = Panel(panel_content, title=f"[bold {color}]Opened Today[/bold {color}]", border_style=f"{color}")
-
   if not debug:
     console.print(Align.center(panel))
 

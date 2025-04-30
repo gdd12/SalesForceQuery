@@ -12,6 +12,7 @@ from helper import (
 from config import DEBUG
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
+from datetime import datetime, timezone
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):
@@ -44,29 +45,56 @@ class EngineerHandler:
 		group_list = concat_group_list(self.teams_list)
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
 
-		team_query = self.queries["EQ_team_queue"].format(product_name=product_list, support_group=group_list)
-		personal_query = self.queries["EQ_personal_queue"].format(product_name=product_list, engineer_name=engineer_name)
-		opened_today_query = self.queries["EQ_opened_today"].format(product_name=product_list, support_engineer_list=support_engineer_list)
+		engineer_query = self.queries["Engineer"].format(
+			product_name=product_list,
+			support_group=group_list,
+			engineer_name=engineer_name,
+			support_engineer_list=support_engineer_list
+		)
 
 		while True:
 			if not self.debug:
 				clear_screen()
 				display_header(self.poll_interval, self.debug)
 
-			log("Fetching team cases")
-			team_cases = http_handler(api_url, username, self.config_password, team_query, self.debug)
+			team_cases = []
+			personal_cases = []
+			opened_today_cases = []
 
-			log("Fetching personal cases")
-			personal_cases = http_handler(api_url, username, self.config_password, personal_query, self.debug)
+			log("Fetching team, personal, and opened today cases")
+			cases = http_handler(api_url, username, self.config_password, engineer_query, self.debug)
+			today_date = datetime.now(timezone.utc).date()
 
-			log("Fetching opened today cases")
-			opened_today_cases = http_handler(api_url, username, self.config_password, opened_today_query, self.debug)
+			for case in cases:
+				owner_name = case.get("Owner", {}).get("Name", "")
+				product = case.get("Product__r", {}).get("Name", "")
+				created_date = case.get("CreatedDate")
+
+				if not created_date:
+					continue
+				try:
+					created_dt = datetime.strptime(created_date, "%Y-%m-%dT%H:%M:%S.%f%z")
+				except ValueError:
+					created_dt = datetime.strptime(created_date, "%Y-%m-%dT%H:%M:%S%z")
+
+				created_dt = created_dt.replace(tzinfo=timezone.utc)
+
+				if product in supported_products and owner_name in group_list:
+					team_cases.append(case)
+
+				if engineer_name.lower() in owner_name.lower():
+					personal_cases.append(case)
+				"""
+					I need to validate that the "owner_name not in group_list" actually works. 
+					Previously it was "owner_name in support_engineer_list" but this will show cases still in the queue
+					I only want to show cases created today that are not in the queue
+				"""
+				if product in supported_products and owner_name not in group_list and created_dt.date() == today_date:
+					opened_today_cases.append(case)
 
 			display_team(team_cases, self.debug)
-			if personal_cases:
-				display_personal(personal_cases, self.debug)
-			if opened_today_cases:
-				display_opened_today(opened_today_cases, self.debug)
+			display_personal(personal_cases, self.debug)
+			display_opened_today(opened_today_cases, self.debug)
 
 			if os.name != "nt" and self.send_notification:
 				notify(team_cases, self.debug, self.sound_notifications)
@@ -79,7 +107,7 @@ class EngineerHandler:
 
 class ManagerHandler:
 	def __init__(self, config, debug, send_notification):
-		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.teams_list = config
+		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.teams_list, self.sound_notifications = config
 		self.debug = debug
 		self.send_notification = send_notification
 
@@ -95,25 +123,36 @@ class ManagerHandler:
 		if not username:
 			raise ConfigurationError(f"{func}; Missing username in the configuration file.")
 
-		team_needs_commitment_query = self.queries["MQ_team_needs_commitment"]
-		queue_needs_commitment_query = self.queries["MQ_queue_needs_commitment"]
-
 		team_names = concat_team_list(self.teams_list)
 		group_list = concat_group_list(self.teams_list)
 
-		queue_needs_commitment_query = queue_needs_commitment_query.format(support_group=group_list)
-		team_needs_commitment_query = team_needs_commitment_query.format(team_list=team_names)
+		manager_query = self.queries["Manager"].format(
+			support_group=group_list,
+			team_list=team_names
+		)
 
 		while True:
 			if not self.debug:
 				clear_screen()
 				display_header(self.poll_interval, self.debug)
 
-			log("Fetching team needs commitment")
-			team_needs_commitment = http_handler(api_url, username, self.config_password, team_needs_commitment_query, self.debug)
+			log("Fetching team data for manager query")
+			cases = http_handler(api_url, username, self.config_password, manager_query, self.debug)
 
-			log("Fetching queue needs commitment")
-			queue_needs_commitment = http_handler(api_url, username, self.config_password, queue_needs_commitment_query, self.debug)
+			queue_needs_commitment = []
+			team_needs_commitment = []
+
+			for case in cases:
+				owner_name = case.get("Owner", {}).get("Name", "")
+				commitment_time = case.get("Time_Before_Next_Update_Commitment__c")
+				# Should make this value configurable, 0.03125 is 45 minutes.
+				# This value is also in the Query itself to it would need to change there as well
+				# May want to have a threshold value in the config.json so the user can configure themselves
+				if owner_name in group_list and commitment_time is not None and commitment_time <= 0.03125:
+					queue_needs_commitment.append(case)
+
+				elif owner_name in team_names and commitment_time is not None and 0 < commitment_time <= 1:
+					team_needs_commitment.append(case)
 
 			display_team_needs_commitment(team_needs_commitment, self.debug)
 			display_queue_needs_commitment(queue_needs_commitment, self.debug)

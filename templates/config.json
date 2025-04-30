@@ -49,11 +49,8 @@
   },
   "DO_NOT_TOUCH": {
     "queries": {
-      "EQ_team_queue": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_group}) ORDER BY CreatedDate DESC",
-      "EQ_personal_queue": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, lastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND Owner.Name LIKE '%{engineer_name}%' ORDER BY CreatedDate DESC",
-      "EQ_opened_today": "SELECT CaseNumber, Product__r.Name, Owner.Name FROM Case WHERE CreatedDate = TODAY AND Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_engineer_list})",
-      "MQ_queue_needs_commitment": "SELECT CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c FROM Case WHERE Status_Closed__c = FALSE  AND Owner.Name IN ({support_group}) AND Time_Before_Next_Update_Commitment__c <= 0.03125 ORDER BY Time_Before_Next_Update_Commitment__c ASC",
-      "MQ_team_needs_commitment": "SELECT CaseNumber, Time_Before_Next_Update_Commitment__c, Status, Milestone_Target_Date__c, Owner.Name FROM Case WHERE Owner.Name IN ({team_list}) AND Time_Before_Next_Update_Commitment__c > 0 AND Time_Before_Next_Update_Commitment__c <= 1 AND Status_Closed__c = FALSE ORDER BY Time_Before_Next_Update_Commitment__c ASC"
+      "Engineer": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, LastModifiedDate FROM Case WHERE Status_Closed__c = FALSE AND ((Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_group})) OR (Owner.Name LIKE '%{engineer_name}%') OR (CreatedDate = TODAY AND Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_engineer_list}))) ORDER BY Owner.Name DESC",
+      "Manager": "SELECT CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c, Status, Milestone_Target_Date__c, Owner.Name FROM Case WHERE Status_Closed__c = FALSE AND ((Owner.Name IN ({support_group}) AND Time_Before_Next_Update_Commitment__c <= 4.03125) OR (Owner.Name IN ({team_list}) AND Time_Before_Next_Update_Commitment__c > 0 AND Time_Before_Next_Update_Commitment__c <= 1)) ORDER BY Time_Before_Next_Update_Commitment__c ASC"
     }
   }
 }
