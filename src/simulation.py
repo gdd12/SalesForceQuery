@@ -6,7 +6,7 @@ from display import handle_shutdown
 
 def simulate():
   func = "simulate()"
-  salesforce_config, null, null, null, debug, null = load_configuration()
+  salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications = load_configuration()
 
   def log(msg): DEBUG(debug, f"{func}: {msg}")
 
