@@ -12,7 +12,7 @@ from helper import (
 from config import DEBUG
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):
@@ -63,7 +63,9 @@ class EngineerHandler:
 
 			log("Fetching team, personal, and opened today cases")
 			cases = http_handler(api_url, username, self.config_password, engineer_query, self.debug)
-			today_date = datetime.now(timezone.utc).date()
+
+			now_utc = datetime.now(timezone.utc)
+			twenty_four_hours_ago = now_utc - timedelta(days=1)
 
 			for case in cases:
 				owner_name = case.get("Owner", {}).get("Name", "")
@@ -89,7 +91,7 @@ class EngineerHandler:
 					Previously it was "owner_name in support_engineer_list" but this will show cases still in the queue
 					I only want to show cases created today that are not in the queue
 				"""
-				if product in supported_products and owner_name not in group_list and created_dt.date() == today_date:
+				if product in supported_products and owner_name not in group_list and created_dt >= twenty_four_hours_ago:
 					opened_today_cases.append(case)
 
 			display_team(team_cases, self.debug)

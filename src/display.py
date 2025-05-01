@@ -167,11 +167,11 @@ def display_opened_today(cases, debug):
       lines.append(f"[bold yellow]{case_num}[/bold yellow] - {product} w/ {engineer}")
 
     panel_content = "\n".join(lines)
-    panel = Panel(panel_content, title=f"[bold {color}]Opened Today[/bold {color}]", border_style=f"{color}")
+    panel = Panel(panel_content, title=f"[bold {color}]Last 24 Hours[/bold {color}]", border_style=f"{color}")
   else:
     panel_content = "No cases created today"
 
-  panel = Panel(panel_content, title=f"[bold {color}]Opened Today[/bold {color}]", border_style=f"{color}")
+  panel = Panel(panel_content, title=f"[bold {color}]Last 24 Hours[/bold {color}]", border_style=f"{color}")
   if not debug:
     console.print(Align.center(panel))
 
