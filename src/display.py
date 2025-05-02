@@ -52,7 +52,6 @@ Examples:
 def display_header(polling_interval, debug):
   func = "display_header()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-  log("Started")
   terminal_width = shutil.get_terminal_size().columns
 
   timestamp = f"Fetching batch @ {(datetime.now()).strftime('%a %b %H:%M')}"
@@ -60,7 +59,6 @@ def display_header(polling_interval, debug):
 
   print(timestamp.center(terminal_width))
   print(polling_info.center(terminal_width))
-  log("Finished")
 
 def clear_screen():
   if os.name == 'nt':
@@ -74,7 +72,7 @@ def handle_shutdown(signum, frame):
 def display_team(cases, debug):
   func = "display_team()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-  log("Started")
+
   color = background_color()
 
   product_count = defaultdict(int)
@@ -95,12 +93,10 @@ def display_team(cases, debug):
       panel = Panel(panel_content, title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
       console.print('\n',Align.center(panel))
 
-  log("Finished")
-
 def display_personal(cases, debug):
   func = "display_personal()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-  log("Started")
+
   color = background_color()
 
   if not cases:
@@ -132,13 +128,10 @@ def display_personal(cases, debug):
       panel = Panel("No case updates", title=f"[bold {color}]Your Cases[/bold {color}]", border_style=f"{color}")
     else:
       lines = []
-
       if InSupport > 0:
         lines.append(f"[bold yellow]{InSupport}[/bold yellow] case(s) are [bold]In Support[/bold]")
-
       if New > 0:
         lines.append(f"[bold yellow]{New}[/bold yellow] case(s) need an [bold]IC[/bold]")
-
       if NeedsCommitment > 0:
         lines.append(f"[bold yellow]{NeedsCommitment}[/bold yellow] case(s) need an [bold]update in 24 hours[/bold]")
 
@@ -147,12 +140,10 @@ def display_personal(cases, debug):
 
     console.print(Align.center(panel))
 
-  log("Finished")
-
 def display_opened_today(cases, debug):
   func = "display_opened_today()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-  log("Started")
+
   color = background_color()
 
   total_case = 0
@@ -176,12 +167,11 @@ def display_opened_today(cases, debug):
     console.print(Align.center(panel))
 
   log(f"Total cases created today = {total_case}")
-  log("Finished")
 
 def display_team_needs_commitment(cases, debug):
   func = "display_team_needs_commitment()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-  log("Started")
+
   color = background_color()
 
   lines = []
@@ -198,12 +188,11 @@ def display_team_needs_commitment(cases, debug):
   panel = Panel(panel_content, title=f"[bold {color}]Team commitments within 1 Day[/bold {color}]", border_style=f"{color}")
   
   if not debug: console.print('\n',Align.center(panel))
-  log("Finished")
 
 def display_queue_needs_commitment(cases, debug):
   func="display_queue_needs_commitment()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
-  log("Started")
+
   color = background_color()
 
   lines = []
@@ -220,15 +209,3 @@ def display_queue_needs_commitment(cases, debug):
 
   if not debug: console.print(Align.center(panel))
   log("Finished")
-
-def title():
-  title = """\
-
-   _____       _           ______                            _____ _____ 
-  / ____|     | |         |  ____|                     /\   |  __ \_   _|
- | (___   __ _| | ___  ___| |__ ___  _ __ ___ ___     /  \  | |__) || |  
-  \___ \ / _` | |/ _ \/ __|  __/ _ \| '__/ __/ _ \   / /\ \ |  ___/ | |  
-  ____) | (_| | |  __/\__ \ | | (_) | | | (_|  __/  / ____ \| |    _| |_ 
- |_____/ \__,_|_|\___||___/_|  \___/|_|  \___\___| /_/    \_\_|   |_____|
-"""
-  return title

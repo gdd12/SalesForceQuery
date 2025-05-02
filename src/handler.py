@@ -12,7 +12,6 @@ from helper import (
 from config import DEBUG
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
-from datetime import datetime, timedelta, timezone
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):

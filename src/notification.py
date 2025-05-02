@@ -6,7 +6,6 @@ def notify(cases, debug, sound):
   func = "notify()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
 
-  log("Started")
   product_count = defaultdict(int)
 
   for case in cases:
@@ -23,5 +22,3 @@ def notify(cases, debug, sound):
       log("Notification sent.")
     except Exception as e:
       log(f"Error sending notification: {e}")
-
-  log("Finished")

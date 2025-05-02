@@ -37,7 +37,7 @@ def main():
       "Supported products", "Polling interval", "Engineer's name", "All queries",
       "Debug value", "Username", "Password", "API URL", "Sending notification", "User role"
     ]:
-      log(f"  - {item}")
+      log(f" - {item}")
 
     role_handler(role, debug, send_notification, config, password)
 

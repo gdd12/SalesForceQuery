@@ -7,14 +7,10 @@ def http_handler(api_url, username, password, query, debug):
   func = "http_handler()"
   def log(msg): DEBUG(debug, f"{func}: {msg}")
 
-  log("Started")
   auth = HTTPBasicAuth(username, password)
-  log("Making HTTP request with query string:")
-  log(query)
+  log(f"Making HTTP request with query string: {query}")
 
   response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query})
-
-  log(f"HTTP {response.status_code}")
 
   if response.status_code == 200:
     return response.json().get('records', [])
@@ -26,7 +22,6 @@ def http_handler(api_url, username, password, query, debug):
 
   if response.status_code in error_messages:
     log(error_messages[response.status_code])
-    log("Finished")
     raise APIError(f"{func}; HTTP {response.status_code} {response.reason}. {error_messages[response.status_code]}")
 
   if response.status_code >= 500:
@@ -34,5 +29,4 @@ def http_handler(api_url, username, password, query, debug):
     raise APIError(f"{func}; HTTP {response.status_code} server error.")
 
   print(f"Error fetching data from Salesforce: {response.status_code} {response.reason} - {response.text}")
-  log("Finished")
   raise APIError(f"{func}; Error {response.status_code} {response.reason}. Unable to fetch data.")

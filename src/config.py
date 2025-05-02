@@ -17,20 +17,16 @@ def load_configuration():
 
   if not os.path.exists(credentials_path):
     if os.path.exists(credentials_template):
-      log("credentials.json not found. Copying from template.")
       shutil.copy(credentials_template, credentials_path)
       missing_files.append('credentials')
     else:
-      log(f"Template file {credentials_template} not found.")
       raise ConfigurationError(f"{func}; Missing {credentials_path} and no template available.")
 
   if not os.path.exists(config_path):
     if os.path.exists(config_template):
-      log("config.json not found. Copying from template.")
       shutil.copy(config_template, config_path)
       missing_files.append('config')
     else:
-      log(f"Template file {config_template} not found.")
       raise ConfigurationError(f"{func}; Missing {config_path} and no template available.")
 
   if missing_files:
@@ -51,21 +47,16 @@ def load_configuration():
       log = lambda msg: DEBUG(debug, f"{func}: {msg}")
 
       supported_products = configurable.get("supported_products", {})
-      log(f"Reading supported products")
       poll_interval = configurable.get("poll_interval", 5)
-      log(f'Reading polling interval of "{poll_interval}" minutes')
       queries = config.get("DO_NOT_TOUCH", {}).get("queries", {})
-      log(f"Reading Salesforce queries")
       send_notifications = configurable.get("notifications", {}).get("send", False)
-      log(f"Should notifications be sent: {send_notifications}")
       sound_notifications = configurable.get("notifications", {}).get("sound", False)
-      log(f"Notification sound: {sound_notifications}")
       teams_list = configurable.get("teams_list", {})
-      log(f"Reading teams lists")
+      log(f"Read configuration from {config_path}")
 
       with open(credentials_path, "r") as cred_file:
         salesforce_config = json.load(cred_file)
-        log(f"Reading Salesforce credentials")
+        log(f"Read Salesforce credentials from {credentials_path}")
       
       background_color()
       return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications
