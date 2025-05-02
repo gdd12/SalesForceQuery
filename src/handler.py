@@ -45,10 +45,14 @@ class EngineerHandler:
 		group_list = concat_group_list(self.teams_list)
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
 
-		engineer_query = self.queries["Engineer"].format(
+		engineer_query = self.queries["Engineer_queues"].format(
 			product_name=product_list,
 			support_group=group_list,
 			engineer_name=engineer_name,
+			support_engineer_list=support_engineer_list
+		)
+		engineer_opened_today = self.queries["Engineer_opened_today"].format(
+			product_name=product_list,
 			support_engineer_list=support_engineer_list
 		)
 
@@ -59,40 +63,21 @@ class EngineerHandler:
 
 			team_cases = []
 			personal_cases = []
-			opened_today_cases = []
 
-			log("Fetching team, personal, and opened today cases")
-			cases = http_handler(api_url, username, self.config_password, engineer_query, self.debug)
+			log("Fetching team and personal cases")
+			all_cases = http_handler(api_url, username, self.config_password, engineer_query, self.debug)
+			log("Fetching cases opened today")
+			opened_today_cases = http_handler(api_url, username, self.config_password, engineer_opened_today, self.debug)
 
-			now_utc = datetime.now(timezone.utc)
-			twenty_four_hours_ago = now_utc - timedelta(days=1)
-
-			for case in cases:
+			for case in all_cases:
 				owner_name = case.get("Owner", {}).get("Name", "")
 				product = case.get("Product__r", {}).get("Name", "")
-				created_date = case.get("CreatedDate")
-
-				if not created_date:
-					continue
-				try:
-					created_dt = datetime.strptime(created_date, "%Y-%m-%dT%H:%M:%S.%f%z")
-				except ValueError:
-					created_dt = datetime.strptime(created_date, "%Y-%m-%dT%H:%M:%S%z")
-
-				created_dt = created_dt.replace(tzinfo=timezone.utc)
 
 				if product in supported_products and owner_name in group_list:
 					team_cases.append(case)
 
 				if engineer_name.lower() in owner_name.lower():
 					personal_cases.append(case)
-				"""
-					I need to validate that the "owner_name not in group_list" actually works. 
-					Previously it was "owner_name in support_engineer_list" but this will show cases still in the queue
-					I only want to show cases created today that are not in the queue
-				"""
-				if product in supported_products and owner_name not in group_list and created_dt >= twenty_four_hours_ago:
-					opened_today_cases.append(case)
 
 			display_team(team_cases, self.debug)
 			display_personal(personal_cases, self.debug)

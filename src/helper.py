@@ -59,15 +59,11 @@ def concat_group_list(teams_list):
 	return ", ".join(quoted_group)
 
 def concat_support_engineer_list(teams_list):
-	group_list_raw = teams_list.get("group", {}).get("list", "")
-	group_names = group_list_raw.split(",")
-
 	other_names = []
 	for k, v in teams_list.items():
 		if k != "group":
 			names = v["list"].split(",")
 			other_names.extend(names)
 
-	all_names = group_names + other_names
-	quoted_names = [f"'{name.strip()}'" for name in all_names]
+	quoted_names = [f"'{name.strip()}'" for name in other_names]
 	return ", ".join(quoted_names)
