@@ -44,14 +44,10 @@ class EngineerHandler:
 		group_list = concat_group_list(self.teams_list)
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
 
-		engineer_query = self.queries["Engineer_queues"].format(
+		query = self.queries["Engineer"].format(
 			product_name=product_list,
 			support_group=group_list,
 			engineer_name=engineer_name,
-			support_engineer_list=support_engineer_list
-		)
-		engineer_opened_today = self.queries["Engineer_opened_today"].format(
-			product_name=product_list,
 			support_engineer_list=support_engineer_list
 		)
 
@@ -62,11 +58,10 @@ class EngineerHandler:
 
 			team_cases = []
 			personal_cases = []
+			opened_today_cases = []
 
-			log("Fetching team and personal cases")
-			all_cases = http_handler(api_url, username, self.config_password, engineer_query, self.debug)
-			log("Fetching cases opened today")
-			opened_today_cases = http_handler(api_url, username, self.config_password, engineer_opened_today, self.debug)
+			log("Fetching Engineer query")
+			all_cases = http_handler(api_url, username, self.config_password, query, self.debug)
 
 			for case in all_cases:
 				owner_name = case.get("Owner", {}).get("Name", "")
@@ -77,6 +72,9 @@ class EngineerHandler:
 
 				if engineer_name.lower() in owner_name.lower():
 					personal_cases.append(case)
+
+				if owner_name in support_engineer_list and engineer_name.lower() not in owner_name.lower():
+					opened_today_cases.append(case)
 
 			display_team(team_cases, self.debug)
 			display_personal(personal_cases, self.debug)
