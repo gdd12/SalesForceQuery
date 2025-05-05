@@ -29,8 +29,12 @@ def simulate():
   for record in response:
     print("----- Record -----")
     for column in columns:
-        item = record.get(column)
-        print(f"{column}: {item}")
+      if '.' in column:
+        parts = column.split('.')
+        item = record.get(parts[0], {}).get(parts[1], 'None')
+      else:
+        item = record.get(column, 'None')
+      print(f"{column}: {item}")
 
 signal.signal(signal.SIGINT, handle_shutdown)
 
