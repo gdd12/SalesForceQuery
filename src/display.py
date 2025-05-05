@@ -110,7 +110,7 @@ def display_personal(cases, debug):
     status = case.get('Status')
     commitment_time = case.get('Time_Before_Next_Update_Commitment__c')
 
-    if commitment_time < 1 and status != 'New':
+    if commitment_time < 1 and status not in ['New', 'Closed']:
       NeedsCommitment += 1
 
     if status == "In Support":
