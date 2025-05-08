@@ -26,8 +26,8 @@ def simulate():
   log(f'{func}: {api_url} :: {username} :: {debug}')
 
   response = http_handler(api_url,username,password,query,debug)
-  for record in response:
-    print("----- Record -----")
+  for idx, record in enumerate(response, start=1):
+    print(f"----- Record {idx} -----")
     for column in columns:
       if '.' in column:
         parts = column.split('.')
