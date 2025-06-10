@@ -12,6 +12,7 @@ from helper import (
 from config import DEBUG
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
+from datetime import datetime
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):
@@ -66,6 +67,10 @@ class EngineerHandler:
 			for case in all_cases:
 				owner_name = case.get("Owner", {}).get("Name", "")
 				product = case.get("Product__r", {}).get("Name", "")
+				created_date_str = case.get("CreatedDate", {})
+				
+				today = datetime.today()
+				created_date = datetime.strptime(created_date_str[:10], "%Y-%m-%d")
 
 				if product in supported_products and owner_name in group_list:
 					team_cases.append(case)
@@ -73,7 +78,7 @@ class EngineerHandler:
 				if engineer_name.lower() in owner_name.lower():
 					personal_cases.append(case)
 
-				if owner_name in support_engineer_list and engineer_name.lower() not in owner_name.lower():
+				if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
 					opened_today_cases.append(case)
 
 			display_team(team_cases, self.debug)

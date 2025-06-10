@@ -44,11 +44,11 @@ def convert_days_to_dhm(day_value):
 		return 'Missed'
 	parts = []
 	if days:
-			parts.append(f"{days}D")
+		parts.append(f"{days}D")
 	if hours:
-			parts.append(f"{hours}H")
+		parts.append(f"{hours}H")
 	if minutes or not parts:
-			parts.append(f"{minutes}M")
+		parts.append(f"{minutes}M")
 
 	return " ".join(parts)
 

@@ -49,7 +49,7 @@
   },
   "DO_NOT_TOUCH": {
     "queries": {
-      "Engineer": "SELECT Account.Name, CreatedDate, Contact.Name, Owner.Name, Owner.Alias, Product__r.Name, Severity__c, Status, Subject, Description, CaseNumber, Time_Before_Next_Update_Commitment__c, Id, LastModifiedDate, Status_Closed__c FROM Case WHERE ((Status_Closed__c = FALSE AND ((Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_group})) OR (Owner.Name LIKE '%{engineer_name}%'))) OR (CreatedDate = TODAY AND Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_engineer_list}))) ORDER BY Owner.Name DESC",
+      "Engineer": "SELECT CreatedDate, Owner.Name, Product__r.Name,  Status, CaseNumber, Time_Before_Next_Update_Commitment__c, Status_Closed__c FROM Case WHERE (Owner.Name LIKE '%{engineer_name}%' AND Status_Closed__c = FALSE) OR (CreatedDate = TODAY AND Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_engineer_list})) OR (Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_group}) AND Status_Closed__c = FALSE) ORDER BY Owner.Name DESC",
       "Manager": "SELECT CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c, Status, Milestone_Target_Date__c, Owner.Name FROM Case WHERE Status_Closed__c = FALSE AND ((Owner.Name IN ({support_group}) AND Time_Before_Next_Update_Commitment__c <= 4.03125) OR (Owner.Name IN ({team_list}) AND Time_Before_Next_Update_Commitment__c > 0 AND Time_Before_Next_Update_Commitment__c <= 1)) ORDER BY Time_Before_Next_Update_Commitment__c ASC"
     }
   }
