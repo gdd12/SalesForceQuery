@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import signal
 import sys
 from config import (
@@ -18,7 +21,6 @@ def main():
   func = 'main()'
 
   try:
-    print("Starting script")
     config = load_configuration()
     role = user_role()
 
