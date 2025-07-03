@@ -15,7 +15,8 @@
       "B2Bi": false,
       "Transfer CFT": false,
       "MFT": false,
-      "Flow Manager": false
+      "Flow Manager": false,
+      "Integrator": false
     },
     "notifications": {
       "send": false,
