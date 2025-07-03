@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Files os="Posix">
+    <File name="configPath" path="config.json"/>
+    <File name="credentialsPath" path="credentials.json"/>
+    <File name="configTemplate" path="templates/config.json"/>
+    <File name="credentialsTemplate" path="templates/credentials.json"/>
+</Files>
