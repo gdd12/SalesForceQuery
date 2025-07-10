@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger()
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-config_path = os.path.join(base_dir, "config.json")
+config_path = os.path.join(base_dir, "config", "config.json")
 
 def load_configuration():
   func = "load_configuration()"
@@ -34,7 +34,8 @@ def load_configuration():
           config["send_notifications"],
           config["teams_list"],
           config["sound_notifications"],
-          config["role"]
+          config["role"],
+          config["background_color"]
         )
     except Exception as e:
       logger.error(f"Failed to load silentConfig.json: {e}. Falling back to normal configuration process.")
@@ -123,14 +124,15 @@ def load_configuration():
           "poll_interval": poll_interval,
           "send_notifications": send_notifications,
           "sound_notifications": sound_notifications,
-          "role": role
+          "role": role,
+          "background_color": color
 
         }, f, indent=2)
 
       logger.info("silentConfig.json created successfully for future runs.")
       logger.info(f"Configuration has been loaded successfully and will now return back to the main routine")
 
-      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications, role
+      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications, role, color
 
   except KeyError as e:
     raise ConfigurationError(f"{func}; Missing expected key in the configuration file: {e}")
@@ -140,23 +142,11 @@ def request_password():
   password = getpass("Password required for API: ")
   return password
 
-def user_role():
-  try:
-    with open(config_path, "r") as config_file:
-      config = json.load(config_file)
-      role = config.get("CONFIGURABLE", {}).get("role",)
-      if role:
-        logger.info(f"User role is {role.upper()}")
-        return role
-      else:
-        raise ConfigurationError(f"Role could not be accessed from the config.json file")
-  except Exception as e:
-    logger.error(f"Shutdown due to FATAL Exception: {e}")
-    raise
-
 def background_color():
   acceptable_colors = ["black","red","green","yellow","blue","magenta","cyan","white","bright_black","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_white"]
   try:
+    # if os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", 'silentConfig.json'))):
+      # Need to read the file for the 
     with open(config_path, "r") as config_file:
       config = json.load(config_file)
       color = config.get("CONFIGURABLE", {}).get("background_color", "black")
@@ -179,7 +169,7 @@ def validateFileReg():
 
   logger.info(f"Location of the template filereg.xml is {fileRegSrc}")
 
-  fileRegDest = os.path.abspath(os.path.join(base_dir, "..", "filereg.xml"))
+  fileRegDest = os.path.abspath(os.path.join(base_dir, "..", "config", "filereg.xml"))
 
   if not os.path.exists(fileRegDest):
     print(f"[Init Startup] filereg.xml does not exist in local config, pulling from templates.")
@@ -197,7 +187,7 @@ def validateFileReg():
 
 def readFileReg():
   base_dir = os.path.dirname(__file__)
-  file_path = os.path.abspath(os.path.join(base_dir, "..", "filereg.xml"))
+  file_path = os.path.abspath(os.path.join(base_dir, "..", "config", "filereg.xml"))
 
   if not os.path.exists(file_path):
     raise FileExistsError(f"filereg.xml not found at {file_path}")
@@ -228,4 +218,4 @@ def validateCredentialsFile(config):
   return len(missing) == 0
 
 def silent_config_path():
-  return os.path.join(base_dir, "silentConfig.json")
+  return os.path.join(base_dir, "config", "silentConfig.json")

@@ -17,7 +17,7 @@ logger = logging.getLogger()
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):
-		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role = config
+		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color = config
 
 	def run(self):
 		func = "EngineerHandler.run()"
@@ -97,7 +97,7 @@ class EngineerHandler:
 
 class ManagerHandler:
 	def __init__(self, config, debug, send_notification):
-		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role = config
+		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color = config
 
 	def run(self):
 		logger.info(f"Class {__class__.__name__} has been invoked")

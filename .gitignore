@@ -1,5 +1,5 @@
-credentials.json
-config.json
+config/*
+!config/.gitkeep
 todo
 filereg.xml
 running.log
