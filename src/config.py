@@ -5,6 +5,7 @@ import sys
 from getpass import getpass
 from exceptions import ConfigurationError
 import xml.etree.ElementTree as ET
+from helper import handle_shutdown
 
 import logging
 logger = logging.getLogger()
@@ -30,32 +31,31 @@ def load_configuration():
   credentials_template = resolve_path("credentialsTemplate")
   logger.info(f"File registry completed")
 
-  logger.info("Validating credentials.json file")
   if not os.path.exists(credentials_path):
-    logger.warning("Credentials file does not exist and will be pulled from the templates library")
     if os.path.exists(credentials_template):
       shutil.copy(credentials_template, credentials_path)
       logger.warning(f"Credentials file was pulled from the templates library and now exists at {credentials_path}")
       missing_files.append('credentials.json')
     else:
-      raise ConfigurationError(f"{func}; Missing {credentials_path} and no template available.")
+      missing_file = f"Missing {credentials_path} and no template available."
+      logger.error(f"{missing_file}")
+      raise ConfigurationError(f"{missing_file}")
 
-  logger.info("Validating config.json file")
   if not os.path.exists(config_path):
-    logger.warning("Config file does not exist and will be pulled from the templates library")
     if os.path.exists(config_template):
       shutil.copy(config_template, config_path)
       logger.warning(f"Config file was pulled from the templates library and now exists at {config_path}")
       missing_files.append('config.json')
     else:
-      raise ConfigurationError(f"{func}; Missing {config_path} and no template available.")
+      missing_file = f"Missing {config_path} and no template available."
+      logger.error(f"{missing_file}")
+      raise ConfigurationError(f"{missing_file}")
 
   if missing_files:
     logger.warning("Configuration files were missing on startup, program must exit to reload configuration")
     print(f"[Init Startup] The following configuration files were created from templates: {', '.join(missing_files)}. "
       f"Update and restart.")
-    logger.info("SHUTDOWN")
-    sys.exit(0)
+    handle_shutdown(exit_code=1)
 
   try:
     with open(config_path, "r") as config_file:
@@ -79,6 +79,11 @@ def load_configuration():
       with open(credentials_path, "r") as cred_file:
         logger.info("Loading the salesforce configuration URL, engineer name, and username for the API call into memory")
         salesforce_config = json.load(cred_file)
+        validated = validateCredentialsFile(salesforce_config)
+
+        if not validated:
+          logger.error("Credentials file is not valid. Must exit to prevent issues later.")
+          handle_shutdown(0)
 
       color = background_color()
       logger.info(f"Background color {color.upper()} has been set")
@@ -124,15 +129,14 @@ def background_color():
     raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
 
 def validateFileReg():
-  func = "validateFileReg()"
   base_dir = os.path.dirname(__file__)
   logger.info(f"Local machine OS is {os.name}")
   if os.name != "nt":
     fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", "filereg.xml"))
-    logger.info(f"Location of the template filereg.xml is {fileRegSrc}")
   else:
     fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", "fileregwin.xml"))
-    logger.info(f"Location of the template filereg.xml is {fileRegSrc}")
+
+  logger.info(f"Location of the template filereg.xml is {fileRegSrc}")
 
   fileRegDest = os.path.abspath(os.path.join(base_dir, "..", "filereg.xml"))
 
@@ -142,7 +146,7 @@ def validateFileReg():
     try:
       if not os.path.exists(fileRegSrc):
         logger.error(f"filereg.xml cannot be found in the templates library. Exiting.")
-        raise FileNotFoundError(f"Template file not found at {fileRegSrc}")
+        handle_shutdown(1)
       shutil.copy(fileRegSrc, fileRegDest)
       logger.info(f"filereg.xml has been pulled from the templates library")
       print(f"[Init Startup] Created filereg.xml based on <{os.name}> Operating System.")
@@ -172,3 +176,12 @@ def readFileReg():
     return file_paths
   except ET.ParseError as e:
     raise ConfigurationError(f"Error parsing XML: {e}")
+
+def validateCredentialsFile(config):
+  required_items = ["url", "engineer_name", "username"]
+  missing = [item for item in required_items if not config.get(item)]
+
+  for item in missing:
+    logger.error(f"{item.upper()} is empty or missing, and is required!")
+
+  return len(missing) == 0

@@ -29,6 +29,7 @@ class EngineerHandler:
 		engineer_name = self.salesforce_config.get("engineer_name")
 
 		if not api_url:
+			logger.error("API url is missing from the credentials.json")
 			raise ConfigurationError(f"{func}; Missing Salesforce API in the configuration file.")
 		if not username:
 			raise ConfigurationError(f"{func}; Missing username in the configuration file.")

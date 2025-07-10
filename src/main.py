@@ -2,7 +2,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import signal
-import sys
 import argparse
 
 def parse_args():
@@ -22,9 +21,7 @@ from config import (
   request_password,
   user_role
 )
-from display import (
-  handle_shutdown
-)
+from helper import handle_shutdown
 from exceptions import APIError, ConfigurationError, UnsupportedRole
 from handler import role_handler
 
@@ -57,9 +54,11 @@ def main():
   except Exception as e:
     logger.exception("Unexpected error")
     print(f"Unexpected Error: {e}")
-    sys.exit(1)
 
-signal.signal(signal.SIGINT, handle_shutdown)
+def signal_handler(sig, frame):
+  handle_shutdown(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
   main()

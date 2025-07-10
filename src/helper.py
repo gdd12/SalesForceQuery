@@ -1,4 +1,5 @@
 from exceptions import BadQuery, ConfigurationError
+import sys
 
 from logger import setup_logger
 logger = setup_logger()
@@ -72,3 +73,11 @@ def concat_support_engineer_list(teams_list):
 	quoted_names = [f"'{name.strip()}'" for name in other_names]
 	logger.info(f"TSE list has undergone formating for SQL query")
 	return ", ".join(quoted_names)
+
+def handle_shutdown(exit_code=0):
+	if exit_code == 0:
+		logger.info(f"Shutdown code: {exit_code}")
+		sys.exit(0)
+	if exit_code == 1:
+		logger.error(f"Shutdown code: {exit_code}")
+		sys.exit(1)
