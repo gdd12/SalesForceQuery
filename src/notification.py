@@ -1,6 +1,5 @@
 import os
 from collections import defaultdict
-from config import DEBUG
 
 import logging
 logger = logging.getLogger()

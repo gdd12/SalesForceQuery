@@ -94,10 +94,6 @@ def request_password():
   password = getpass("Password required for API: ")
   return password
 
-def DEBUG(debug, message):
-  if debug:
-    print(f"{message}")
-
 def user_role():
   try:
     with open(config_path, "r") as config_file:

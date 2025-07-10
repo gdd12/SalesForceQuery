@@ -1,6 +1,5 @@
 import requests
 from requests.auth import HTTPBasicAuth
-from config import DEBUG
 from exceptions import APIError
 
 import logging

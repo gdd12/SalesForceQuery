@@ -9,7 +9,6 @@ from display import (
 from helper import (
   concat_team_list, concat_group_list, concat_support_engineer_list
 )
-from config import DEBUG
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
 from datetime import datetime
