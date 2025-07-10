@@ -19,7 +19,6 @@ logger = setup_logger(debug_flag)
 
 from config import (
   load_configuration,
-  DEBUG,
   request_password,
   user_role
 )
