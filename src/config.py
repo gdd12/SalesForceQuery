@@ -20,7 +20,7 @@ def load_configuration():
   if os.path.exists(silent_path):
     logger.info(f"Silent config file exists at {silent_path} and will be used as an override!")
 
-    logger.warning(f"WARNING: A Silent Config file exists. Any future configuration changes must be made to the {silent_path}")
+    logger.warning(f"WARNING: A Silent Config file exists. Any future configuration changes must be made to {silent_path}")
     try:
       with open(silent_path, "r") as f:
         logger.info("Loading configuration from silentConfig.json...")
@@ -143,18 +143,23 @@ def request_password():
   return password
 
 def background_color():
-  acceptable_colors = ["black","red","green","yellow","blue","magenta","cyan","white","bright_black","bright_red","bright_green","bright_yellow","bright_blue","bright_magenta","bright_cyan","bright_white"]
+  acceptable_colors = [
+    "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white",
+    "bright_black", "bright_red", "bright_green", "bright_yellow", "bright_blue",
+    "bright_magenta", "bright_cyan", "bright_white"
+  ]
   try:
-    # if os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", 'silentConfig.json'))):
-      # Need to read the file for the 
-    with open(config_path, "r") as config_file:
-      config = json.load(config_file)
-      color = config.get("CONFIGURABLE", {}).get("background_color", "black")
-
-      if color not in acceptable_colors:
-        raise ConfigurationError(
-          f'Color "{color}" is not acceptable. Acceptable colors include: {", ".join(acceptable_colors)}'
-      )
+    silent_config_path = os.path.abspath(
+      os.path.join(os.path.dirname(__file__), "..", "config", "silentConfig.json")
+    )
+    if os.path.exists(silent_config_path):
+      with open(silent_config_path, "r") as silent_file:
+        config = json.load(silent_file)
+        color = config["background_color"]
+    else:
+      with open(config_path, "r") as config_file:
+        config = json.load(config_file)
+        color = config.get("CONFIGURABLE", {}).get("background_color", "black")
     return color
   except KeyError as e:
     raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
