@@ -2,7 +2,7 @@ import signal
 from config import load_configuration, request_password
 from api import http_handler
 from helper import define_query_columns
-from display import handle_shutdown
+from helper import handle_shutdown
 
 def simulate():
   func = "simulate()"

@@ -30,10 +30,6 @@ def clear_screen():
   else:
     os.system('clear')
 
-def handle_shutdown(signum, frame):
-  logger.info(f"Shutdown code: {signum}")
-  sys.exit(0)
-
 def display_team(cases, debug):
   color = background_color()
 
