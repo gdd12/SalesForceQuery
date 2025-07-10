@@ -17,6 +17,7 @@ def notify(cases, debug, sound):
     script = f'display notification "{message}" with title "New SalesForce Cases" sound name "{sound}"'
 
     try:
+      logger.info(f"Sending notification: {message}")
       os.system(f"osascript -e '{script}'")
       logger.info("Notification sent.")
     except Exception as e:

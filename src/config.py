@@ -20,7 +20,7 @@ def load_configuration():
   if os.path.exists(silent_path):
     logger.info(f"Silent config file exists at {silent_path} and will be used as an override!")
 
-    logger.warning(f"WARNING: A Silent Config file exists. Any future configuration changes must be made to {silent_path}")
+    logger.warning(f"Warning - A Silent Config file exists. Any future configuration changes must be made to {silent_path}")
     try:
       with open(silent_path, "r") as f:
         logger.info("Loading configuration from silentConfig.json...")
@@ -90,6 +90,10 @@ def load_configuration():
       debug = configurable.get("debug", False)
 
       supported_products = configurable.get("supported_products", {})
+      supported_products_cleaned = {key: value for key, value in supported_products.items() if value}
+      if not supported_products_cleaned:
+        raise ConfigurationError("At least one product must be true in supported_products.")
+
       poll_interval = configurable.get("poll_interval", 5)
       queries = config.get("DO_NOT_TOUCH", {}).get("queries", {})
       send_notifications = configurable.get("notifications", {}).get("send", False)
@@ -117,7 +121,7 @@ def load_configuration():
       with open(silent_path, "w") as f:
         json.dump({
           "salesforce_config": salesforce_config,
-          "supported_products": supported_products,
+          "supported_products": supported_products_cleaned,
           "queries": queries,
           "teams_list": teams_list,
           "debug": debug,
@@ -126,13 +130,12 @@ def load_configuration():
           "sound_notifications": sound_notifications,
           "role": role,
           "background_color": color
-
         }, f, indent=2)
 
       logger.info("silentConfig.json created successfully for future runs.")
       logger.info(f"Configuration has been loaded successfully and will now return back to the main routine")
 
-      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications, role, color
+      return salesforce_config, supported_products_cleaned, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications, role, color
 
   except KeyError as e:
     raise ConfigurationError(f"{func}; Missing expected key in the configuration file: {e}")
