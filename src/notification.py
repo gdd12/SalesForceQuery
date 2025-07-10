@@ -14,10 +14,13 @@ def notify(cases, debug, sound):
   if product_count:
     message_parts = [f"{count} {product} Case(s)" for product, count in product_count.items()]
     message = "\n".join(message_parts)
-    script = f'display notification "{message}" with title "New SalesForce Cases" sound name "{sound}"'
+    if sound:
+      script = f'display notification "{message}" with title "New SalesForce Cases" sound name "{sound}"'
+    else:
+      script = f'display notification "{message}" with title "New SalesForce Cases"'
 
     try:
-      logger.info(f"Sending notification: {message}")
+      logger.info(f"Sending notification: {message} with {'no' if not sound else f'{sound}'} sound")
       os.system(f"osascript -e '{script}'")
       logger.info("Notification sent.")
     except Exception as e:
