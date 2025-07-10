@@ -18,8 +18,7 @@ logger = setup_logger(debug_flag)
 
 from config import (
   load_configuration,
-  request_password,
-  user_role
+  request_password
 )
 from helper import handle_shutdown
 from exceptions import APIError, ConfigurationError, UnsupportedRole
@@ -31,8 +30,8 @@ def main():
     logger.info("******************** Config Setup ********************")
     logger.info("******************************************************")
     config = load_configuration()
-    role = user_role()
 
+    role = config[8]
     config_debug = config[4]
     send_notifications = config[5]
 

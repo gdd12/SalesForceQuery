@@ -15,6 +15,29 @@ config_path = os.path.join(base_dir, "config.json")
 
 def load_configuration():
   func = "load_configuration()"
+  silent_path = silent_config_path()
+
+  if os.path.exists(silent_path):
+    logger.info(f"Silent config file exists at {silent_path} and will be used as an override!")
+
+    logger.warning(f"WARNING: A Silent Config file exists. Any future configuration changes must be made to the {silent_path}")
+    try:
+      with open(silent_path, "r") as f:
+        logger.info("Loading configuration from silentConfig.json...")
+        config = json.load(f)
+        return (
+          config["salesforce_config"],
+          config["supported_products"],
+          config["poll_interval"],
+          config["queries"],
+          config["debug"],
+          config["send_notifications"],
+          config["teams_list"],
+          config["sound_notifications"],
+          config["role"]
+        )
+    except Exception as e:
+      logger.error(f"Failed to load silentConfig.json: {e}. Falling back to normal configuration process.")
 
   missing_files = []
   validateFileReg()
@@ -71,10 +94,12 @@ def load_configuration():
       send_notifications = configurable.get("notifications", {}).get("send", False)
       sound_notifications = configurable.get("notifications", {}).get("sound", False)
       teams_list = configurable.get("teams_list", {})
+      role = configurable.get("role")
 
       logger.info(f"Configured supported products: {[key for key, value in supported_products.items() if value]}")
       logger.info(f"Polling interval of {poll_interval} minutes is now set")
       logger.info(f"Notifications will{' NOT' if not send_notifications else ''} be sent"f"{f' with sound {sound_notifications.upper()}' if send_notifications else ''}")
+      logger.info(f"Role of {role} has been set")
 
       with open(credentials_path, "r") as cred_file:
         logger.info("Loading the salesforce configuration URL, engineer name, and username for the API call into memory")
@@ -88,8 +113,24 @@ def load_configuration():
       color = background_color()
       logger.info(f"Background color {color.upper()} has been set")
 
+      with open(silent_path, "w") as f:
+        json.dump({
+          "salesforce_config": salesforce_config,
+          "supported_products": supported_products,
+          "queries": queries,
+          "teams_list": teams_list,
+          "debug": debug,
+          "poll_interval": poll_interval,
+          "send_notifications": send_notifications,
+          "sound_notifications": sound_notifications,
+          "role": role
+
+        }, f, indent=2)
+
+      logger.info("silentConfig.json created successfully for future runs.")
       logger.info(f"Configuration has been loaded successfully and will now return back to the main routine")
-      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications
+
+      return salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications, role
 
   except KeyError as e:
     raise ConfigurationError(f"{func}; Missing expected key in the configuration file: {e}")
@@ -185,3 +226,6 @@ def validateCredentialsFile(config):
     logger.error(f"{item.upper()} is empty or missing, and is required!")
 
   return len(missing) == 0
+
+def silent_config_path():
+  return os.path.join(base_dir, "silentConfig.json")
