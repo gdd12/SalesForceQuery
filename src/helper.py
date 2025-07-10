@@ -1,5 +1,8 @@
 from exceptions import BadQuery, ConfigurationError
 
+from logger import setup_logger
+logger = setup_logger()
+
 def define_query_columns(query):
 	upper_query = query.upper()
 	try:
@@ -56,6 +59,7 @@ def concat_group_list(teams_list):
 	group_list_raw = teams_list.get("group", {}).get("list", "")
 	group_names = group_list_raw.split(",")
 	quoted_group = [f"'{group.strip()}'" for group in group_names]
+	logger.info(f"Group list has undergone formating for SQL query")
 	return ", ".join(quoted_group)
 
 def concat_support_engineer_list(teams_list):
@@ -66,4 +70,5 @@ def concat_support_engineer_list(teams_list):
 			other_names.extend(names)
 
 	quoted_names = [f"'{name.strip()}'" for name in other_names]
+	logger.info(f"TSE list has undergone formating for SQL query")
 	return ", ".join(quoted_names)

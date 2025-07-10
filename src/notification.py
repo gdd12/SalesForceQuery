@@ -2,10 +2,10 @@ import os
 from collections import defaultdict
 from config import DEBUG
 
-def notify(cases, debug, sound):
-  func = "notify()"
-  def log(msg): DEBUG(debug, f"{func}: {msg}")
+import logging
+logger = logging.getLogger()
 
+def notify(cases, debug, sound):
   product_count = defaultdict(int)
 
   for case in cases:
@@ -19,6 +19,6 @@ def notify(cases, debug, sound):
 
     try:
       os.system(f"osascript -e '{script}'")
-      log("Notification sent.")
+      logger.info("Notification sent.")
     except Exception as e:
-      log(f"Error sending notification: {e}")
+      logger.error(f"Error sending notification: {e}")

@@ -13,6 +13,8 @@ from config import DEBUG
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
 from datetime import datetime
+import logging
+logger = logging.getLogger()
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):
@@ -22,8 +24,7 @@ class EngineerHandler:
 
 	def run(self):
 		func = "EngineerHandler.run()"
-		def log(msg): DEBUG(self.debug, f"{func}: {msg}")
-
+		logger.info(f"Class {__class__.__name__} has been invoked")
 		api_url = self.salesforce_config.get("url")
 		username = self.salesforce_config.get("username")
 		engineer_name = self.salesforce_config.get("engineer_name")
@@ -51,18 +52,20 @@ class EngineerHandler:
 			engineer_name=engineer_name,
 			support_engineer_list=support_engineer_list
 		)
+		logger.info(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
 		while True:
-			if not self.debug:
-				clear_screen()
-				display_header(self.poll_interval, self.debug)
+			logger.info(f"Inside Handler loop")
+			clear_screen()
+			display_header(self.poll_interval)
 
 			team_cases = []
 			personal_cases = []
 			opened_today_cases = []
 
-			log("Fetching Engineer query")
 			all_cases = http_handler(api_url, username, self.config_password, query, self.debug)
+
+			logger.info(f"{__class__.__name__} received successful HTTP response containing {len(all_cases)} cases")
 
 			for case in all_cases:
 				owner_name = case.get("Owner", {}).get("Name", "")
@@ -80,7 +83,7 @@ class EngineerHandler:
 
 				if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
 					opened_today_cases.append(case)
-
+			
 			display_team(team_cases, self.debug)
 			display_personal(personal_cases, self.debug)
 			display_opened_today(opened_today_cases, self.debug)
@@ -88,7 +91,7 @@ class EngineerHandler:
 			if os.name != "nt" and self.send_notification:
 				notify(team_cases, self.debug, self.sound_notifications)
 
-			log(f"Sleeping for {self.poll_interval} minutes...")
+			logger.info(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
 
 	def set_password(self, password):
@@ -101,16 +104,15 @@ class ManagerHandler:
 		self.send_notification = send_notification
 
 	def run(self):
-		func = "ManagerHandler.run()"
-		def log(msg): DEBUG(self.debug, f"{func}: {msg}")
+		logger.info(f"Class {__class__.__name__} has been invoked")
 
 		api_url = self.salesforce_config.get("url")
 		username = self.salesforce_config.get("username")
 
 		if not api_url:
-			raise ConfigurationError(f"{func}; Missing Salesforce API in the configuration file.")
+			raise ConfigurationError(f"Missing Salesforce API in the configuration file.")
 		if not username:
-			raise ConfigurationError(f"{func}; Missing username in the configuration file.")
+			raise ConfigurationError(f"Missing username in the configuration file.")
 
 		team_names = concat_team_list(self.teams_list)
 		group_list = concat_group_list(self.teams_list)
@@ -119,13 +121,13 @@ class ManagerHandler:
 			support_group=group_list,
 			team_list=team_names
 		)
+		logger.info(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
 		while True:
-			if not self.debug:
-				clear_screen()
-				display_header(self.poll_interval, self.debug)
+			logger.info(f"Inside Handler loop")
+			clear_screen()
+			display_header(self.poll_interval)
 
-			log("Fetching team data for manager query")
 			cases = http_handler(api_url, username, self.config_password, manager_query, self.debug)
 
 			queue_needs_commitment = []
@@ -146,7 +148,7 @@ class ManagerHandler:
 			display_team_needs_commitment(team_needs_commitment, self.debug)
 			display_queue_needs_commitment(queue_needs_commitment, self.debug)
 
-			log(f"Sleeping for {self.poll_interval} minutes...")
+			logger.info(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
 
 	def set_password(self, password):
@@ -160,6 +162,7 @@ def role_handler(role, debug, send_notification, config, password):
 	elif role == "MANAGER":
 		handler = ManagerHandler(config, debug, send_notification)
 	else:
+		logger.error(f"Unsupported role '{role.lower()}'")
 		raise UnsupportedRole(f'{func}; Unsupported role "{role.lower()}"')
 
 	handler.set_password(password)

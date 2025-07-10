@@ -3,16 +3,19 @@ from requests.auth import HTTPBasicAuth
 from config import DEBUG
 from exceptions import APIError
 
+import logging
+logger = logging.getLogger()
+
 def http_handler(api_url, username, password, query, debug):
-  func = "http_handler()"
-  def log(msg): DEBUG(debug, f"{func}: {msg}")
 
   auth = HTTPBasicAuth(username, password)
-  log(f"Making HTTP request with query string: {query}")
+  logger.info(f"HTTPBasicAuth completed")
 
+  logger.info(f"Making HTTP request")
   response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query})
 
   if response.status_code == 200:
+    logger.info(f"HTTP {response.status_code} Continuing with response processing")
     return response.json().get('records', [])
 
   error_messages = {
@@ -21,12 +24,12 @@ def http_handler(api_url, username, password, query, debug):
   }
 
   if response.status_code in error_messages:
-    log(error_messages[response.status_code])
-    raise APIError(f"{func}; HTTP {response.status_code} {response.reason}. {error_messages[response.status_code]}")
+    logger.error(error_messages[response.status_code])
+    raise APIError(f"HTTP {response.status_code} {response.reason}. {error_messages[response.status_code]}")
 
   if response.status_code >= 500:
-    log(f"{response.status_code} {response.reason}. Server error.")
-    raise APIError(f"{func}; HTTP {response.status_code} server error.")
+    logger.error(f"{response.status_code} {response.reason}. Server error.")
+    raise APIError(f"HTTP {response.status_code} server error.")
 
   print(f"Error fetching data from Salesforce: {response.status_code} {response.reason} - {response.text}")
-  raise APIError(f"{func}; Error {response.status_code} {response.reason}. Unable to fetch data.")
+  raise APIError(f"Error {response.status_code} {response.reason}. Unable to fetch data.")
