@@ -8,6 +8,7 @@ def parse_args():
   parser = argparse.ArgumentParser()
   parser.add_argument('--debug', action='store_true', help="Enable debug logging into a running.log file")
   parser.add_argument('--notify', action='store_true', help="Force notifications to be sent, overriding the config.json. MacOS ONLY!")
+  parser.add_argument('--config', action='store_true', help="Print out the current configuration")
   return parser.parse_args()
 
 args = parse_args()
@@ -37,6 +38,20 @@ def main():
 
     debug = args.debug if args.debug else config_debug
     send_notification = args.notify if args.notify else send_notifications
+    if args.config:
+      logger.info('Printing config to screen')
+      print(f"\n== Current Config == ")
+      print(f"> Name/URL:", config[0].get("engineer_name"), "/", config[0].get("url"))
+      print(f"> Products:", [key for key, value in config[1].items() if value])
+      print(f"> Polling Interval:", config[2])
+      # print(config[3]) Queries
+      print(f"> Debug:", config[4])
+      print(f"> Send Notifications:", config[5])
+      # print(config[6]) Team list
+      print(f"> Notification Sound:", config[7])
+      print(f"> Role:", config[8])
+      print(f"> Color:", config[9])
+      handle_shutdown(0)
 
     logger.info("******************* Setup Complete *******************")
     logger.info("******************************************************")
