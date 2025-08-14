@@ -227,3 +227,33 @@ def validateCredentialsFile(config):
 
 def silent_config_path():
   return os.path.join(base_dir, "config", "silentConfig.json")
+
+def load_excluded_cases():
+  excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
+  try:
+    with open(excludedCasesFile, 'r') as file:
+      logger.info(f"Excluded Cases file found at {excludedCasesFile}")
+      return {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
+  except FileNotFoundError:
+    logger.error(f"The {excludedCasesFile} cannot be found")
+    return set()
+  
+def add_excluded_cases(case_name: str):
+  excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
+  existing_cases = set()
+  if os.path.exists(excludedCasesFile):
+    with open(excludedCasesFile, 'r') as file:
+      existing_cases = {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
+
+  if case_name in existing_cases:
+    logger.info(f"The case '{case_name}' already exists in {excludedCasesFile}.")
+    print(f'\nCase {case_name} already exits in excludedCases.cfg')
+    return
+
+  try:
+    with open(excludedCasesFile, 'a') as file:
+      file.write(case_name + '\n')
+    logger.info(f"Added '{case_name}' to {excludedCasesFile}.")
+    print(f'\nCase {case_name} added to excludedCases.cfg')
+  except Exception as e:
+      logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")

@@ -3,12 +3,14 @@ warnings.filterwarnings("ignore")
 
 import signal
 import argparse
+from config import add_excluded_cases
 
 def parse_args():
   parser = argparse.ArgumentParser()
   parser.add_argument('--debug', action='store_true', help="Enable debug logging into a running.log file")
   parser.add_argument('--notify', action='store_true', help="Force notifications to be sent, overriding the config.json. MacOS ONLY!")
   parser.add_argument('--config', action='store_true', help="Print out the current configuration")
+  parser.add_argument('--exclude', type=str, help="Add an exclusion case number")
   return parser.parse_args()
 
 args = parse_args()
@@ -31,6 +33,10 @@ def main():
     logger.info("******************** Config Setup ********************")
     logger.info("******************************************************")
     config = load_configuration()
+
+    if args.exclude:
+      add_excluded_cases(args.exclude)
+      return
 
     role = config[8]
     config_debug = config[4]

@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
 from helper import convert_days_to_dhm
+from config import load_excluded_cases
 
 from logger import setup_logger
 logger = setup_logger()
@@ -32,14 +33,19 @@ def clear_screen():
 
 def display_team(cases, debug):
   color = background_color()
-
+  excluded_cases = load_excluded_cases()
   product_count = defaultdict(int)
-  for case in cases:
+
+  filtered_cases = [
+    case for case in cases
+    if str(case.get('CaseNumber')) not in excluded_cases
+  ]
+  
+  for case in filtered_cases:
     product = case.get('Product__r', {}).get('Name', 'No Product')
     product_count[product] += 1
 
-  
-  if not cases:
+  if not filtered_cases:
       panel = Panel("No cases in the queue", title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
       console.print('\n',Align.center(panel))
   else:
@@ -55,6 +61,7 @@ def display_personal(cases, debug):
   InSupport = 0
   New = 0
   NeedsCommitment = 0
+  AboutToMiss = 0
 
   if not cases:
     raise ValueError("No cases to display for personal.")
@@ -64,7 +71,10 @@ def display_personal(cases, debug):
     commitment_time = case.get('Time_Before_Next_Update_Commitment__c')
 
     if commitment_time < 1 and status not in ['New', 'Closed']:
-      NeedsCommitment += 1
+      if commitment_time < 0.1:
+        AboutToMiss += 1
+      else:
+        NeedsCommitment += 1
 
     if status == "In Support":
       InSupport += 1
@@ -82,6 +92,8 @@ def display_personal(cases, debug):
       lines.append(f"[bold yellow]{New}[/bold yellow] case(s) need an [bold]IC[/bold]")
     if NeedsCommitment > 0:
       lines.append(f"[bold yellow]{NeedsCommitment}[/bold yellow] case(s) need an [bold]update in 24 hours[/bold]")
+    if AboutToMiss > 0:
+      lines.append(f"[bold yellow]{AboutToMiss}[/bold yellow] case(s) need an [bold red]update right now[/bold red]")
 
     panel_content = "\n".join(lines)
     panel = Panel(panel_content, title=f"[bold {color}]Personal Queue[/bold {color}]", border_style=f"{color}")
