@@ -17,7 +17,7 @@ logger = logging.getLogger()
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification):
-		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color = config
+		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color, self.update_threshold = config
 
 	def run(self):
 		func = "EngineerHandler.run()"
@@ -82,8 +82,8 @@ class EngineerHandler:
 				if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
 					opened_today_cases.append(case)
 			
-			display_team(team_cases, self.debug)
-			display_personal(personal_cases, self.debug)
+			display_team(team_cases, self.update_threshold)
+			display_personal(personal_cases, self.update_threshold)
 			display_opened_today(opened_today_cases, self.debug)
 
 			if os.name != "nt" and self.send_notification:
@@ -97,7 +97,7 @@ class EngineerHandler:
 
 class ManagerHandler:
 	def __init__(self, config, debug, send_notification):
-		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color = config
+		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color, self.update_threshold = config
 
 	def run(self):
 		logger.info(f"Class {__class__.__name__} has been invoked")
@@ -115,9 +115,10 @@ class ManagerHandler:
 
 		manager_query = self.queries["Manager"].format(
 			support_group=group_list,
-			team_list=team_names
+			team_list=team_names,
+			update_threshold=(self.update_threshold / (24 * 60))
 		)
-		logger.info(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
+		logger.info(f"The Manager query has been formated with configured Teams and update thresholds")
 
 		while True:
 			logger.info(f"Inside Handler loop")
@@ -132,17 +133,15 @@ class ManagerHandler:
 			for case in cases:
 				owner_name = case.get("Owner", {}).get("Name", "")
 				commitment_time = case.get("Time_Before_Next_Update_Commitment__c")
-				# Should make this value configurable, 0.03125 is 45 minutes.
-				# This value is also in the Query itself to it would need to change there as well
-				# May want to have a threshold value in the config.json so the user can configure themselves
-				if owner_name in group_list and commitment_time is not None and commitment_time <= 0.03125:
+
+				if owner_name in group_list and commitment_time is not None and commitment_time <= (self.update_threshold / (24 * 60)):
 					queue_needs_commitment.append(case)
 
 				elif owner_name in team_names and commitment_time is not None and 0 < commitment_time <= 1:
 					team_needs_commitment.append(case)
 
-			display_team_needs_commitment(team_needs_commitment, self.debug)
-			display_queue_needs_commitment(queue_needs_commitment, self.debug)
+			display_team_needs_commitment(team_needs_commitment, self.update_threshold)
+			display_queue_needs_commitment(queue_needs_commitment, self.update_threshold)
 
 			logger.info(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)

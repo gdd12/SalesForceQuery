@@ -31,10 +31,11 @@ def clear_screen():
   else:
     os.system('clear')
 
-def display_team(cases, debug):
+def display_team(cases, update_threshold):
   color = background_color()
   excluded_cases = load_excluded_cases()
   product_count = defaultdict(int)
+  needs_commitment = 0
 
   filtered_cases = [
     case for case in cases
@@ -43,6 +44,8 @@ def display_team(cases, debug):
   
   for case in filtered_cases:
     product = case.get('Product__r', {}).get('Name', 'No Product')
+    if case.get('Time_Before_Next_Update_Commitment__c') < (update_threshold / (24 * 60)):
+      needs_commitment += 1
     product_count[product] += 1
 
   if not filtered_cases:
@@ -52,11 +55,12 @@ def display_team(cases, debug):
     lines = []
     for product, count in product_count.items():
       lines.append(f"[bold yellow]{count}[/bold yellow] new [bold]{product}[/bold] case(s)")
+      if needs_commitment > 0 : lines.append(f"[bold red]{needs_commitment}[/bold red] case(s) needs commitment!")
     panel_content = "\n".join(lines)
     panel = Panel(panel_content, title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
     console.print('\n',Align.center(panel))
 
-def display_personal(cases, debug):
+def display_personal(cases, update_threshold):
   color = background_color()
   InSupport = 0
   New = 0
@@ -71,7 +75,7 @@ def display_personal(cases, debug):
     commitment_time = case.get('Time_Before_Next_Update_Commitment__c')
 
     if commitment_time < 1 and status not in ['New', 'Closed']:
-      if commitment_time < 0.1:
+      if commitment_time < (update_threshold / (24 * 60)):
         AboutToMiss += 1
       else:
         NeedsCommitment += 1
@@ -123,7 +127,7 @@ def display_opened_today(cases, debug):
 
   console.print(Align.center(panel))
 
-def display_team_needs_commitment(cases, debug):
+def display_team_needs_commitment(cases, update_threshold):
   color = background_color()
   lines = []
 
@@ -140,7 +144,7 @@ def display_team_needs_commitment(cases, debug):
   
   console.print('\n',Align.center(panel))
 
-def display_queue_needs_commitment(cases, debug):
+def display_queue_needs_commitment(cases, update_threshold):
   color = background_color()
   lines = []
 
@@ -152,6 +156,6 @@ def display_queue_needs_commitment(cases, debug):
     lines.append(f"[bold yellow]{case_num}[/bold yellow] for [bold]{product}[/bold] in [bold]{next_update_formated}[/bold]")
   if not cases: lines.append(f"                 None")
   panel_content = "\n".join(lines)
-  panel = Panel(panel_content, title=f"[bold {color}]Queue commitments within 45 minutes[/bold {color}]", border_style=f"{color}")
+  panel = Panel(panel_content, title=f"[bold {color}]Queue commitments within {update_threshold} minutes[/bold {color}]", border_style=f"{color}")
 
   console.print(Align.center(panel))

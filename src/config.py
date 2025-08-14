@@ -35,7 +35,8 @@ def load_configuration():
           config["teams_list"],
           config["sound_notifications"],
           config["role"],
-          config["background_color"]
+          config["background_color"],
+          config["update_threshold"]
         )
     except Exception as e:
       logger.error(f"Failed to load silentConfig.json: {e}. Falling back to normal configuration process.")
@@ -100,11 +101,13 @@ def load_configuration():
       sound_notifications = configurable.get("notifications", {}).get("sound", False)
       teams_list = configurable.get("teams_list", {})
       role = configurable.get("role")
+      update_threshold = configurable.get("update_threshold")
 
       logger.info(f"Configured supported products: {[key for key, value in supported_products.items() if value]}")
       logger.info(f"Polling interval of {poll_interval} minutes is now set")
       logger.info(f"Notifications will{' NOT' if not send_notifications else ''} be sent"f"{f' with sound {sound_notifications.upper()}' if send_notifications else ''}")
       logger.info(f"Role of {role} has been set")
+      logger.info(f"Update threshold of {update_threshold} minutes is set")
 
       with open(credentials_path, "r") as cred_file:
         logger.info("Loading the salesforce configuration URL, engineer name, and username for the API call into memory")
@@ -129,13 +132,14 @@ def load_configuration():
           "send_notifications": send_notifications,
           "sound_notifications": sound_notifications,
           "role": role,
-          "background_color": color
+          "background_color": color,
+          "update_threshold": update_threshold
         }, f, indent=2)
 
       logger.info("silentConfig.json created successfully for future runs.")
       logger.info(f"Configuration has been loaded successfully and will now return back to the main routine")
 
-      return salesforce_config, supported_products_cleaned, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications, role, color
+      return salesforce_config, supported_products_cleaned, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications, role, color, update_threshold
 
   except KeyError as e:
     raise ConfigurationError(f"{func}; Missing expected key in the configuration file: {e}")
@@ -165,7 +169,7 @@ def background_color():
         color = config.get("CONFIGURABLE", {}).get("background_color", "black")
     return color
   except KeyError as e:
-    raise ConfigurationError(f"Missing expected key in the configuration file: {e}")
+    return "black"
 
 def validateFileReg():
   base_dir = os.path.dirname(__file__)
