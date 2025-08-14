@@ -8,9 +8,6 @@ logger = logging.getLogger()
 def http_handler(api_url, username, password, query, debug):
 
   auth = HTTPBasicAuth(username, password)
-  logger.info(f"HTTPBasicAuth completed")
-
-  logger.info(f"Making HTTP request")
   response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query})
 
   if response.status_code == 200:
