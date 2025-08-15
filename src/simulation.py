@@ -1,25 +1,27 @@
+import warnings
+warnings.filterwarnings("ignore")
 import signal
+import re
 from config import load_configuration, request_password
 from api import http_handler
 from helper import define_query_columns
-from helper import handle_shutdown
+from main import signal_handler
 
 def simulate():
-  func = "simulate()"
-  salesforce_config, supported_products, poll_interval, queries, debug, send_notifications, teams_list, sound_notifications = load_configuration()
+  salesforce_config, supported_products_dict, poll_interval, queries, *_ , debug, send_notification, teams_list, sound_notifications, role, color, update_threshold = load_configuration()
 
   api_url = salesforce_config.get("url")
   username = salesforce_config.get("username")
 
-  password = request_password(debug)
-  query = input('Enter query: ')
-
+  query = query_builder()
   columns = define_query_columns(query)
   
   if columns: print(f"Selected columns include: {columns}")
   if not debug: print(f'Using query: {query}')
 
+  password = request_password()
   response = http_handler(api_url,username,password,query,debug)
+
   for idx, record in enumerate(response, start=1):
     print(f"----- Record {idx} -----")
     for column in columns:
@@ -30,7 +32,21 @@ def simulate():
         item = record.get(column, 'None')
       print(f"{column}: {item}")
 
-signal.signal(signal.SIGINT, handle_shutdown)
+def query_builder():
+  query = input('Enter query: ')
+  placeholders = re.findall(r"\{(.*?)\}", query)
+
+  values = {}
+  for placeholder in placeholders:
+    user_input = input(f"Enter value for '{placeholder}': ")
+    values[placeholder] = user_input
+
+  formatted_query = query.format(**values)
+
+  return formatted_query
+
+signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
+  print('Simulation Environment!')
   simulate()
