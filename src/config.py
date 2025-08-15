@@ -93,6 +93,7 @@ def load_configuration():
       supported_products = configurable.get("supported_products", {})
       supported_products_cleaned = {key: value for key, value in supported_products.items() if value}
       if not supported_products_cleaned:
+        logger.error("At least one product must be true in supported_products.")
         raise ConfigurationError("At least one product must be true in supported_products.")
 
       poll_interval = configurable.get("poll_interval", 5)
