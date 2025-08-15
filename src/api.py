@@ -11,7 +11,7 @@ def http_handler(api_url, username, password, query, debug):
   response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query})
 
   if response.status_code == 200:
-    logger.info(f"HTTP {response.status_code} Continuing with response processing")
+    logger.info(f"HTTP {response.status_code}")
     return response.json().get('records', [])
 
   error_messages = {
