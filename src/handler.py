@@ -63,7 +63,7 @@ class EngineerHandler:
 
 			all_cases = http_handler(api_url, username, self.config_password, query, self.debug)
 
-			logger.info(f"{__class__.__name__} received successful HTTP response containing {len(all_cases)} cases")
+			logger.info(f"{__class__.__name__} received successful HTTP response")
 
 			for case in all_cases:
 				owner_name = case.get("Owner", {}).get("Name", "")
