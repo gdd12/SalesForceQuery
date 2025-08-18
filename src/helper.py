@@ -79,5 +79,5 @@ def handle_shutdown(exit_code=0):
 		logger.info(f"Shutdown code: {exit_code}")
 		sys.exit(0)
 	if exit_code == 1:
-		logger.error(f"Shutdown code: {exit_code}")
+		logger.info(f"Shutdown code: {exit_code}")
 		sys.exit(1)

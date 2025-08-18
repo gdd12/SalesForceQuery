@@ -59,8 +59,8 @@ def load_configuration():
   if not os.path.exists(credentials_path):
     if os.path.exists(credentials_template):
       shutil.copy(credentials_template, credentials_path)
-      logger.warning(f"Credentials file was pulled from the templates library and now exists at {credentials_path}")
-      missing_files.append('credentials.json')
+      logger.info(f"Credentials file now exists at {credentials_path}")
+      missing_files.append(credentials_path)
     else:
       missing_file = f"Missing {credentials_path} and no template available."
       logger.error(f"{missing_file}")
@@ -69,17 +69,18 @@ def load_configuration():
   if not os.path.exists(config_path):
     if os.path.exists(config_template):
       shutil.copy(config_template, config_path)
-      logger.warning(f"Config file was pulled from the templates library and now exists at {config_path}")
-      missing_files.append('config.json')
+      logger.info(f"Config file now exists at {config_path}")
+      missing_files.append(config_path)
     else:
       missing_file = f"Missing {config_path} and no template available."
       logger.error(f"{missing_file}")
       raise ConfigurationError(f"{missing_file}")
 
   if missing_files:
-    logger.warning("Configuration files were missing on startup, program must exit to reload configuration")
-    print(f"[Init Startup] The following configuration files were created from templates: {', '.join(missing_files)}. "
-      f"Update and restart.")
+    logger.warning("Configuration files were missing on startup, program must exit to reload configuration.\n")
+    print(f"Update the following config files and restart the app:")
+    for file in missing_files:
+      print(f"-> {file}")
     handle_shutdown(exit_code=1)
 
   try:
@@ -93,7 +94,7 @@ def load_configuration():
       supported_products = configurable.get("supported_products", {})
       supported_products_cleaned = {key: value for key, value in supported_products.items() if value}
       if not supported_products_cleaned:
-        logger.error("At least one product must be true in supported_products.")
+        logger.error("At least one product must be true in supported_products. Exiting")
         raise ConfigurationError("At least one product must be true in supported_products.")
 
       poll_interval = configurable.get("poll_interval", 5)
