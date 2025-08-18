@@ -58,19 +58,15 @@ def load_configuration():
 
   if not os.path.exists(credentials_path):
     if os.path.exists(credentials_template):
-      shutil.copy(credentials_template, credentials_path)
-      logger.info(f"Credentials file now exists at {credentials_path}")
-      missing_files.append(credentials_path)
+      interactive_credentials_setup(credentials_path, credentials_template)
     else:
       missing_file = f"Missing {credentials_path} and no template available."
       logger.error(f"{missing_file}")
       raise ConfigurationError(f"{missing_file}")
 
-  if not os.path.exists(config_path):
+  if not os.path.exists(config_path) and not os.path.exists(silent_path):
     if os.path.exists(config_template):
-      shutil.copy(config_template, config_path)
-      logger.info(f"Config file now exists at {config_path}")
-      missing_files.append(config_path)
+      interactive_config_setup(config_path, config_template)
     else:
       missing_file = f"Missing {config_path} and no template available."
       logger.error(f"{missing_file}")
@@ -263,3 +259,78 @@ def add_excluded_cases(case_name: str):
     print(f'\nCase {case_name} added to excludedCases.cfg')
   except Exception as e:
       logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")
+
+def interactive_config_setup(config_path, config_template_path):
+  print("--- Initial Configuration Setup ---")
+  logger.info("Starting interactive setup for config.json")
+
+  if os.path.exists(config_path):
+    with open(config_path, "r") as f:
+      config = json.load(f)
+  elif os.path.exists(config_template_path):
+    with open(config_template_path, "r") as f:
+      config = json.load(f)
+  else:
+    raise ConfigurationError("No configuration file or template available for setup.")
+
+  configurable = config.get("CONFIGURABLE", {})
+  supported_products = configurable.get("supported_products", {})
+  send_notifications = configurable.get("notifications", {}).get("send", False)
+
+  if not supported_products:
+    raise ConfigurationError("No 'supported_products' found in the config template.")
+
+  print("\nPlease answer with 'y' or 'n' to enable or disable each supported product (default is NO):\n")
+  updated_products = {}
+  for product, enabled in supported_products.items():
+    while True:
+      response = input(f"Enable product {product}? [y/n]: ").strip().lower()
+      if response in ("y", "yes"):
+        updated_products[product] = True
+        break
+      elif response in ("n", "no", ""):
+        updated_products[product] = False
+        break
+
+  response_notifications = input(f"Enable notifications? [y/n]: ").strip().lower()
+  send_notifications = False
+  if response_notifications in ("y", "yes"):
+    send_notifications = True
+
+  config["CONFIGURABLE"]["supported_products"] = updated_products
+  config["CONFIGURABLE"]["notifications"]["send"] = send_notifications
+  with open(config_path, "w") as f:
+    json.dump(config, f, indent=2)
+
+  logger.info("Initial configuration completed and saved to config.json.")
+  print("\nConfiguration saved successfully.\n")
+
+def interactive_credentials_setup(credentials_path, credentials_template):
+  print("\n--- Initial Credentials Setup ---")
+  logger.info("Starting interactive setup for credentials.json")
+
+  if os.path.exists(credentials_path):
+    with open(credentials_path, "r") as f:
+      credentials = json.load(f)
+  elif os.path.exists(credentials_template):
+    with open(credentials_template, "r") as f:
+      credentials = json.load(f)
+  else:
+    raise ConfigurationError("No configuration file or template available for setup.")
+
+  credentials["url"] = get_non_empty_input("Enter the API URL: ")
+  credentials["username"] = get_non_empty_input("Enter your email: ")
+  credentials["engineer_name"] = get_non_empty_input("Enter your name: ")
+
+  with open(credentials_path, "w") as f:
+    json.dump(credentials, f, indent=2)
+
+  logger.info("Credentials completed and saved to credentials.json.")
+  print("\nCredentials saved successfully.\n")
+
+def get_non_empty_input(prompt):
+  while True:
+    value = input(prompt).strip()
+    if value:
+      return value
+    print("This field cannot be empty.")
