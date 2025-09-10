@@ -3,6 +3,7 @@
     "supported_products": {
       "Axway Cloud AMPLIFY B2B Integration": false,
       "Axway Cloud eInvoicing Multi-Tenant": false,
+      "Axway Cloud CSOS Service": false,
       "Amplify API Platform": false,
       "Decision Insight": false,
       "SecureTransport": false,
