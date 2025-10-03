@@ -137,7 +137,7 @@ def load_excluded_cases():
       logger.info(f"Excluded Cases file found at {excludedCasesFile}")
       return {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
   except FileNotFoundError:
-    logger.error(f"The {excludedCasesFile} cannot be found")
+    logger.info(f"Excluded file config cannot be found, displaying all returned cases.")
     return set()
   
 def add_excluded_cases(case_name: str):
