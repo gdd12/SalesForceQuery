@@ -12,6 +12,7 @@ def parse_args():
   parser.add_argument('-config', action='store_true', help="Print out the current configuration")
   parser.add_argument('-exclude', type=str, help="Add an exclusion case number")
   parser.add_argument('-setup', action='store_true', help="Re-write configuration")
+  parser.add_argument('-simulate', action='store_true', help="Enter simulation env")
   return parser.parse_args()
 
 args = parse_args()
@@ -30,6 +31,7 @@ from handler import role_handler
 
 def main():
   logger.info("Logger initialized with debug=%s", debug_flag)
+
   try:
     logger.info("******************** Config Setup ********************")
     logger.info("******************************************************")
@@ -42,6 +44,11 @@ def main():
 
     if args.exclude:
       add_excluded_cases(args.exclude)
+      return
+    
+    if args.simulate:
+      from simulation import simulate
+      simulate()
       return
 
     role = config[8]

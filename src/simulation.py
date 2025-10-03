@@ -8,6 +8,8 @@ from helper import define_query_columns
 from main import signal_handler
 
 def simulate():
+  print("\n******************** Entering Simulation Env ********************")
+  print("*****************************************************************\n")
   salesforce_config, supported_products_dict, poll_interval, queries, *_ , debug, send_notification, teams_list, sound_notifications, role, color, update_threshold = load_configuration()
 
   api_url = salesforce_config.get("url")
