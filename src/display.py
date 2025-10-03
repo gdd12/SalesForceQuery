@@ -16,7 +16,6 @@ logger = setup_logger()
 console = Console()
 
 def display_header(polling_interval):
-  logger.info(f"Printing the header layers")
   terminal_width = shutil.get_terminal_size().columns
   timestamp = f"Fetching batch @ {(datetime.now()).strftime('%a %b %H:%M')}"
   polling_info = f"Next poll in {polling_interval} minutes..."
@@ -115,8 +114,9 @@ def display_opened_today(cases, debug):
       case_num = case.get("CaseNumber")
       product = case.get('Product__r', {}).get('Name', 'No Product')
       engineer = case.get('Owner', {}).get('Name', 'n/a')
+      priority = case.get('Severity__c')
       total_case += 1
-      lines.append(f"[bold yellow]{case_num}[/bold yellow] - {product} w/ {engineer}")
+      lines.append(f"[bold yellow]{case_num}[/bold yellow] - {product} (P{priority.split(' ')[0]}) - {engineer.split(' ')[0]}")
 
     panel_content = "\n".join(lines)
     panel = Panel(panel_content, title=f"[bold {color}]Last 24 Hours[/bold {color}]", border_style=f"{color}")
