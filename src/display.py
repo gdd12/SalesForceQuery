@@ -137,7 +137,7 @@ def display_team_needs_commitment(cases, update_threshold):
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
     next_update_formated = convert_days_to_dhm(next_update)
     lines.append(f"[bold yellow]{case_num}[/bold yellow] w/ {owner} in [bold]{next_update_formated}[/bold]")
-  if not cases: lines.append(f"                  None")
+  if not cases: lines.append(f"None, your team is looking good!")
 
   panel_content = "\n".join(lines)
   panel = Panel(panel_content, title=f"[bold {color}]Team commitments within 1 Day[/bold {color}]", border_style=f"{color}")
@@ -154,7 +154,7 @@ def display_queue_needs_commitment(cases, update_threshold):
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
     next_update_formated = convert_days_to_dhm(next_update)
     lines.append(f"[bold yellow]{case_num}[/bold yellow] for [bold]{product}[/bold] in [bold]{next_update_formated}[/bold]")
-  if not cases: lines.append(f"                 None")
+  if not cases: lines.append(f"   None, your team has it covered!")
   panel_content = "\n".join(lines)
   panel = Panel(panel_content, title=f"[bold {color}]Queue commitments within {update_threshold} minutes[/bold {color}]", border_style=f"{color}")
 
