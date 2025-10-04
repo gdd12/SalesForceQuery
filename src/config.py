@@ -177,26 +177,36 @@ def interactive_config_setup(config_path, config_template_path):
   supported_products = configurable.get("supported_products", {})
   send_notifications = configurable.get("notifications", {}).get("send", False)
 
+  while True:
+    role_response = input("Are you an Engineer or Manager: ").strip().lower()
+    if role_response not in ("engineer", "manager"):
+      print("Please enter either 'Engineer' or 'Manager'")
+    else: break
+
+  config["CONFIGURABLE"]["role"] = role_response
+
   if not supported_products:
     raise ConfigurationError("No 'supported_products' found in the config template.")
 
-  while True:
-    print("\nPlease answer with 'y' or 'n' to enable or disable each supported product (default is NO):\n")
-    updated_products = {}
-    for product, enabled in supported_products.items():
-      while True:
-        response = input(f"Enable product {product}? [y/n]: ").strip().lower()
-        if response in ("y", "yes"):
-          updated_products[product] = True
-          break
-        elif response in ("n", "no", ""):
-          updated_products[product] = False
-          break
-
-    if any(updated_products.values()):
-      break
-    else:
-      print("\nError: At least one product must be enabled.")
+  if role_response == 'engineer':
+    while True:
+      print("\nPlease answer with 'y' or 'n' to enable or disable each supported product (default is NO):\n")
+      updated_products = {}
+      for product, enabled in supported_products.items():
+        while True:
+          response = input(f"Enable product {product}? [y/n]: ").strip().lower()
+          if response in ("y", "yes"):
+            updated_products[product] = True
+            break
+          elif response in ("n", "no", ""):
+            updated_products[product] = False
+            break
+      if any(updated_products.values()):
+        break
+      else:
+        print("\nError: At least one product must be enabled.")
+  else:
+    updated_products = {product: True for product in supported_products}
 
   config["CONFIGURABLE"].setdefault("supported_products", {})
   config["CONFIGURABLE"]["supported_products"].update(updated_products)
@@ -319,19 +329,24 @@ def extract_and_validate_config(config):
   }
 
 def unpack_config(config_dict):
-  return (
-    config_dict["salesforce_config"],
-    config_dict["supported_products"],
-    config_dict["poll_interval"],
-    config_dict["queries"],
-    config_dict["debug"],
-    config_dict["send_notifications"],
-    config_dict["teams_list"],
-    config_dict["sound_notifications"],
-    config_dict["role"],
-    config_dict["background_color"],
-    config_dict["update_threshold"]
-  )
+  try:
+    return (
+      config_dict["salesforce_config"],
+      config_dict["supported_products"],
+      config_dict["poll_interval"],
+      config_dict["queries"],
+      config_dict["debug"],
+      config_dict["send_notifications"],
+      config_dict["teams_list"],
+      config_dict["sound_notifications"],
+      config_dict["role"],
+      config_dict["background_color"],
+      config_dict["update_threshold"]
+    )
+  except Exception as e:
+    logger.error(f"Silent config tainted! Delete {silent_config_path()} and restart.")
+    raise(ConfigurationError(f"Missing {e}"))
+
 
 def rewrite_configuration():
   valid_files = ["config", "creds", "both"]
