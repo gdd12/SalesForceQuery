@@ -48,7 +48,7 @@ def display_team(cases, update_threshold):
     product_count[product] += 1
 
   if not filtered_cases:
-      panel = Panel("No cases in the queue", title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
+      panel = Panel("None, you're looking good!", title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
       console.print('\n',Align.center(panel))
   else:
     lines = []
@@ -86,7 +86,7 @@ def display_personal(cases, update_threshold):
       New += 1
 
   if InSupport + New + NeedsCommitment == 0:
-    panel = Panel("No case updates", title=f"[bold {color}]Your Cases[/bold {color}]", border_style=f"{color}")
+    panel = Panel("None, you're looking good!", title=f"[bold {color}]Your Cases[/bold {color}]", border_style=f"{color}")
   else:
     lines = []
     if InSupport > 0:
