@@ -32,29 +32,12 @@ cd SalesForceQuery/src
 python3 main.py
 ```
 
-The program will start and run a validation check for the existance of the credentials.json and config.json file. Since the first startup will not have these files, the program will create them from a template.
-
 ### 3. First-Time Setup
-In the ```credentials.json``` file, fill out all fields with appropriate values. If you do not know the API URL, reach out to the creator of this program.
+The program will prompt you to enter the configuration - follow the wizard.
 
-Example of credentials.json:
-```bash
-{
-  "url": "https://SalesForce-api.com/query",
-  "username": "JohnDoe@Company.com",
-  "engineer_name": "First Last"
-}
-```
-In the ```config.json``` file, set the products you support to 'true'.
+IMPORTANT: Entering the incorrect role is an irreversible change!
 
-If you are a manager, update the ```"role": "engineer"``` to ```"role": "manager"```
-
-If you are on Mac, update the ```"notifications": false``` to ```"notifications": true```. Or you can run the program with the --notify flag to override the value in the config.json. Ex ```python3 main.py --notify```
-
-### 4. Start the program
-
-Start the program by running the below command. You will be prompted to enter your password and once complete, should now see relevant information in your terminal for the configured queries.
-
-```bash
-python3 main.py
-```
+### Configurable after setup:
+If you see a product missing from this tool you can perform the following to add it:
+1. If a silentConfig.json is located in config/ you can it to the 'supported_products' section with the value of 'True'
+2. If there is no silentConfig.json, add the product to the config.json located in config/ with the value of 'True'
