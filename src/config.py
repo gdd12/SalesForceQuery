@@ -153,10 +153,25 @@ def add_excluded_cases(case_name: str):
     return
 
   try:
-    with open(excludedCasesFile, 'a') as file:
-      file.write(case_name + '\n')
-    logger.info(f"Added '{case_name}' to {excludedCasesFile}.")
-    print(f'\nCase {case_name} added to excludedCases.cfg')
+    # Add a reset mechanism for the excludedCases
+    if case_name.upper() == 'RESET':
+      template = '# Any cases you do not want to be notified about can be placed here.'
+      if file_exists(excludedCasesFile):
+          os.remove(excludedCasesFile)
+      with open(excludedCasesFile, 'w') as file:
+          file.write(template + '\n')
+      logger.info('Successfully reset excludedCases.cfg')
+    # Regular addition of excludedCase
+    else:
+      try:
+        int_case = int(case_name)
+        with open(excludedCasesFile, 'a') as file:
+          file.write(str(int_case) + '\n')
+        logger.info(f"Added '{int_case}' to {excludedCasesFile}.")
+        print(f'\nCase {int_case} added to excludedCases.cfg')
+      except ValueError:
+        logger.warning(f"Invalid argument '{case_name}'. Must be an INTEGER. Did you mean to type 'RESET'?")
+
   except Exception as e:
       logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")
 

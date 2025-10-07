@@ -10,7 +10,7 @@ def parse_args():
   parser.add_argument('-debug', action='store_true', help="Enable debug logging into a running.log file")
   parser.add_argument('-notify', action='store_true', help="Force notifications to be sent, overriding the config.json. MacOS ONLY!")
   parser.add_argument('-config', action='store_true', help="Print out the current configuration")
-  parser.add_argument('-exclude', type=str, help="Add an exclusion case number")
+  parser.add_argument('-exclude', type=str, help="Add an exclusion case number. Use 'RESET' to reset the file")
   parser.add_argument('-setup', action='store_true', help="Re-write configuration")
   parser.add_argument('-simulate', action='store_true', help="Enter simulation env")
   return parser.parse_args()
