@@ -18,7 +18,8 @@
       "Transfer CFT": false,
       "MFT": false,
       "Flow Manager": false,
-      "Integrator": false
+      "Integrator": false,
+      "Mapping Services": false
     },
     "notifications": {
       "send": false,
