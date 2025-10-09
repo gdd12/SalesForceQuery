@@ -25,7 +25,7 @@ def load_configuration():
     logger.info("Using silent config override")
     config = load_json_file(silent_path, fatal=True)
     return unpack_config(config)
-
+  logger.info("Silent configuration not found, standard loader starting...")
   validateFileReg()
   registry = readFileReg()
 
@@ -33,6 +33,7 @@ def load_configuration():
   credentials_path = resolve_registry_path(registry, "credentialsPath")
   config_template = resolve_registry_path(registry, "configTemplate")
   credentials_template = resolve_registry_path(registry, "credentialsTemplate")
+  logger.info("Returned the full path from filereg.xml children")
 
   if not file_exists(config_path): interactive_config_setup(config_path, config_template)
   if not file_exists(credentials_path): interactive_credentials_setup(credentials_path, credentials_template)
@@ -43,12 +44,11 @@ def load_configuration():
   extracted = extract_and_validate_config(config)
   extracted["salesforce_config"] = credentials
 
-  write_json_file(silent_path, extracted)
-
+  create_silent_file(silent_path, extracted)
+  logger.info("Completed... Continue to main routine")
   return unpack_config(extracted)
 
 def request_password():
-  logger.info("Requesting password for API")
   password = getpass("Password required for API: ")
   return password
 
@@ -82,7 +82,6 @@ def validateFileReg():
   fileRegDest = os.path.abspath(os.path.join(base_dir, "..", "config", "filereg.xml"))
 
   if not os.path.exists(fileRegDest):
-    print(f"[Init Startup] filereg.xml does not exist in local config, pulling from templates.")
     logger.info(f"This is the first startup and filereg.xml does not exist. Pulling from the templates library.")
     try:
       if not os.path.exists(fileRegSrc):
@@ -90,7 +89,6 @@ def validateFileReg():
         handle_shutdown(1)
       shutil.copy(fileRegSrc, fileRegDest)
       logger.info(f"filereg.xml has been pulled from the templates library")
-      print(f"[Init Startup] Created filereg.xml based on <{os.name}> Operating System.")
     except FileNotFoundError as e:
       print(f"[Init Startup] ERROR: {e}")
       raise
@@ -103,6 +101,7 @@ def readFileReg():
     raise FileExistsError(f"filereg.xml not found at {file_path}")
 
   try:
+    logger.info("Reading filereg.xml")
     tree = ET.parse(file_path)
     root = tree.getroot()
     file_paths = {}
@@ -113,19 +112,11 @@ def readFileReg():
       if not name or not path:
         raise ConfigurationError(f"Missing 'name' or 'path' attribute in one of the <File> entries.")
       file_paths[name] = path.strip()
-      logger.info(f"{name} located at {os.path.abspath(os.path.join(base_dir, '..', path))}")
+
+    logger.info(f"The following paths are initialized: {file_paths}")
     return file_paths
   except ET.ParseError as e:
     raise ConfigurationError(f"Error parsing XML: {e}")
-
-def validateCredentialsFile(config):
-  required_items = ["url", "engineer_name", "username"]
-  missing = [item for item in required_items if not config.get(item)]
-
-  for item in missing:
-    logger.error(f"{item.upper()} is empty or missing, and is required!")
-
-  return len(missing) == 0
 
 def silent_config_path():
   return os.path.join(base_dir, "config", "silentConfig.json")
@@ -176,8 +167,8 @@ def add_excluded_cases(case_name: str):
       logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")
 
 def interactive_config_setup(config_path, config_template_path):
+  logger.info("Config does not exist. Starting interactive setup for config.json")
   print("--- Configuration Setup ---")
-  logger.info("Starting interactive setup for config.json")
 
   if os.path.exists(config_path):
     with open(config_path, "r") as f:
@@ -239,8 +230,8 @@ def interactive_config_setup(config_path, config_template_path):
   print("\nConfiguration saved successfully.\n")
 
 def interactive_credentials_setup(credentials_path, credentials_template):
+  logger.info("Credentials does not exist. Starting interactive setup for credentials.json")
   print("\n--- Credentials Setup ---")
-  logger.info("Starting interactive setup for credentials.json")
 
   if os.path.exists(credentials_path):
     with open(credentials_path, "r") as f:
@@ -280,6 +271,7 @@ def file_exists(path, fatal=False, message=None):
 def load_json_file(path, fatal=False, context=""):
   try:
     with open(path, "r") as f:
+      logger.info(f"Loading data from {os.path.split(path)[1]}")
       return json.load(f)
   except Exception as e:
     msg = f"Failed to load JSON file at {path}"
@@ -290,11 +282,11 @@ def load_json_file(path, fatal=False, context=""):
       handle_shutdown(1)
     return None
   
-def write_json_file(path, data):
+def create_silent_file(path, data):
   try:
     with open(path, "w") as f:
       json.dump(data, f, indent=2)
-    logger.info(f"Successfully wrote to {path}")
+    logger.info(f"Successfully wrote {os.path.split(path)[1]} to {path}")
   except Exception as e:
     logger.error(f"Failed to write to {path}: {e}")
     raise
@@ -312,14 +304,6 @@ def prompt_yes_no(prompt, default=False):
     if response == "" and default is not None:
       return default
 
-def ensure_file_from_template(dest, template):
-  if not os.path.exists(dest):
-    if not os.path.exists(template):
-      logger.error(f"Missing both target and template: {dest}, {template}")
-      handle_shutdown(1)
-    logger.info(f"File does not exist - {dest}")
-    return dest
-
 def extract_and_validate_config(config):
   configurable = config.get("CONFIGURABLE", {})
   queries = config.get("DO_NOT_TOUCH", {}).get("queries", {})
@@ -329,7 +313,7 @@ def extract_and_validate_config(config):
   }
   if not supported_products:
     raise ConfigurationError("At least one product must be enabled.")
-
+  logger.info("Extracted and validated the data")
   return {
     "supported_products": supported_products,
     "poll_interval": configurable.get("poll_interval"),
