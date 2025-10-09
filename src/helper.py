@@ -67,10 +67,17 @@ def concat_support_engineer_list(teams_list):
 	other_names = []
 	for k, v in teams_list.items():
 		if k != "group":
-			names = v["list"].split(",")
+			names = v["list"].split(",") if v["viewable"] else []
 			other_names.extend(names)
 
+	if (other_names[0]) == '':
+		logger.warning(f"Team list is empty, query may return no results")
+
 	quoted_names = [f"'{name.strip()}'" for name in other_names]
+	if len(quoted_names) < 1:
+		logger.error(f"No 'Viewable' team list configured. Must exit as the query will be malformed!")
+		handle_shutdown(1)
+		raise ConfigurationError(f"At least on team must be 'Viewable' in configuration")
 	logger.info(f"TSE list has undergone formating for SQL query")
 	return ", ".join(quoted_names)
 
