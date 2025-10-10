@@ -160,9 +160,9 @@ def add_excluded_cases(case_name: str):
     # Regular addition of excludedCase
     else:
       try:
-        int_case = int(case_name)
+        int_case = str(case_name)
         with open(excludedCasesFile, 'a') as file:
-          file.write(str(int_case) + '\n')
+          file.write(int_case + '\n')
         logger.info(f"Added '{int_case}' to {excludedCasesFile}.")
         print(f'\nCase {int_case} added to excludedCases.cfg')
       except ValueError:
