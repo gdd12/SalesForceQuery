@@ -156,7 +156,7 @@ def add_excluded_cases(case_name: str):
           os.remove(excludedCasesFile)
       with open(excludedCasesFile, 'w') as file:
           file.write(template + '\n')
-      logger.info('Successfully reset excludedCases.cfg')
+      logger.warning('Successfully reset excludedCases.cfg')
     # Regular addition of excludedCase
     else:
       try:
