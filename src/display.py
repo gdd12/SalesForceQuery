@@ -8,7 +8,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
 from helper import convert_days_to_dhm
-from config import load_excluded_cases
 
 from logger import setup_logger
 logger = setup_logger()
@@ -32,22 +31,16 @@ def clear_screen():
 
 def display_team(cases, update_threshold):
   color = background_color()
-  excluded_cases = load_excluded_cases()
   product_count = defaultdict(int)
   needs_commitment = 0
 
-  filtered_cases = [
-    case for case in cases
-    if str(case.get('CaseNumber')) not in excluded_cases
-  ]
-  
-  for case in filtered_cases:
+  for case in cases:
     product = case.get('Product__r', {}).get('Name', 'No Product')
     if case.get('Time_Before_Next_Update_Commitment__c') < (update_threshold / (24 * 60)):
       needs_commitment += 1
     product_count[product] += 1
 
-  if not filtered_cases:
+  if not cases:
       panel = Panel("None, you're looking good!", title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
       console.print('\n',Align.center(panel))
   else:

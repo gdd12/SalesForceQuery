@@ -13,6 +13,8 @@ from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
 from datetime import datetime
 import logging
+from config import load_excluded_cases
+
 logger = logging.getLogger()
 
 class EngineerHandler:
@@ -65,15 +67,18 @@ class EngineerHandler:
 
 			logger.info(f"{__class__.__name__} received successful HTTP response")
 
+			excluded_cases = load_excluded_cases()
+
 			for case in all_cases:
 				owner_name = case.get("Owner", {}).get("Name", "")
 				product = case.get("Product__r", {}).get("Name", "")
-				created_date_str = case.get("CreatedDate", {})
+				created_date_str = case.get("CreatedDate", "")
+				case_number = case.get("CaseNumber", "").strip()
 				
 				today = datetime.today()
 				created_date = datetime.strptime(created_date_str[:10], "%Y-%m-%d")
 
-				if product in supported_products and owner_name in group_list:
+				if (product in supported_products and owner_name in group_list) and (case_number not in excluded_cases):
 					team_cases.append(case)
 
 				if engineer_name.lower() in owner_name.lower():

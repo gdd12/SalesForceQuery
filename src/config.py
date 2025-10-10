@@ -125,8 +125,13 @@ def load_excluded_cases():
   excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
   try:
     with open(excludedCasesFile, 'r') as file:
-      logger.info(f"Excluded Cases file found at {excludedCasesFile}")
-      return {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
+      lines = file.readlines()
+      excluded = {
+        line.strip() for line in lines
+        if line.strip() and not line.strip().startswith('#')
+      }
+      logger.info(f"Loaded {len(excluded)} excluded cases from {excludedCasesFile}")
+      return excluded
   except FileNotFoundError:
     logger.info(f"Excluded file config cannot be found, displaying all returned cases.")
     return set()
