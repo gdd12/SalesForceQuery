@@ -33,24 +33,23 @@ def main():
   logger.info("Logger initialized with debug=%s", debug_flag)
 
   try:
-    logger.info("******************** Config Setup ********************")
-    logger.info("******************************************************")
+    if args.exclude:
+      add_excluded_cases(args.exclude)
+      return
 
     if args.setup:
       rewrite_configuration()
-      return
-    
-    config = load_configuration()
-
-    if args.exclude:
-      add_excluded_cases(args.exclude)
       return
     
     if args.simulate:
       from simulation import simulate
       simulate()
       return
+    
+    logger.info("******************** Config Setup ********************")
+    logger.info("******************************************************")
 
+    config = load_configuration()
     role = config[8]
     config_debug = config[4]
     send_notifications = config[5]

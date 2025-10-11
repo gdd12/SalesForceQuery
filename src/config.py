@@ -135,41 +135,44 @@ def load_excluded_cases():
   except FileNotFoundError:
     logger.info(f"Excluded file config cannot be found, displaying all returned cases.")
     return set()
-  
+
 def add_excluded_cases(case_name: str):
   excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
   existing_cases = set()
+
   if os.path.exists(excludedCasesFile):
     with open(excludedCasesFile, 'r') as file:
       existing_cases = {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
 
   if case_name in existing_cases:
-    logger.info(f"The case '{case_name}' already exists in {excludedCasesFile}.")
-    print(f'\nCase {case_name} already exits in excludedCases.cfg')
+    logger.warning(f'Case {case_name} already exits in excludedCases.cfg')
     return
 
-  try:
-    # Add a reset mechanism for the excludedCases
-    if case_name.upper() == 'RESET':
-      template = '# Any cases you do not want to be notified about can be placed here.'
+  # Add a reset mechanism for the excludedCases
+  if case_name.upper() == 'RESET':
+    template = '# Any cases you do not want to be notified about can be placed here.'
+    try:
       if file_exists(excludedCasesFile):
-          os.remove(excludedCasesFile)
+        os.remove(excludedCasesFile)
       with open(excludedCasesFile, 'w') as file:
-          file.write(template + '\n')
+        file.write(template + '\n')
       logger.warning('Successfully reset excludedCases.cfg')
-    # Regular addition of excludedCase
-    else:
-      try:
-        int_case = str(case_name)
-        with open(excludedCasesFile, 'a') as file:
-          file.write(int_case + '\n')
-        logger.info(f"Added '{int_case}' to {excludedCasesFile}.")
-        print(f'\nCase {int_case} added to excludedCases.cfg')
-      except ValueError:
-        logger.warning(f"Invalid argument '{case_name}'. Must be an INTEGER. Did you mean to type 'RESET'?")
+    except Exception as e:
+      logger.error(f"Failed to reset {excludedCasesFile}: {e}")
+    return
+
+  if not case_name.isdigit():
+    logger.warning(f"Invalid argument '{case_name}'. Must be an INTEGER. Did you mean to type 'RESET'?")
+    return
+  
+  try:
+    with open(excludedCasesFile, 'a') as file:
+      file.write(case_name + '\n')
+    logger.info(f"Added '{case_name}' to {excludedCasesFile}.")
+    print(f'\nCase {case_name} added to excludedCases.cfg')
 
   except Exception as e:
-      logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")
+    logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")
 
 def interactive_config_setup(config_path, config_template_path):
   logger.info("Config does not exist. Starting interactive setup for config.json")
