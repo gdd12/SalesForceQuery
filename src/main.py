@@ -3,7 +3,6 @@ warnings.filterwarnings("ignore")
 
 import signal
 import argparse
-from config import add_excluded_cases, rewrite_configuration
 
 def parse_args():
   parser = argparse.ArgumentParser()
@@ -13,6 +12,7 @@ def parse_args():
   parser.add_argument('-exclude', type=str, help="Add an exclusion case number. Use 'RESET' to reset the file")
   parser.add_argument('-setup', action='store_true', help="Re-write configuration")
   parser.add_argument('-simulate', action='store_true', help="Enter simulation env")
+  parser.add_argument('-test', action='store_true', help="Test env - no API calls")
   return parser.parse_args()
 
 args = parse_args()
@@ -22,6 +22,8 @@ from logger import setup_logger
 logger = setup_logger(debug_flag)
 
 from config import (
+  add_excluded_cases,
+  rewrite_configuration,
   load_configuration,
   request_password
 )
@@ -47,7 +49,6 @@ def main():
       return
     
     logger.info("******************** Config Setup ********************")
-    logger.info("******************************************************")
 
     config = load_configuration()
     role = config[8]
@@ -70,10 +71,9 @@ def main():
       handle_shutdown(0)
 
     logger.info("******************* Setup Complete *******************")
-    logger.info("******************************************************")
     password = request_password()
 
-    role_handler(role, debug, send_notification, config, password)
+    role_handler(role, debug, send_notification, config, password, args.test)
 
   except ConfigurationError as e:
     print(f"Configuration Error: {e}")

@@ -11,9 +11,12 @@ def setup_logger(debug_enabled=False):
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
 
-    if not logger.handlers and debug_enabled:
+    if not logger.handlers:
         file_handler = logging.FileHandler(LOG_FILE)
-        file_handler.setLevel(logging.DEBUG)
+        if debug_enabled:
+            file_handler.setLevel(logging.DEBUG)
+        else:
+            file_handler.setLevel(logging.INFO)
 
         formatter = logging.Formatter('%(asctime)s [%(levelname)s] [%(funcName)s]: %(message)s')
         file_handler.setFormatter(formatter)

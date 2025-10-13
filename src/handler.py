@@ -18,12 +18,13 @@ from config import load_excluded_cases
 logger = logging.getLogger()
 
 class EngineerHandler:
-	def __init__(self, config, debug, send_notification):
+	def __init__(self, config, debug, send_notification, isTest):
+		self.isTest = isTest
 		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color, self.update_threshold = config
 
-	def run(self):
+	def run(self, isTest):
 		func = "EngineerHandler.run()"
-		logger.info(f"Class {__class__.__name__} has been invoked")
+		logger.debug(f"Class {__class__.__name__} has been invoked")
 		api_url = self.salesforce_config.get("url")
 		username = self.salesforce_config.get("username")
 		engineer_name = self.salesforce_config.get("engineer_name")
@@ -52,10 +53,10 @@ class EngineerHandler:
 			engineer_name=engineer_name,
 			support_engineer_list=support_engineer_list
 		)
-		logger.info(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
+		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
 		while True:
-			logger.info(f"Inside Handler loop")
+			logger.debug(f"Inside Handler loop")
 			clear_screen()
 			display_header(self.poll_interval)
 
@@ -63,9 +64,8 @@ class EngineerHandler:
 			personal_cases = []
 			opened_today_cases = []
 
+			if isTest: return # Ensure API is not hit if Test mode
 			all_cases = http_handler(api_url, username, self.config_password, query, self.debug)
-
-			logger.info(f"{__class__.__name__} received successful HTTP response")
 
 			excluded_cases = load_excluded_cases()
 
@@ -94,18 +94,19 @@ class EngineerHandler:
 			if os.name != "nt" and self.send_notification:
 				notify(team_cases, self.debug, self.sound_notifications)
 
-			logger.info(f"Sleeping for {self.poll_interval} minutes.")
+			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
 
 	def set_password(self, password):
 		self.config_password = password
 
 class ManagerHandler:
-	def __init__(self, config, debug, send_notification):
+	def __init__(self, config, debug, send_notification, isTest):
+		self.isTest = isTest
 		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color, self.update_threshold = config
 
-	def run(self):
-		logger.info(f"Class {__class__.__name__} has been invoked")
+	def run(self, isTest):
+		logger.debug(f"Class {__class__.__name__} has been invoked")
 
 		api_url = self.salesforce_config.get("url")
 		username = self.salesforce_config.get("username")
@@ -123,13 +124,14 @@ class ManagerHandler:
 			team_list=team_names,
 			update_threshold=(self.update_threshold / (24 * 60))
 		)
-		logger.info(f"The Manager query has been formated with configured Teams and update thresholds")
+		logger.debug(f"The Manager query has been formated with configured Teams and update thresholds")
 
 		while True:
-			logger.info(f"Inside Handler loop")
+			logger.debug(f"Inside Handler loop")
 			clear_screen()
 			display_header(self.poll_interval)
 
+			if isTest: return # Ensure API is not hit if Test mode
 			cases = http_handler(api_url, username, self.config_password, manager_query, self.debug)
 
 			queue_needs_commitment = []
@@ -148,22 +150,22 @@ class ManagerHandler:
 			display_team_needs_commitment(team_needs_commitment, self.update_threshold)
 			display_queue_needs_commitment(queue_needs_commitment, self.update_threshold)
 
-			logger.info(f"Sleeping for {self.poll_interval} minutes.")
+			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
 
 	def set_password(self, password):
 		self.config_password = password
 
-def role_handler(role, debug, send_notification, config, password):
+def role_handler(role, debug, send_notification, config, password, isTest):
 	func = "role_handler()"
 	role = role.upper()
 	if role == "ENGINEER":
-		handler = EngineerHandler(config, debug, send_notification)
+		handler = EngineerHandler(config, debug, send_notification, isTest)
 	elif role == "MANAGER":
-		handler = ManagerHandler(config, debug, send_notification)
+		handler = ManagerHandler(config, debug, send_notification, isTest)
 	else:
 		logger.error(f"Unsupported role '{role.lower()}'")
 		raise UnsupportedRole(f'{func}; Unsupported role "{role.lower()}"')
 
 	handler.set_password(password)
-	handler.run()
+	handler.run(isTest)
