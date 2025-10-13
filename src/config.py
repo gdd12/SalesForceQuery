@@ -25,7 +25,7 @@ def load_configuration():
     logger.info("Using silent config override")
     config = load_json_file(silent_path, fatal=True)
     return unpack_config(config)
-  logger.info("Silent configuration not found, standard loader starting...")
+  logger.debug("Silent configuration not found, standard loader starting...")
   validateFileReg()
   registry = readFileReg()
 
@@ -33,7 +33,7 @@ def load_configuration():
   credentials_path = resolve_registry_path(registry, "credentialsPath")
   config_template = resolve_registry_path(registry, "configTemplate")
   credentials_template = resolve_registry_path(registry, "credentialsTemplate")
-  logger.info("Returned the full path from filereg.xml children")
+  logger.debug("Returned the full path from filereg.xml children")
 
   if not file_exists(config_path): interactive_config_setup(config_path, config_template)
   if not file_exists(credentials_path): interactive_credentials_setup(credentials_path, credentials_template)
@@ -45,7 +45,7 @@ def load_configuration():
   extracted["salesforce_config"] = credentials
 
   create_silent_file(silent_path, extracted)
-  logger.info("Completed... Continue to main routine")
+  logger.debug("Completed... Continue to main routine")
   return unpack_config(extracted)
 
 def request_password():
@@ -71,24 +71,24 @@ def background_color():
 
 def validateFileReg():
   base_dir = os.path.dirname(__file__)
-  logger.info(f"Local machine OS is {os.name}")
+  logger.debug(f"Local machine OS is {os.name}")
   if os.name != "nt":
     fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", "filereg.xml"))
   else:
     fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", "fileregwin.xml"))
 
-  logger.info(f"Location of the template filereg.xml is {fileRegSrc}")
+  logger.debug(f"Location of the template filereg.xml is {fileRegSrc}")
 
   fileRegDest = os.path.abspath(os.path.join(base_dir, "..", "config", "filereg.xml"))
 
   if not os.path.exists(fileRegDest):
-    logger.info(f"This is the first startup and filereg.xml does not exist. Pulling from the templates library.")
+    logger.debug(f"This is the first startup and filereg.xml does not exist. Pulling from the templates library.")
     try:
       if not os.path.exists(fileRegSrc):
         logger.error(f"filereg.xml cannot be found in the templates library. Exiting.")
         handle_shutdown(1)
       shutil.copy(fileRegSrc, fileRegDest)
-      logger.info(f"filereg.xml has been pulled from the templates library")
+      logger.debug(f"filereg.xml has been pulled from the templates library")
     except FileNotFoundError as e:
       print(f"[Init Startup] ERROR: {e}")
       raise
@@ -101,7 +101,7 @@ def readFileReg():
     raise FileExistsError(f"filereg.xml not found at {file_path}")
 
   try:
-    logger.info("Reading filereg.xml")
+    logger.debug("Reading filereg.xml")
     tree = ET.parse(file_path)
     root = tree.getroot()
     file_paths = {}
@@ -113,7 +113,7 @@ def readFileReg():
         raise ConfigurationError(f"Missing 'name' or 'path' attribute in one of the <File> entries.")
       file_paths[name] = path.strip()
 
-    logger.info(f"The following paths are initialized: {file_paths}")
+    logger.debug(f"The following paths are initialized: {file_paths}")
     return file_paths
   except ET.ParseError as e:
     raise ConfigurationError(f"Error parsing XML: {e}")
@@ -131,6 +131,7 @@ def load_excluded_cases():
         if line.strip() and not line.strip().startswith('#')
       }
       logger.info(f"Loaded {len(excluded)} excluded cases from {excludedCasesFile}")
+      logger.debug(f"Excluded cases include: {excluded}")
       return excluded
   except FileNotFoundError:
     logger.info(f"Excluded file config cannot be found, displaying all returned cases.")
@@ -273,7 +274,9 @@ def file_exists(path, fatal=False, message=None):
       logger.error(message or f"Required file not found: {path}")
       handle_shutdown(1)
     else:
+      logger.debug(f"File {path} does not exist, and is not required at this time.")
       return False
+  logger.debug(f"File {path} exists")
   return True
 
 def load_json_file(path, fatal=False, context=""):

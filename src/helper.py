@@ -60,7 +60,7 @@ def concat_group_list(teams_list):
 	group_list_raw = teams_list.get("group", {}).get("list", "")
 	group_names = group_list_raw.split(",")
 	quoted_group = [f"'{group.strip()}'" for group in group_names]
-	logger.info(f"Group list has undergone formating for SQL query")
+	logger.debug(f"Group list has undergone formating for SQL query")
 	return ", ".join(quoted_group)
 
 def concat_support_engineer_list(teams_list):
@@ -78,7 +78,7 @@ def concat_support_engineer_list(teams_list):
 		logger.error(f"No 'Viewable' team list configured. Must exit as the query will be malformed!")
 		handle_shutdown(1)
 		raise ConfigurationError(f"At least on team must be 'Viewable' in configuration")
-	logger.info(f"TSE list has undergone formating for SQL query")
+	logger.debug(f"TSE list has undergone formating for SQL query")
 	return ", ".join(quoted_names)
 
 def handle_shutdown(exit_code=0):

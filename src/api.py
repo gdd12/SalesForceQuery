@@ -8,6 +8,8 @@ logger = logging.getLogger()
 def http_handler(api_url, username, password, query, debug):
 
   auth = HTTPBasicAuth(username, password)
+  logger.debug(f"Using query: {query}")
+  logger.debug(f"HTTP request to {api_url}")
   response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query})
 
   if response.status_code == 200:
@@ -20,10 +22,12 @@ def http_handler(api_url, username, password, query, debug):
   }
 
   if response.status_code in error_messages:
+    logger.debug(f"Received response: {response}")
     logger.error(error_messages[response.status_code])
     raise APIError(f"HTTP {response.status_code} {response.reason}. {error_messages[response.status_code]}")
 
   if response.status_code >= 500:
+    logger.debug(f"Received response: {response}")
     logger.error(f"{response.status_code} {response.reason}. Server error.")
     raise APIError(f"HTTP {response.status_code} server error.")
 

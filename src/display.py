@@ -1,5 +1,4 @@
 import shutil
-import sys
 import os
 from datetime import datetime
 from collections import defaultdict
@@ -23,7 +22,7 @@ def display_header(polling_interval):
   print(polling_info.center(terminal_width))
 
 def clear_screen():
-  logger.info("Cleaing screen from other garbage")
+  logger.debug("Cleaing screen from startup")
   if os.name == 'nt':
     os.system('cls')
   else:
