@@ -1,9 +1,7 @@
 import requests
 from requests.auth import HTTPBasicAuth
 from exceptions import APIError
-
-import logging
-logger = logging.getLogger()
+from logger import logger
 
 def http_handler(api_url, username, password, query, debug):
 

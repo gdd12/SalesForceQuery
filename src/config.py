@@ -1,14 +1,11 @@
 import json
 import os
 import shutil
-import sys
 from getpass import getpass
 from exceptions import ConfigurationError
 import xml.etree.ElementTree as ET
 from helper import handle_shutdown
-
-import logging
-logger = logging.getLogger()
+from logger import logger
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 config_path = os.path.join(base_dir, "config", "config.json")

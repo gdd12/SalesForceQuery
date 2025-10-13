@@ -1,8 +1,6 @@
 from exceptions import BadQuery, ConfigurationError
 import sys
-
-from logger import setup_logger
-logger = setup_logger()
+from logger import logger
 
 def define_query_columns(query):
 	upper_query = query.upper()

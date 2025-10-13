@@ -1,8 +1,6 @@
 import os
 from collections import defaultdict
-
-import logging
-logger = logging.getLogger()
+from logger import logger
 
 def notify(cases, debug, sound):
   product_count = defaultdict(int)

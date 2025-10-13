@@ -6,20 +6,23 @@ import argparse
 
 def parse_args():
   parser = argparse.ArgumentParser()
-  parser.add_argument('-debug', action='store_true', help="Enable debug logging into a running.log file")
   parser.add_argument('-notify', action='store_true', help="Force notifications to be sent, overriding the config.json. MacOS ONLY!")
   parser.add_argument('-config', action='store_true', help="Print out the current configuration")
   parser.add_argument('-exclude', type=str, help="Add an exclusion case number. Use 'RESET' to reset the file")
   parser.add_argument('-setup', action='store_true', help="Re-write configuration")
   parser.add_argument('-simulate', action='store_true', help="Enter simulation env")
   parser.add_argument('-test', action='store_true', help="Test env - no API calls")
+  parser.add_argument('-log', nargs='?', const='info', choices=['info', 'debug'], help="Enable logging. Optional argument: 'debug' for debug-level logging")
   return parser.parse_args()
 
 args = parse_args()
-debug_flag = args.debug
+log_level = args.log or None
+debug_flag = log_level == 'debug' if log_level else False
 
-from logger import setup_logger
-logger = setup_logger(debug_flag)
+from logger import setup_logger, logger as base_logger
+if log_level:
+  setup_logger(log_level)
+logger = base_logger
 
 from config import (
   add_excluded_cases,
@@ -55,7 +58,7 @@ def main():
     config_debug = config[4]
     send_notifications = config[5]
 
-    debug = args.debug if args.debug else config_debug
+    debug = debug_flag if debug_flag else config_debug
     send_notification = args.notify if args.notify else send_notifications
     if args.config:
       logger.info('Printing config to screen')

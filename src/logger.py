@@ -4,16 +4,18 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, '..', 'running.log')
 
-def setup_logger(debug_enabled=False):
-    logger = logging.getLogger()
+logger = logging.getLogger("custom_logger")
+logger.addHandler(logging.NullHandler())
+
+def setup_logger(log_level=None):
+    global logger
+    if log_level not in ('info', 'debug'):
+        return logger
     logger.setLevel(logging.DEBUG)
 
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logging.getLogger("requests").setLevel(logging.WARNING)
-
-    if not logger.handlers:
+    if not logger.handlers or isinstance(logger.handlers[0], logging.NullHandler):
         file_handler = logging.FileHandler(LOG_FILE)
-        if debug_enabled:
+        if log_level == 'debug':
             file_handler.setLevel(logging.DEBUG)
         else:
             file_handler.setLevel(logging.INFO)

@@ -12,10 +12,8 @@ from helper import (
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
 from datetime import datetime
-import logging
 from config import load_excluded_cases
-
-logger = logging.getLogger()
+from logger import logger
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification, isTest):

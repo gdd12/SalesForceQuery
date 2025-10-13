@@ -7,9 +7,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
 from helper import convert_days_to_dhm
-
-from logger import setup_logger
-logger = setup_logger()
+from logger import logger
 
 console = Console()
 
