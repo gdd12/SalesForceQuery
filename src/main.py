@@ -35,7 +35,7 @@ from exceptions import APIError, ConfigurationError, UnsupportedRole
 from handler import role_handler
 
 def main():
-  logger.info("Logger initialized with debug=%s", debug_flag)
+  logger.info("Logger initialized with debug=%s and test=%s", debug_flag, args.test)
 
   try:
     if args.exclude:

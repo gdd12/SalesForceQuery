@@ -2,9 +2,13 @@ import os
 from collections import defaultdict
 from logger import logger
 
-def notify(cases, debug, sound):
+def notify(cases, isTest: False, sound):
   product_count = defaultdict(int)
-  
+
+  if isTest:
+    logger.debug("Test mode enabled, notification will NOT be sent.")
+    return
+
   for case in cases:
     product = case.get('Product__r', {}).get('Name', 'No Product')
     product_count[product] += 1

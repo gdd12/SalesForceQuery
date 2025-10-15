@@ -62,8 +62,7 @@ class EngineerHandler:
 			personal_cases = []
 			opened_today_cases = []
 
-			if isTest: return # Ensure API is not hit if Test mode
-			all_cases = http_handler(api_url, username, self.config_password, query, self.debug)
+			all_cases = http_handler(api_url, username, self.config_password, query, isTest)
 
 			excluded_cases = load_excluded_cases()
 
@@ -90,7 +89,7 @@ class EngineerHandler:
 			display_opened_today(opened_today_cases, self.debug)
 
 			if os.name != "nt" and self.send_notification:
-				notify(team_cases, self.debug, self.sound_notifications)
+				notify(team_cases, isTest, self.sound_notifications)
 
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)

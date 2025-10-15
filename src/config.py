@@ -41,7 +41,7 @@ def load_configuration():
   extracted = extract_and_validate_config(config)
   extracted["salesforce_config"] = credentials
 
-  create_silent_file(silent_path, extracted)
+  create_json_file(silent_path, extracted)
   logger.debug("Completed... Continue to main routine")
   return unpack_config(extracted)
 
@@ -290,7 +290,7 @@ def load_json_file(path, fatal=False, context=""):
       handle_shutdown(1)
     return None
   
-def create_silent_file(path, data):
+def create_json_file(path, data):
   try:
     with open(path, "w") as f:
       json.dump(data, f, indent=2)
