@@ -10,12 +10,6 @@ from logger import logger
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 config_path = os.path.join(base_dir, "config", "config.json")
 
-acceptable_colors = [
-  "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white",
-  "bright_black", "bright_red", "bright_green", "bright_yellow", "bright_blue",
-  "bright_magenta", "bright_cyan", "bright_white"
-]
-
 def load_configuration():
   validateFileReg()
   registry = readFileReg()
@@ -36,18 +30,7 @@ def request_password():
 
 def background_color():
   try:
-    silent_config_path = os.path.abspath(
-      os.path.join(os.path.dirname(__file__), "..", "config", "silentConfig.json")
-    )
-    if os.path.exists(silent_config_path):
-      with open(silent_config_path, "r") as silent_file:
-        config = json.load(silent_file)
-        color = config["background_color"]
-    else:
-      with open(config_path, "r") as config_file:
-        config = json.load(config_file)
-        color = config.get("CONFIGURABLE", {}).get("background_color", "black")
-    return color
+    return get_config_value("background_color")
   except KeyError as e:
     return "black"
 
@@ -99,9 +82,6 @@ def readFileReg():
     return file_paths
   except ET.ParseError as e:
     raise ConfigurationError(f"Error parsing XML: {e}")
-
-def silent_config_path():
-  return os.path.join(base_dir, "config", "silentConfig.json")
 
 def load_excluded_cases():
   excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
@@ -278,28 +258,6 @@ def prompt_yes_no(prompt, default=False):
     if response == "" and default is not None:
       return default
 
-def unpack_config(config_dict):
-  try:
-    return (
-      config_dict["username"],
-      config_dict["api_url"],
-      config_dict["engineer_name"],
-      config_dict["products"],
-      config_dict["poll_interval"],
-      config_dict["queries"],
-      config_dict["debug"],
-      config_dict["notifications"]["send"],
-      config_dict["teams_list"],
-      config_dict["notifications"]["send"],
-      config_dict["role"],
-      config_dict["background_color"],
-      config_dict["max_event_file_size_in_Bytes"],
-      config_dict["update_threshold"]
-    )
-  except Exception as e:
-    logger.error(f"Silent config tainted! Delete {silent_config_path()} and restart.")
-    raise(ConfigurationError(f"Missing {e}"))
-
 def rewrite_configuration():
   file_registry = readFileReg()
   config_path = resolve_registry_path(file_registry, "configPath")
@@ -307,18 +265,18 @@ def rewrite_configuration():
 
   interactive_config_setup(config_path, config_template, CalledFrom='User')
 
-def get_config_value(key):
-  silent_config = silent_config_path()
-  registry = readFileReg()
-  config_path = resolve_registry_path(registry, "configPath")
+def get_config_value(key: str):
+  try:
+    registry = readFileReg()
+    config_file = resolve_registry_path(registry, "configPath")
 
-  if file_exists(silent_config):
-    config_file = silent_config
-  else:
-    config_file = config_path
+    config_data = load_json_file(config_file)
+    config_value_from_key = config_data.get(key)
 
-  config_data = load_json_file(config_file)
-  config_value_from_key = config_data.get(key)
+    if config_value_from_key == None:
+      raise ConfigurationError(f"Invalid key: {key}")
 
-  logger.debug(f"Returning value {config_value_from_key} from {key} ")
-  return config_value_from_key
+    logger.debug(f"Returning value {config_value_from_key} from {key} ")
+    return config_value_from_key
+  except ConfigurationError as e:
+    raise e

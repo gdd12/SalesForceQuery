@@ -32,12 +32,16 @@ cd SalesForceQuery/src
 python3 main.py
 ```
 
-### 3. First-Time Setup
 The program will prompt you to enter the configuration - follow the wizard.
 
-IMPORTANT: Entering the incorrect role is an irreversible change!
-
 ### Configurable after setup:
-If you see a product missing from this tool you can perform the following to add it:
-1. If a silentConfig.json is located in config/ you can it to the 'supported_products' section with the value of 'True'
-2. If there is no silentConfig.json, add the product to the config.json located in config/ with the value of 'True'
+If you see a product missing from this tool you can add it to the 'products' list in the config.json located in config/ with the the value of 'True'.
+
+Changing the configuration can be performed manually or through the wizard seen when executing the script with the -setup flag.
+
+Available tool flags:
+-notify							   > Forces notifications to be sent
+-config							   > Prints the current config to the screen
+-exclude [Case Number OR 'Reset']  > Adds a case number to the excludedCases.cfg so you are not notified. 'RESET' will clear this file.
+-setup							   > Triggers an interactive setup to rewrite the current configuration
+-test ['info' OR 'debug']		   > Enabled INFO or DEBUG logging for testing/troubleshooting purposes
