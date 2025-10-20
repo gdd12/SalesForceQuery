@@ -54,23 +54,29 @@ def main():
     logger.info("******************** Config Setup ********************")
 
     config = load_configuration()
-    role = config[8]
-    config_debug = config[4]
-    send_notifications = config[5]
+
+    role = config["role"]
+    config_debug = config["debug"]
+    send_notifications = config["notifications"]["send"]
+    engineer_name = config["engineer_name"]
+    url = config["api_url"]
+    poll_interval = config["poll_interval"]
+    sound_notifications = config["notifications"]["sound"]
+    color = config["background_color"]
 
     debug = debug_flag if debug_flag else config_debug
     send_notification = args.notify if args.notify else send_notifications
     if args.config:
       logger.info('Printing config to screen')
       print(f"\n== Current Config == ")
-      print(f"> Name/URL:", config[0].get("engineer_name"), "/", config[0].get("url"))
-      print(f"> Products:", [key for key, value in config[1].items() if value])
-      print(f"> Polling Interval:", config[2])
-      print(f"> Debug:", config[4])
-      print(f"> Send Notifications:", config[5])
-      print(f"> Notification Sound:", config[7])
-      print(f"> Role:", config[8])
-      print(f"> Color:", config[9])
+      print(f"> Name/URL:", engineer_name, "/", url)
+      print(f"> Products:", [key for key, value in config["products"].items() if value])
+      print(f"> Polling Interval:", poll_interval)
+      print(f"> Debug:", debug)
+      print(f"> Send Notifications:", send_notification)
+      print(f"> Notification Sound:", sound_notifications)
+      print(f"> Role:", role)
+      print(f"> Color:", color)
       handle_shutdown(0)
 
     logger.info("******************* Setup Complete *******************")

@@ -17,16 +17,31 @@ from logger import logger
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification, isTest):
+		self.supported_products_dict = config.get("products", {})
+		notifications = config.get("notifications", {})
+		self.send_notification = send_notification or notifications.get("send", False)
+		self.sound_notifications = notifications.get("sound", None)
+		self.salesforce_config = {
+            "url": config.get("api_url", ""),
+            "username": config.get("username", ""),
+            "engineer_name": config.get("engineer_name", "")
+        }
+		self.poll_interval = config.get("poll_interval", 30)
+		self.queries = config.get("queries", {})
+		self.debug = debug or config.get("debug", False)
 		self.isTest = isTest
-		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color, self.update_threshold = config
-
+		self.teams_list = config.get("teams_list", {})
+		self.role = config.get("role", "").upper()
+		self.color = config.get("background_color", None)
+		self.update_threshold = config.get("update_threshold", 45)
+		self.config_password = None
+		
 	def run(self, isTest):
 		func = "EngineerHandler.run()"
 		logger.debug(f"Class {__class__.__name__} has been invoked")
 		api_url = self.salesforce_config.get("url")
 		username = self.salesforce_config.get("username")
 		engineer_name = self.salesforce_config.get("engineer_name")
-
 		if not api_url:
 			logger.error("API url is missing from the credentials.json")
 			raise ConfigurationError(f"{func}; Missing Salesforce API in the configuration file.")
@@ -99,8 +114,26 @@ class EngineerHandler:
 
 class ManagerHandler:
 	def __init__(self, config, debug, send_notification, isTest):
+
+		# May need to re-evaluate if all of these are needed in this handler #
+		self.supported_products_dict = config.get("products", {})
+		notifications = config.get("notifications", {})
+		self.send_notification = send_notification or notifications.get("send", False)
+		self.sound_notifications = notifications.get("sound", None)
+		self.salesforce_config = {
+			"url": config.get("api_url", ""),
+			"username": config.get("username", ""),
+			"engineer_name": config.get("engineer_name", "")
+		}
+		self.poll_interval = config.get("poll_interval", 30)
+		self.queries = config.get("queries", {})
+		self.debug = debug or config.get("debug", False)
 		self.isTest = isTest
-		self.salesforce_config, self.supported_products_dict, self.poll_interval, self.queries, *_ , self.debug, self.send_notification, self.teams_list, self.sound_notifications, self.role, self.color, self.update_threshold = config
+		self.teams_list = config.get("teams_list", {})
+		self.role = config.get("role", "").upper()
+		self.color = config.get("background_color", None)
+		self.update_threshold = config.get("update_threshold", 45)
+		self.config_password = None
 
 	def run(self, isTest):
 		logger.debug(f"Class {__class__.__name__} has been invoked")
@@ -128,8 +161,7 @@ class ManagerHandler:
 			clear_screen()
 			display_header(self.poll_interval)
 
-			if isTest: return # Ensure API is not hit if Test mode
-			cases = http_handler(api_url, username, self.config_password, manager_query, self.debug)
+			cases = http_handler(api_url, username, self.config_password, manager_query, isTest)
 
 			queue_needs_commitment = []
 			team_needs_commitment = []

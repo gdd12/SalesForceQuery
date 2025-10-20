@@ -2,8 +2,7 @@
 
 <Files os="Posix">
     <File name="configPath" path="config/config.json"/>
-    <File name="credentialsPath" path="config/credentials.json"/>
     <File name="configTemplate" path="templates/config.json"/>
-    <File name="credentialsTemplate" path="templates/credentials.json"/>
-    <File name="mockData" path="config/mockData.txt"/>
+    <File name="mockData" path="config/mockData.json"/>
+    <File name="events" path="config/events.jsonl"/>
 </Files>

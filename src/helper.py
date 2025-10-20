@@ -20,7 +20,6 @@ def define_query_columns(query):
 		return []
 
 def concat_team_list(names_list):
-	func = "concat_team_list()"
 	name_list = []
 
 	for data in names_list.values():
@@ -29,7 +28,7 @@ def concat_team_list(names_list):
 			name_list += [name.strip() for name in raw_list.split(',') if name.strip()]
 
 	if not name_list:
-		raise ConfigurationError(f"{func} failed: Must have at least one 'viewable' team with names in the configuration file.")
+		raise ConfigurationError(f"Must have at least one 'viewable' team with names in the configuration file.")
 
 	name_string = ", ".join(f"'{name}'" for name in name_list)
 	return name_string
@@ -68,14 +67,15 @@ def concat_support_engineer_list(teams_list):
 			names = v["list"].split(",") if v["viewable"] else []
 			other_names.extend(names)
 
-	if (other_names[0]) == '':
+	if (other_names) == '':
 		logger.warning(f"Team list is empty, query may return no results")
 
 	quoted_names = [f"'{name.strip()}'" for name in other_names]
 	if len(quoted_names) < 1:
-		logger.error(f"No 'Viewable' team list configured. Must exit as the query will be malformed!")
+		failure_reason = "No 'Viewable' team list configured. Must exit as the query will be malformed!"
+		print(failure_reason)
+		logger.error(failure_reason)
 		handle_shutdown(1)
-		raise ConfigurationError(f"At least on team must be 'Viewable' in configuration")
 	logger.debug(f"TSE list has undergone formating for SQL query")
 	return ", ".join(quoted_names)
 

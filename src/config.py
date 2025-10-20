@@ -17,33 +17,18 @@ acceptable_colors = [
 ]
 
 def load_configuration():
-  silent_path = silent_config_path()
-  if file_exists(silent_path):
-    logger.info("Using silent config override")
-    config = load_json_file(silent_path, fatal=True)
-    return unpack_config(config)
-  logger.debug("Silent configuration not found, standard loader starting...")
   validateFileReg()
   registry = readFileReg()
 
   config_path = resolve_registry_path(registry, "configPath")
-  credentials_path = resolve_registry_path(registry, "credentialsPath")
   config_template = resolve_registry_path(registry, "configTemplate")
-  credentials_template = resolve_registry_path(registry, "credentialsTemplate")
   logger.debug("Returned the full path from filereg.xml children")
 
-  if not file_exists(config_path): interactive_config_setup(config_path, config_template)
-  if not file_exists(credentials_path): interactive_credentials_setup(credentials_path, credentials_template)
+  if not file_exists(config_path): interactive_config_setup(config_path, config_template, CalledFrom='System')
 
   config = load_json_file(config_path, fatal=True)
-  credentials = load_json_file(credentials_path, fatal=True)
-
-  extracted = extract_and_validate_config(config)
-  extracted["salesforce_config"] = credentials
-
-  create_json_file(silent_path, extracted)
   logger.debug("Completed... Continue to main routine")
-  return unpack_config(extracted)
+  return config
 
 def request_password():
   password = getpass("Password required for API: ")
@@ -172,9 +157,11 @@ def add_excluded_cases(case_name: str):
   except Exception as e:
     logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")
 
-def interactive_config_setup(config_path, config_template_path):
-  logger.info("Config does not exist. Starting interactive setup for config.json")
-  print("--- Configuration Setup ---")
+def interactive_config_setup(config_path, config_template_path, CalledFrom=None):
+  if CalledFrom == 'System':
+    print("--- Configuration Setup ---")
+    logger.info("Config does not exist. Starting interactive setup for config.json")
+  if CalledFrom == 'User': print("\n--- Re-writing configuration ---")
 
   if os.path.exists(config_path):
     with open(config_path, "r") as f:
@@ -185,9 +172,8 @@ def interactive_config_setup(config_path, config_template_path):
   else:
     raise ConfigurationError("No configuration file or template available for setup.")
 
-  configurable = config.get("CONFIGURABLE", {})
-  supported_products = configurable.get("supported_products", {})
-  send_notifications = configurable.get("notifications", {}).get("send", False)
+  products = config.get("products", {})
+  send_notifications = config.get("notifications", {}).get("send", False)
 
   while True:
     role_response = input("Are you an Engineer or Manager: ").strip().lower()
@@ -195,16 +181,16 @@ def interactive_config_setup(config_path, config_template_path):
       print("Please enter either 'Engineer' or 'Manager'")
     else: break
 
-  config["CONFIGURABLE"]["role"] = role_response
+  config["role"] = role_response
 
-  if not supported_products:
-    raise ConfigurationError("No 'supported_products' found in the config template.")
+  if not products:
+    raise ConfigurationError("No 'products' found in the config template.")
 
   if role_response == 'engineer':
     while True:
       print("\nPlease answer with 'y' or 'n' to enable or disable each supported product (default is NO):\n")
       updated_products = {}
-      for product, enabled in supported_products.items():
+      for product, enabled in products.items():
         while True:
           response = input(f"Enable product {product}? [y/n]: ").strip().lower()
           if response in ("y", "yes"):
@@ -218,45 +204,25 @@ def interactive_config_setup(config_path, config_template_path):
       else:
         print("\nError: At least one product must be enabled.")
   else:
-    updated_products = {product: True for product in supported_products}
+    updated_products = {product: True for product in products}
 
-  config["CONFIGURABLE"].setdefault("supported_products", {})
-  config["CONFIGURABLE"]["supported_products"].update(updated_products)
-  
+  config.setdefault("products", {})
+  config["products"].update(updated_products)
+
   response_notifications = input(f"Enable notifications? [y/n]: ").strip().lower()
   send_notifications = response_notifications in ("y", "yes")
 
-  config["CONFIGURABLE"].setdefault("notifications", {})
-  config["CONFIGURABLE"]["notifications"]["send"] = send_notifications
+  config.setdefault("notifications", {})
+  config["notifications"]["send"] = send_notifications
+  config["api_url"] = get_non_empty_input("Enter the API URL: ")
+  config["username"] = get_non_empty_input("Enter your email: ")
+  config["engineer_name"] = get_non_empty_input("Enter your name: ")
 
   with open(config_path, "w") as f:
     json.dump(config, f, indent=2)
 
   logger.info("Initial configuration completed and saved to config.json.")
   print("\nConfiguration saved successfully.\n")
-
-def interactive_credentials_setup(credentials_path, credentials_template):
-  logger.info("Credentials does not exist. Starting interactive setup for credentials.json")
-  print("\n--- Credentials Setup ---")
-
-  if os.path.exists(credentials_path):
-    with open(credentials_path, "r") as f:
-      credentials = json.load(f)
-  elif os.path.exists(credentials_template):
-    with open(credentials_template, "r") as f:
-      credentials = json.load(f)
-  else:
-    raise ConfigurationError("No configuration file or template available for setup.")
-
-  credentials["url"] = get_non_empty_input("Enter the API URL: ")
-  credentials["username"] = get_non_empty_input("Enter your email: ")
-  credentials["engineer_name"] = get_non_empty_input("Enter your name: ")
-
-  with open(credentials_path, "w") as f:
-    json.dump(credentials, f, indent=2)
-
-  logger.info("Credentials completed and saved to credentials.json.")
-  print("\nCredentials saved successfully.\n")
 
 def get_non_empty_input(prompt):
   while True:
@@ -279,7 +245,7 @@ def file_exists(path, fatal=False, message=None):
 def load_json_file(path, fatal=False, context=""):
   try:
     with open(path, "r") as f:
-      logger.info(f"Loading data from {os.path.split(path)[1]}")
+      logger.debug(f"Loading data from {os.path.split(path)[1]}")
       return json.load(f)
   except Exception as e:
     msg = f"Failed to load JSON file at {path}"
@@ -312,79 +278,47 @@ def prompt_yes_no(prompt, default=False):
     if response == "" and default is not None:
       return default
 
-def extract_and_validate_config(config):
-  configurable = config.get("CONFIGURABLE", {})
-  queries = config.get("DO_NOT_TOUCH", {}).get("queries", {})
-
-  supported_products = {
-    k: v for k, v in configurable.get("supported_products", {}).items() if v
-  }
-  if not supported_products:
-    raise ConfigurationError("At least one product must be enabled.")
-  logger.info("Extracted and validated the data")
-  return {
-    "supported_products": supported_products,
-    "poll_interval": configurable.get("poll_interval"),
-    "queries": queries,
-    "debug": configurable.get("debug", False),
-    "send_notifications": configurable.get("notifications", {}).get("send", False),
-    "sound_notifications": configurable.get("notifications", {}).get("sound"),
-    "teams_list": configurable.get("teams_list", {}),
-    "role": configurable.get("role"),
-    "background_color": configurable.get("background_color", "black"),
-    "update_threshold": configurable.get("update_threshold"),
-  }
-
 def unpack_config(config_dict):
   try:
     return (
-      config_dict["salesforce_config"],
-      config_dict["supported_products"],
+      config_dict["username"],
+      config_dict["api_url"],
+      config_dict["engineer_name"],
+      config_dict["products"],
       config_dict["poll_interval"],
       config_dict["queries"],
       config_dict["debug"],
-      config_dict["send_notifications"],
+      config_dict["notifications"]["send"],
       config_dict["teams_list"],
-      config_dict["sound_notifications"],
+      config_dict["notifications"]["send"],
       config_dict["role"],
       config_dict["background_color"],
+      config_dict["max_event_file_size_in_Bytes"],
       config_dict["update_threshold"]
     )
   except Exception as e:
     logger.error(f"Silent config tainted! Delete {silent_config_path()} and restart.")
     raise(ConfigurationError(f"Missing {e}"))
 
-
 def rewrite_configuration():
-  valid_files = ["config", "creds", "both"]
-  print("\n--- Re-writing configuration ---")
-  def ask_for_file():
-    return input("Rewrite config.json or credentials.json? [config/creds/both]: ").strip().lower()
-
-  while True:
-    rewrite_file = ask_for_file()
-    if rewrite_file in valid_files:
-      break
-    else:
-      print("Invalid input. Please enter 'config', 'creds', or 'both'.")
-  
   file_registry = readFileReg()
   config_path = resolve_registry_path(file_registry, "configPath")
-  credentials_path = resolve_registry_path(file_registry, "credentialsPath")
   config_template = resolve_registry_path(file_registry, "configTemplate")
-  credentials_template = resolve_registry_path(file_registry, "credentialsTemplate")
 
-  if rewrite_file == "config":
-    interactive_config_setup(config_path, config_template)
-  elif rewrite_file == "creds":
-    interactive_credentials_setup(credentials_path, credentials_template)
-  elif rewrite_file == "both":
-    interactive_config_setup(config_path, config_template)
-    interactive_credentials_setup(credentials_path, credentials_template)
-  
-  if file_exists(silent_config_path()):
-    try:
-      os.remove(silent_config_path())
-      logger.info(f"Removed silent configuration at {silent_config_path()}")
-    except Exception as e:
-      logger.error(f"Failed to remove silent configuration: {e}")
+  interactive_config_setup(config_path, config_template, CalledFrom='User')
+
+def get_config_value(key):
+  silent_config = silent_config_path()
+  registry = readFileReg()
+  config_path = resolve_registry_path(registry, "configPath")
+
+  if file_exists(silent_config):
+    config_file = silent_config
+  else:
+    config_file = config_path
+
+  config_data = load_json_file(config_file)
+  config_value_from_key = config_data.get(key)
+
+  logger.debug(f"Returning value {config_value_from_key} from {key} ")
+  return config_value_from_key
