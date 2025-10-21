@@ -13,3 +13,7 @@ class BadQuery(Exception):
 class UnsupportedRole(Exception):
   """Rasied when there is an issue with the role configured in the config.json file"""
   pass
+
+class MalformedTeamConfiguration(Exception):
+  """Raised when there is an issue with the teams list configuration"""
+  pass

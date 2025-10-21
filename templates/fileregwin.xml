@@ -5,4 +5,6 @@
     <File name="configTemplate" path="templates\config.json"/>
     <File name="mockData" path="config\mockData.json"/>
     <File name="events" path="config\events.jsonl"/>
+    <File name="teamsPath" path="config\teams.json"/>
+    <File name="teamsTemplate" path="templates\teams.json"/>
 </Files>

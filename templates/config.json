@@ -20,10 +20,6 @@
     "Integrator": false,
     "Mapping Services": false
   },
-  "notifications": {
-    "send": false,
-    "sound": "funk"
-  },
   "username": "",
   "api_url": "",
   "engineer_name": "",
@@ -33,26 +29,9 @@
   "update_threshold": 45,
   "background_color": "black",
   "max_event_file_size_in_Bytes": 10000,
-  "teams_list": {
-    "b2b": {
-      "viewable": false,
-      "list": ""
-    },
-    "mft": {
-      "viewable": false,
-      "list": ""
-    },
-    "api": {
-      "viewable": false,
-      "list": ""
-    },
-    "cam": {
-      "viewable": false,
-      "list": ""
-    },
-    "group": {
-      "list": "Support_Americas, Escalation_Group, MCS"
-    }
+  "notifications": {
+    "send": false,
+    "sound": "funk"
   },
   "queries": {
     "Engineer": "SELECT CreatedDate, Owner.Name, Product__r.Name,  Status, CaseNumber, Time_Before_Next_Update_Commitment__c, Status_Closed__c, Severity__c FROM Case WHERE (Owner.Name LIKE '%{engineer_name}%' AND Status_Closed__c = FALSE) OR (CreatedDate = TODAY AND Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_engineer_list})) OR (Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_group}) AND Status_Closed__c = FALSE) ORDER BY Owner.Name DESC",

@@ -1,4 +1,4 @@
-from exceptions import BadQuery, ConfigurationError
+from exceptions import BadQuery, ConfigurationError, MalformedTeamConfiguration
 import sys
 from logger import logger
 
@@ -61,23 +61,24 @@ def concat_group_list(teams_list):
 	return ", ".join(quoted_group)
 
 def concat_support_engineer_list(teams_list):
-	other_names = []
-	for k, v in teams_list.items():
-		if k != "group":
-			names = v["list"].split(",") if v["viewable"] else []
-			other_names.extend(names)
+	try:
+		other_names = []
+		for k, v in teams_list.items():
+			if k != "group":
+				names = v["list"].split(",") if v["viewable"] else []
+				other_names.extend(names)
 
-	if (other_names) == '':
-		logger.warning(f"Team list is empty, query may return no results")
+		if (other_names) == '':
+			logger.warning(f"Team list is empty, query may return no results")
 
-	quoted_names = [f"'{name.strip()}'" for name in other_names]
-	if len(quoted_names) < 1:
-		failure_reason = "No 'Viewable' team list configured. Must exit as the query will be malformed!"
-		print(failure_reason)
-		logger.error(failure_reason)
-		handle_shutdown(1)
-	logger.debug(f"TSE list has undergone formating for SQL query")
-	return ", ".join(quoted_names)
+		quoted_names = [f"'{name.strip()}'" for name in other_names]
+		if len(quoted_names) < 1:
+			failure_reason = "No 'Viewable' team list configured. Must exit as the query will be malformed!"
+			raise MalformedTeamConfiguration(failure_reason)
+		logger.debug(f"TSE list has undergone formating for SQL query")
+		return ", ".join(quoted_names)
+	except Exception as e:
+		raise
 
 def handle_shutdown(exit_code=0):
 	if exit_code == 0:

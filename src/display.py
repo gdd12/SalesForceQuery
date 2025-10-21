@@ -26,8 +26,7 @@ def clear_screen():
   else:
     os.system('clear')
 
-def display_team(cases, update_threshold):
-  color = background_color()
+def display_team(cases, update_threshold, color):
   product_count = defaultdict(int)
   needs_commitment = 0
 
@@ -49,8 +48,7 @@ def display_team(cases, update_threshold):
     panel = Panel(panel_content, title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
     console.print('\n',Align.center(panel))
 
-def display_personal(cases, update_threshold):
-  color = background_color()
+def display_personal(cases, update_threshold, color):
   InSupport = 0
   New = 0
   NeedsCommitment = 0
@@ -93,9 +91,7 @@ def display_personal(cases, update_threshold):
 
   console.print(Align.center(panel))
 
-def display_opened_today(cases, debug):
-  color = background_color()
-
+def display_opened_today(cases, debug, color):
   total_case = 0
 
   lines = []
@@ -117,8 +113,7 @@ def display_opened_today(cases, debug):
 
   console.print(Align.center(panel))
 
-def display_team_needs_commitment(cases, update_threshold):
-  color = background_color()
+def display_team_needs_commitment(cases, update_threshold, color):
   lines = []
 
   for case in cases:
@@ -134,8 +129,7 @@ def display_team_needs_commitment(cases, update_threshold):
   
   console.print('\n',Align.center(panel))
 
-def display_queue_needs_commitment(cases, update_threshold):
-  color = background_color()
+def display_queue_needs_commitment(cases, update_threshold, color):
   lines = []
 
   for case in cases:

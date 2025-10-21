@@ -28,7 +28,8 @@ from config import (
   add_excluded_cases,
   rewrite_configuration,
   load_configuration,
-  request_password
+  request_password,
+  load_teams_list
 )
 from helper import handle_shutdown
 from exceptions import APIError, ConfigurationError, UnsupportedRole
@@ -54,6 +55,7 @@ def main():
     logger.info("******************** Config Setup ********************")
 
     config = load_configuration()
+    teamsList = load_teams_list()
 
     role = config["role"]
     config_debug = config["debug"]
@@ -82,7 +84,7 @@ def main():
     logger.info("******************* Setup Complete *******************")
     password = request_password()
 
-    role_handler(role, debug, send_notification, config, password, args.test)
+    role_handler(role, debug, send_notification, config, password, args.test, teamsList)
 
   except ConfigurationError as e:
     print(f"Configuration Error: {e}")

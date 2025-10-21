@@ -14,14 +14,16 @@ def load_configuration():
   validateFileReg()
   registry = readFileReg()
 
-  config_path = resolve_registry_path(registry, "configPath")
   config_template = resolve_registry_path(registry, "configTemplate")
+  teams_template = resolve_registry_path(registry, "teamsTemplate")
+  teams_path = resolve_registry_path(registry, "teamsPath")
   logger.debug("Returned the full path from filereg.xml children")
 
-  if not file_exists(config_path): interactive_config_setup(config_path, config_template, CalledFrom='System')
+  if not file_exists(config_path): interactive_config_setup(config_path, config_template, CalledFrom='System') 
+  if not file_exists(teams_path): register_teams_list(teams_path, teams_template)
 
   config = load_json_file(config_path, fatal=True)
-  logger.debug("Completed... Continue to main routine")
+  logger.info("Configuration set up completed... Continue to main routine.")
   return config
 
 def request_password():
@@ -225,7 +227,7 @@ def file_exists(path, fatal=False, message=None):
 def load_json_file(path, fatal=False, context=""):
   try:
     with open(path, "r") as f:
-      logger.debug(f"Loading data from {os.path.split(path)[1]}")
+      logger.info(f"Loading data from {os.path.split(path)[1]}")
       return json.load(f)
   except Exception as e:
     msg = f"Failed to load JSON file at {path}"
@@ -246,6 +248,7 @@ def create_json_file(path, data):
     raise
 
 def resolve_registry_path(registry, key, default=None):
+  logger.info(f"Resolving {key}")
   return os.path.join(base_dir, registry.get(key, default or key))
 
 def prompt_yes_no(prompt, default=False):
@@ -267,10 +270,7 @@ def rewrite_configuration():
 
 def get_config_value(key: str):
   try:
-    registry = readFileReg()
-    config_file = resolve_registry_path(registry, "configPath")
-
-    config_data = load_json_file(config_file)
+    config_data = load_json_file(config_path)
     config_value_from_key = config_data.get(key)
 
     if config_value_from_key == None:
@@ -280,3 +280,21 @@ def get_config_value(key: str):
     return config_value_from_key
   except ConfigurationError as e:
     raise e
+
+def register_teams_list(teams_path, teams_template):
+  with open(teams_template, 'r') as template_file:
+    template_data = json.load(template_file)
+
+  with open(teams_path, 'w') as teams_file:
+    json.dump(template_data, teams_file, indent=2)
+
+  error_reason = "Teams list was created successfully, however the system cannot run without manually editing/importing valid values."
+  logger.error(error_reason)
+  print(error_reason)
+  handle_shutdown(0)
+
+def load_teams_list():
+  registry = readFileReg()
+  teams_file = resolve_registry_path(registry, "teamsPath")
+  teams = load_json_file(teams_file, fatal=True)
+  return teams

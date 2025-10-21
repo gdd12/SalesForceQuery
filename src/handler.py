@@ -16,7 +16,7 @@ from config import load_excluded_cases
 from logger import logger
 
 class EngineerHandler:
-	def __init__(self, config, debug, send_notification, isTest):
+	def __init__(self, config, debug, send_notification, isTest, teamsList):
 		self.supported_products_dict = config.get("products", {})
 		notifications = config.get("notifications", {})
 		self.send_notification = send_notification or notifications.get("send", False)
@@ -30,7 +30,7 @@ class EngineerHandler:
 		self.queries = config.get("queries", {})
 		self.debug = debug or config.get("debug", False)
 		self.isTest = isTest
-		self.teams_list = config.get("teams_list", {})
+		self.teams_list = teamsList
 		self.role = config.get("role", "").upper()
 		self.color = config.get("background_color", None)
 		self.update_threshold = config.get("update_threshold", 45)
@@ -69,7 +69,7 @@ class EngineerHandler:
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
 		while True:
-			logger.debug(f"Inside Handler loop")
+			logger.info(f"Inside engineer handler loop")
 			clear_screen()
 			display_header(self.poll_interval)
 
@@ -99,9 +99,9 @@ class EngineerHandler:
 				if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
 					opened_today_cases.append(case)
 			
-			display_team(team_cases, self.update_threshold)
-			display_personal(personal_cases, self.update_threshold)
-			display_opened_today(opened_today_cases, self.debug)
+			display_team(team_cases, self.update_threshold, self.color)
+			display_personal(personal_cases, self.update_threshold, self.color)
+			display_opened_today(opened_today_cases, self.debug, self.color)
 
 			if os.name != "nt" and self.send_notification:
 				notify(team_cases, isTest, self.sound_notifications)
@@ -113,7 +113,7 @@ class EngineerHandler:
 		self.config_password = password
 
 class ManagerHandler:
-	def __init__(self, config, debug, send_notification, isTest):
+	def __init__(self, config, debug, send_notification, isTest, teamsList):
 
 		# May need to re-evaluate if all of these are needed in this handler #
 		self.supported_products_dict = config.get("products", {})
@@ -129,7 +129,7 @@ class ManagerHandler:
 		self.queries = config.get("queries", {})
 		self.debug = debug or config.get("debug", False)
 		self.isTest = isTest
-		self.teams_list = config.get("teams_list", {})
+		self.teams_list = teamsList
 		self.role = config.get("role", "").upper()
 		self.color = config.get("background_color", None)
 		self.update_threshold = config.get("update_threshold", 45)
@@ -157,7 +157,7 @@ class ManagerHandler:
 		logger.debug(f"The Manager query has been formated with configured Teams and update thresholds")
 
 		while True:
-			logger.debug(f"Inside Handler loop")
+			logger.debug(f"Inside manager handler loop")
 			clear_screen()
 			display_header(self.poll_interval)
 
@@ -176,8 +176,8 @@ class ManagerHandler:
 				elif owner_name in team_names and commitment_time is not None and 0 < commitment_time <= 1:
 					team_needs_commitment.append(case)
 
-			display_team_needs_commitment(team_needs_commitment, self.update_threshold)
-			display_queue_needs_commitment(queue_needs_commitment, self.update_threshold)
+			display_team_needs_commitment(team_needs_commitment, self.update_threshold, self.color)
+			display_queue_needs_commitment(queue_needs_commitment, self.update_threshold, self.color)
 
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
@@ -185,13 +185,13 @@ class ManagerHandler:
 	def set_password(self, password):
 		self.config_password = password
 
-def role_handler(role, debug, send_notification, config, password, isTest):
+def role_handler(role, debug, send_notification, config, password, isTest, teamsList):
 	func = "role_handler()"
 	role = role.upper()
 	if role == "ENGINEER":
-		handler = EngineerHandler(config, debug, send_notification, isTest)
+		handler = EngineerHandler(config, debug, send_notification, isTest, teamsList)
 	elif role == "MANAGER":
-		handler = ManagerHandler(config, debug, send_notification, isTest)
+		handler = ManagerHandler(config, debug, send_notification, isTest, teamsList)
 	else:
 		logger.error(f"Unsupported role '{role.lower()}'")
 		raise UnsupportedRole(f'{func}; Unsupported role "{role.lower()}"')

@@ -1,0 +1,21 @@
+{
+  "b2b": {
+    "viewable": true,
+    "list": ""
+  },
+  "mft": {
+    "viewable": false,
+    "list": ""
+  },
+  "api": {
+    "viewable": false,
+    "list": ""
+  },
+  "cam": {
+    "viewable": false,
+    "list": ""
+  },
+  "group": {
+    "list": "Support_Americas, Escalation_Group, MCS"
+  }
+}
