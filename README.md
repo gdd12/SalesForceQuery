@@ -46,4 +46,5 @@ Available tool flags:
 -exclude [Case Number OR 'Reset']  > Adds a case number to the excludedCases.cfg so you are not notified. 'RESET' will clear this file.
 -setup							   > Triggers an interactive setup to rewrite the current configuration
 -test ['info' OR 'debug']		   > Enabled INFO or DEBUG logging for testing/troubleshooting purposes
+-team ['print' OR ('update' <Team Name> <'Viewable' OR None>)]
 ```
