@@ -1,6 +1,4 @@
 config/*
-!config/.gitkeep
 !config/excludedCases.cfg
 todo
-filereg.xml
 running.log

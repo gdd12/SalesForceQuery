@@ -41,10 +41,24 @@ Changing the configuration can be performed manually or through the wizard seen 
 
 ```bash
 Available tool flags:
--notify							   > Forces notifications to be sent
--config							   > Prints the current config to the screen
--exclude [Case Number OR 'Reset']  > Adds a case number to the excludedCases.cfg so you are not notified. 'RESET' will clear this file.
--setup							   > Triggers an interactive setup to rewrite the current configuration
--test ['info' OR 'debug']		   > Enabled INFO or DEBUG logging for testing/troubleshooting purposes
+-notify
+    Forces notifications to be sent
+
+-config
+    Prints the current config to the screen
+
+-exclude [Case Number OR 'Reset']
+    Adds a case number to the excludedCases.cfg so you are not notified
+    Use 'Reset' to clear this file
+
+-setup
+    Triggers an interactive setup to rewrite the current configuration
+
+-test ['info' OR 'debug']
+    Enables INFO or DEBUG logging for testing/troubleshooting
+
 -team ['print' OR ('update' <Team Name> <'Viewable' OR None>)]
+    Manage team settings:
+        'print'       - displays current team configuration
+        'update'      - updates team name and visibility
 ```
