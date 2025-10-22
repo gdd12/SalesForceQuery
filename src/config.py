@@ -289,7 +289,7 @@ def register_teams_list(teams_path, teams_template):
   with open(teams_path, 'w') as teams_file:
     json.dump(template_data, teams_file, indent=2)
 
-  error_reason = "Teams list was created successfully, however the system cannot run without manually editing/importing valid values."
+  error_reason = "Teams list is empty, the program cannot run without it. \nRun the program with '-team update <team_name> viewable' to update!"
   logger.error(error_reason)
   print(error_reason)
   handle_shutdown(0)
