@@ -95,6 +95,7 @@ def main():
       handle_shutdown(0)
 
     logger.info("******************* Setup Complete *******************")
+    print("\n******************* SalesForceQuery Tool *******************\n")
     password = request_password()
 
     role_handler(role, debug, send_notification, config, password, args.test, teamsList)

@@ -27,7 +27,7 @@ def load_configuration():
   return config
 
 def request_password():
-  password = getpass("Password required for API: ")
+  password = getpass("API Password: ")
   return password
 
 def background_color():
