@@ -13,6 +13,8 @@ def parse_args():
   parser.add_argument('-simulate', action='store_true', help="Enter simulation env")
   parser.add_argument('-test', action='store_true', help="Test env - no API calls")
   parser.add_argument('-log', nargs='?', const='info', choices=['info', 'debug'], help="Enable logging. Optional argument: 'debug' for debug-level logging")
+  parser.add_argument('-team', nargs='?', const='print', choices=['print', 'update'], help="Print or update the team list")
+  parser.add_argument('team_args', nargs='*', help="Argument(s) for 'update' (e.g., team name)")
   return parser.parse_args()
 
 args = parse_args()
@@ -29,7 +31,8 @@ from config import (
   rewrite_configuration,
   load_configuration,
   request_password,
-  load_teams_list
+  load_teams_list,
+  print_or_edit_team_list
 )
 from helper import handle_shutdown
 from exceptions import APIError, ConfigurationError, UnsupportedRole
@@ -51,7 +54,17 @@ def main():
       from simulation import simulate
       simulate()
       return
-    
+
+    if str(args.team).lower() == 'print':
+      print_or_edit_team_list(Print=True, Update=False, Team=None)
+      return
+
+    if str(args.team).lower() == 'update':
+      if not args.team_args:
+        return print("Error: 'update' requires one positional argument. Example: -team update b2b")
+      print_or_edit_team_list(Print=False, Update=True, Team=(args.team_args[0]), Viewable=('viewable' in args.team_args))
+      return
+
     logger.info("******************** Config Setup ********************")
 
     config = load_configuration()

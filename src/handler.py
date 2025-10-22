@@ -12,8 +12,9 @@ from helper import (
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
 from datetime import datetime
-from config import load_excluded_cases
+from config import load_excluded_cases, get_config_value
 from logger import logger
+from analytics import processEvents
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification, isTest, teamsList):
@@ -68,6 +69,8 @@ class EngineerHandler:
 		)
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
+		events_processing_enabled = get_config_value("process_events")
+
 		while True:
 			logger.info(f"Inside engineer handler loop")
 			clear_screen()
@@ -105,6 +108,8 @@ class EngineerHandler:
 
 			if os.name != "nt" and self.send_notification:
 				notify(team_cases, isTest, self.sound_notifications)
+
+			if events_processing_enabled: processEvents(all_cases)
 
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)

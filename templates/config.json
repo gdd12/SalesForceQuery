@@ -29,6 +29,7 @@
   "update_threshold": 45,
   "background_color": "black",
   "max_event_file_size_in_Bytes": 10000,
+  "process_events": false,
   "notifications": {
     "send": false,
     "sound": "funk"

@@ -198,7 +198,7 @@ def interactive_config_setup(config_path, config_template_path, CalledFrom=None)
   config["notifications"]["send"] = send_notifications
   config["api_url"] = get_non_empty_input("Enter the API URL: ")
   config["username"] = get_non_empty_input("Enter your email: ")
-  config["engineer_name"] = get_non_empty_input("Enter your name: ")
+  config["engineer_name"] = get_non_empty_input("Enter your full name: ")
 
   with open(config_path, "w") as f:
     json.dump(config, f, indent=2)
@@ -235,6 +235,7 @@ def load_json_file(path, fatal=False, context=""):
       msg += f" during {context}"
     logger.error(f"{msg}: {e}")
     if fatal:
+      print(f"{msg} {e}")
       handle_shutdown(1)
     return None
   
@@ -298,3 +299,49 @@ def load_teams_list():
   teams_file = resolve_registry_path(registry, "teamsPath")
   teams = load_json_file(teams_file, fatal=True)
   return teams
+
+def print_or_edit_team_list(Print=False, Update=False, Team=None, Viewable=False):
+  logger.info(
+    f"{'Printing' if Print else 'Updating'} "
+    f"{'team' if Team else 'teams.json configuration'}"
+    f"{f' {Team}' if Team else ''}"
+  )
+  try:
+    teams = load_teams_list()
+
+    if Print:
+      for team, data in teams.items():
+        print(f"{team.upper()}: {data['list']}")
+    if Update:
+      if not Team:
+        return print(f"Error: 'update' requires one positional argument. Example: -team update b2b")
+
+      list_to_update = teams[Team]['list']
+      print(f"Current team: {list_to_update}")
+      new_member = get_non_empty_input("Add team member: ")
+      updated_list = list_to_update + ',' + new_member
+    
+      registry = readFileReg()
+      teams_file = resolve_registry_path(registry, "teamsPath")
+
+      with open(teams_file, "r") as f:
+        team_file_data = json.load(f)
+
+      team_file_data[Team]['list'] = updated_list
+      
+      if Viewable:
+        team_file_data[Team]['viewable'] = Viewable
+
+      with open(teams_file, "w") as f:
+        json.dump(team_file_data, f, indent=2)
+      
+      print(f"Succesfully added {new_member} to the {Team} team!")
+      if Viewable:
+        print(f"Successfully set 'viewable' to true for {Team}")
+
+  except Exception as e:
+    logger.error("Error updating team list", exc_info=True)
+    raise Exception(e)
+
+def set_viewable_team():
+  return
