@@ -68,7 +68,6 @@ def readFileReg():
     raise FileExistsError(f"filereg.xml not found at {file_path}")
 
   try:
-    logger.debug("Reading filereg.xml")
     tree = ET.parse(file_path)
     root = tree.getroot()
     file_paths = {}
@@ -79,8 +78,7 @@ def readFileReg():
       if not name or not path:
         raise ConfigurationError(f"Missing 'name' or 'path' attribute in one of the <File> entries.")
       file_paths[name] = path.strip()
-
-    logger.debug(f"The following paths are initialized: {file_paths}")
+    logger.debug("filereg.xml has been loaded")
     return file_paths
   except ET.ParseError as e:
     raise ConfigurationError(f"Error parsing XML: {e}")
