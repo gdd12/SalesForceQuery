@@ -178,7 +178,7 @@ class ManagerHandler:
 				if owner_name in group_list and commitment_time is not None and commitment_time <= (self.update_threshold / (24 * 60)):
 					queue_needs_commitment.append(case)
 
-				elif owner_name in team_names and commitment_time is not None and 0 < commitment_time <= 1:
+				elif owner_name in team_names and commitment_time is not None and commitment_time <= 1:
 					team_needs_commitment.append(case)
 
 			display_team_needs_commitment(team_needs_commitment, self.update_threshold, self.color)
