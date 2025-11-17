@@ -7,10 +7,17 @@ from api import http_handler
 from helper import define_query_columns
 from main import signal_handler
 
-def simulate():
+def simulate(logger):
   print("\n******************** Entering Simulation Env ********************")
   print("*****************************************************************\n")
-  salesforce_config, supported_products_dict, poll_interval, queries, *_ , debug, send_notification, teams_list, sound_notifications, role, color, update_threshold = load_configuration()
+  logger.info('Entering simulation environment!')
+  config = load_configuration()
+  salesforce_config = {
+    "url": config.get("api_url", ""),
+    "username": config.get("username", ""),
+    "engineer_name": config.get("engineer_name", "")
+  }
+  debug = config.get("debug", False)
 
   api_url = salesforce_config.get("url")
   username = salesforce_config.get("username")

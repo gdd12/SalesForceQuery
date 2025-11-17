@@ -71,8 +71,8 @@ class EngineerHandler:
 
 		events_processing_enabled = get_config_value("process_events")
 
+		logger.info(f"Inside engineer handler loop")
 		while True:
-			logger.info(f"Inside engineer handler loop")
 			clear_screen()
 			display_header(self.poll_interval)
 
@@ -91,7 +91,8 @@ class EngineerHandler:
 				case_number = case.get("CaseNumber", "").strip()
 				
 				today = datetime.today()
-				created_date = datetime.strptime(created_date_str[:10], "%Y-%m-%d")
+				if created_date_str: created_date = datetime.strptime(created_date_str[:10], "%Y-%m-%d")
+				else: raise Exception(f"Invalid CreatedDate: {'Cannot be null' if len(created_date_str) < 1 else f'{created_date_str}'}")
 
 				if (product in supported_products and owner_name in group_list) and (case_number not in excluded_cases):
 					team_cases.append(case)
@@ -161,8 +162,9 @@ class ManagerHandler:
 		)
 		logger.debug(f"The Manager query has been formated with configured Teams and update thresholds")
 
+		events_processing_enabled = get_config_value("process_events")
+		logger.debug(f"Inside manager handler loop")
 		while True:
-			logger.debug(f"Inside manager handler loop")
 			clear_screen()
 			display_header(self.poll_interval)
 
@@ -184,6 +186,7 @@ class ManagerHandler:
 			display_team_needs_commitment(team_needs_commitment, self.update_threshold, self.color)
 			display_queue_needs_commitment(queue_needs_commitment, self.update_threshold, self.color)
 
+			if events_processing_enabled: processEvents(cases)
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
 

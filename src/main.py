@@ -21,9 +21,11 @@ args = parse_args()
 log_level = args.log or None
 debug_flag = log_level == 'debug' if log_level else False
 
-from logger import setup_logger, logger as base_logger
+from logger import setup_logger, setup_process_logger, logger as base_logger, process
 if log_level:
   setup_logger(log_level)
+  setup_process_logger(log_level)
+
 logger = base_logger
 
 from config import (
@@ -40,6 +42,7 @@ from handler import role_handler
 
 def main():
   logger.info("Logger initialized with debug=%s and test=%s", debug_flag, args.test)
+  process.info("Processing logger initialized with debug=%s and test=%s", debug_flag, args.test)
 
   try:
     if args.exclude:
@@ -52,7 +55,7 @@ def main():
     
     if args.simulate:
       from simulation import simulate
-      simulate()
+      simulate(base_logger)
       return
 
     if str(args.team).lower() == 'print':

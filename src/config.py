@@ -5,7 +5,7 @@ from getpass import getpass
 from exceptions import ConfigurationError
 import xml.etree.ElementTree as ET
 from helper import handle_shutdown
-from logger import logger
+from logger import logger, process
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 config_path = os.path.join(base_dir, "config", "config.json")
@@ -60,7 +60,8 @@ def validateFileReg():
       print(f"[Init Startup] ERROR: {e}")
       raise
 
-def readFileReg():
+def readFileReg(Proc=False):
+  active_logger = process if Proc else logger
   base_dir = os.path.dirname(__file__)
   file_path = os.path.abspath(os.path.join(base_dir, "..", "config", "filereg.xml"))
 
@@ -78,7 +79,7 @@ def readFileReg():
       if not name or not path:
         raise ConfigurationError(f"Missing 'name' or 'path' attribute in one of the <File> entries.")
       file_paths[name] = path.strip()
-    logger.debug("filereg.xml has been loaded")
+    active_logger.debug("filereg.xml has been loaded")
     return file_paths
   except ET.ParseError as e:
     raise ConfigurationError(f"Error parsing XML: {e}")
@@ -211,27 +212,29 @@ def get_non_empty_input(prompt):
       return value
     print("This field cannot be empty.")
 
-def file_exists(path, fatal=False, message=None):
+def file_exists(path, fatal=False, message=None, Proc=False):
+  active_logger = process if Proc else logger
   if not os.path.exists(path):
     if fatal:
-      logger.error(message or f"Required file not found: {path}")
+      active_logger.error(message or f"Required file not found: {path}")
       handle_shutdown(1)
     else:
-      logger.debug(f"File {path} does not exist, and is not required at this time.")
+      active_logger.debug(f"File {path} does not exist, and is not required at this time.")
       return False
-  logger.debug(f"File {path} exists")
+  active_logger.debug(f"File {path} exists")
   return True
 
-def load_json_file(path, fatal=False, context=""):
+def load_json_file(path, fatal=False, context="", Proc=False):
+  active_logger = process if Proc else logger
   try:
     with open(path, "r") as f:
-      logger.info(f"Loading data from {os.path.split(path)[1]}")
+      active_logger.info(f"Loading data from {os.path.split(path)[1]}")
       return json.load(f)
   except Exception as e:
     msg = f"Failed to load JSON file at {path}"
     if context:
       msg += f" during {context}"
-    logger.error(f"{msg}: {e}")
+    active_logger.error(f"{msg}: {e}")
     if fatal:
       print(f"{msg} {e}")
       handle_shutdown(1)
@@ -246,8 +249,9 @@ def create_json_file(path, data):
     logger.error(f"Failed to write to {path}: {e}")
     raise
 
-def resolve_registry_path(registry, key, default=None):
-  logger.info(f"Resolving {key}")
+def resolve_registry_path(registry, key, default=None, Proc=False):
+  active_logger = process if Proc else logger
+  active_logger.info(f"Resolving {key}")
   return os.path.join(base_dir, registry.get(key, default or key))
 
 def prompt_yes_no(prompt, default=False):
@@ -267,15 +271,16 @@ def rewrite_configuration():
 
   interactive_config_setup(config_path, config_template, CalledFrom='User')
 
-def get_config_value(key: str):
+def get_config_value(key: str, Proc=False):
+  active_logger = process if Proc else logger
   try:
-    config_data = load_json_file(config_path)
+    config_data = load_json_file(config_path, Proc=Proc)
     config_value_from_key = config_data.get(key)
 
     if config_value_from_key == None:
       raise ConfigurationError(f"Invalid key: {key}")
 
-    logger.debug(f"Returning value {config_value_from_key} from {key} ")
+    active_logger.debug(f"Returning value {config_value_from_key} from {key} ")
     return config_value_from_key
   except ConfigurationError as e:
     raise e
