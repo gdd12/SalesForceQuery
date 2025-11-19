@@ -39,6 +39,6 @@
   },
   "queries": {
     "Engineer": "SELECT CreatedDate, Owner.Name, Product__r.Name,  Status, CaseNumber, Time_Before_Next_Update_Commitment__c, Status_Closed__c, Severity__c FROM Case WHERE (Owner.Name LIKE '%{engineer_name}%' AND Status_Closed__c = FALSE) OR (CreatedDate = TODAY AND Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_engineer_list})) OR (Product__r.Name IN ({product_name}) AND Owner.Name IN ({support_group}) AND Status_Closed__c = FALSE) ORDER BY Owner.Name DESC",
-    "Manager": "SELECT CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c, Status, Milestone_Target_Date__c, Owner.Name, Severity__c FROM Case WHERE Status_Closed__c = FALSE AND ((Owner.Name IN ({support_group}) AND Time_Before_Next_Update_Commitment__c <= {update_threshold}) OR (Owner.Name IN ({team_list}) AND Time_Before_Next_Update_Commitment__c <= 1)) ORDER BY Time_Before_Next_Update_Commitment__c ASC"
+    "Manager": "SELECT CreatedDate, CaseNumber, Product__r.Name, Time_Before_Next_Update_Commitment__c, Status, Milestone_Target_Date__c, Status_Closed__c, Owner.Name, Severity__c FROM Case WHERE Status_Closed__c = FALSE AND ((Owner.Name IN ({support_group}) AND Time_Before_Next_Update_Commitment__c <= {update_threshold}) OR (Owner.Name IN ({team_list}) AND Time_Before_Next_Update_Commitment__c <= 1)) ORDER BY Time_Before_Next_Update_Commitment__c ASC"
   }
 }
