@@ -22,7 +22,7 @@ def http_handler(api_url, username, password, query, isTest: False):
   if isTest:
     if file_exists(mock_data):
       try:
-        response_data = load_json_file(mock_data)
+        response_data = load_json_file(mock_data, fatal=True)
         logger.info(f"Test mode enabled. Loaded mock data from {mock_data}")
       except json.JSONDecodeError as e:
         logger.error(f"Failed to decode JSON from {mock_data}: {e}")
