@@ -23,17 +23,17 @@ class EngineerHandler:
 		self.send_notification = send_notification or notifications.get("send", False)
 		self.sound_notifications = notifications.get("sound", None)
 		self.salesforce_config = {
-            "url": config.get("api_url", ""),
-            "username": config.get("username", ""),
-            "engineer_name": config.get("engineer_name", "")
-        }
+			"url": config.get("api_url", ""),
+			"username": config.get("username", ""),
+			"engineer_name": config.get("engineer_name", "")
+		}
 		self.poll_interval = config.get("poll_interval", 30)
 		self.queries = config.get("queries", {})
 		self.debug = debug or config.get("debug", False)
 		self.isTest = isTest
 		self.teams_list = teamsList
 		self.role = config.get("role", "").upper()
-		self.color = config.get("background_color", None)
+		self.color = config.get("colors", None)
 		self.update_threshold = config.get("update_threshold", 45)
 		self.config_password = None
 		
@@ -137,7 +137,7 @@ class ManagerHandler:
 		self.isTest = isTest
 		self.teams_list = teamsList
 		self.role = config.get("role", "").upper()
-		self.color = config.get("background_color", None)
+		self.color = config.get("colors", None)
 		self.update_threshold = config.get("update_threshold", 45)
 		self.config_password = None
 

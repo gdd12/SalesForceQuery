@@ -27,6 +27,8 @@ def clear_screen():
     os.system('clear')
 
 def display_team(cases, update_threshold, color):
+  pColor = color.get("primary")
+  sColor = color.get("secondary")
   product_count = defaultdict(int)
   needs_commitment = 0
 
@@ -37,18 +39,21 @@ def display_team(cases, update_threshold, color):
     product_count[product] += 1
 
   if not cases:
-      panel = Panel("None, you're looking good!", title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
+      panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Team Queue[/bold {pColor}]", border_style=f"{pColor}")
       console.print('\n',Align.center(panel))
   else:
     lines = []
     for product, count in product_count.items():
-      lines.append(f"[bold yellow]{count}[/bold yellow] new [bold]{product}[/bold] case(s)")
+      lines.append(f"[bold {sColor}]{count}[/bold {sColor}] new [bold]{product}[/bold] case(s)")
       if needs_commitment > 0 : lines.append(f"[bold red]{needs_commitment}[/bold red] case(s) needs commitment!")
     panel_content = "\n".join(lines)
-    panel = Panel(panel_content, title=f"[bold {color}]Team Queue[/bold {color}]", border_style=f"{color}")
+    panel = Panel(panel_content, title=f"[bold {pColor}]Team Queue[/bold {pColor}]", border_style=f"{pColor}")
     console.print('\n',Align.center(panel))
 
 def display_personal(cases, update_threshold, color):
+  pColor = color.get("primary")
+  sColor = color.get("secondary")
+
   InSupport = 0
   New = 0
   NeedsCommitment = 0
@@ -74,24 +79,27 @@ def display_personal(cases, update_threshold, color):
       New += 1
 
   if InSupport + New + NeedsCommitment == 0:
-    panel = Panel("None, you're looking good!", title=f"[bold {color}]Your Cases[/bold {color}]", border_style=f"{color}")
+    panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
   else:
     lines = []
     if InSupport > 0:
-      lines.append(f"[bold yellow]{InSupport}[/bold yellow] case(s) are [bold]In Support[/bold]")
+      lines.append(f"[bold {sColor}]{InSupport}[/bold {sColor}] case(s) are [bold]In Support[/bold]")
     if New > 0:
-      lines.append(f"[bold yellow]{New}[/bold yellow] case(s) need an [bold]IC[/bold]")
+      lines.append(f"[bold {sColor}]{New}[/bold {sColor}] case(s) need an [bold]IC[/bold]")
     if NeedsCommitment > 0:
-      lines.append(f"[bold yellow]{NeedsCommitment}[/bold yellow] case(s) need an [bold]update in 24 hours[/bold]")
+      lines.append(f"[bold {sColor}]{NeedsCommitment}[/bold {sColor}] case(s) need an [bold]update in 24 hours[/bold]")
     if AboutToMiss > 0:
-      lines.append(f"[bold yellow]{AboutToMiss}[/bold yellow] case(s) need an [bold red]update right now[/bold red]")
+      lines.append(f"[bold {sColor}]{AboutToMiss}[/bold {sColor}] case(s) need an [bold red]update right now[/bold red]")
 
     panel_content = "\n".join(lines)
-    panel = Panel(panel_content, title=f"[bold {color}]Personal Queue[/bold {color}]", border_style=f"{color}")
+    panel = Panel(panel_content, title=f"[bold {pColor}]Personal Queue[/bold {pColor}]", border_style=f"{pColor}")
 
   console.print(Align.center(panel))
 
 def display_opened_today(cases, debug, color):
+  pColor = color.get("primary")
+  sColor = color.get("secondary")
+
   total_case = 0
 
   lines = []
@@ -102,18 +110,20 @@ def display_opened_today(cases, debug, color):
       engineer = case.get('Owner', {}).get('Name', 'n/a')
       priority = case.get('Severity__c')
       total_case += 1
-      lines.append(f"[bold yellow]{case_num}[/bold yellow] - {product} (P{priority.split(' ')[0]}) - {engineer.split(' ')[0]}")
+      lines.append(f"[bold {sColor}]{case_num}[/bold {sColor}] - {product} (P{priority.split(' ')[0]}) - {engineer.split(' ')[0]}")
 
     panel_content = "\n".join(lines)
-    panel = Panel(panel_content, title=f"[bold {color}]Last 24 Hours[/bold {color}]", border_style=f"{color}")
+    panel = Panel(panel_content, title=f"[bold {pColor}]Last 24 Hours[/bold {pColor}]", border_style=f"{pColor}")
   else:
     panel_content = "No cases created today"
 
-  panel = Panel(panel_content, title=f"[bold {color}]Last 24 Hours[/bold {color}]", border_style=f"{color}")
+  panel = Panel(panel_content, title=f"[bold {pColor}]Last 24 Hours[/bold {pColor}]", border_style=f"{pColor}")
 
   console.print(Align.center(panel))
 
 def display_team_needs_commitment(cases, update_threshold, color):
+  pColor = color.get("primary")
+  sColor = color.get("secondary")
   lines = []
 
   for case in cases:
@@ -121,15 +131,18 @@ def display_team_needs_commitment(cases, update_threshold, color):
     owner = case.get("Owner", {}).get("Name", "n/a")
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
     next_update_formated = convert_days_to_dhm(next_update)
-    lines.append(f"[bold yellow]{case_num}[/bold yellow] w/ {owner} in [bold]{next_update_formated}[/bold]")
+    lines.append(f"[bold {sColor}]{case_num}[/bold {sColor}] w/ {owner} in [bold]{next_update_formated}[/bold]")
   if not cases: lines.append(f"None, your team is looking good!")
 
   panel_content = "\n".join(lines)
-  panel = Panel(panel_content, title=f"[bold {color}]Team commitments within 1 Day[/bold {color}]", border_style=f"{color}")
+  panel = Panel(panel_content, title=f"[bold {pColor}]Team commitments within 1 Day[/bold {pColor}]", border_style=f"{pColor}")
   
   console.print('\n',Align.center(panel))
 
 def display_queue_needs_commitment(cases, update_threshold, color):
+  pColor = color.get("primary")
+  sColor = color.get("secondary")
+
   lines = []
 
   for case in cases:
@@ -137,9 +150,9 @@ def display_queue_needs_commitment(cases, update_threshold, color):
     product = case.get('Product__r', {}).get('Name', 'No Product')
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
     next_update_formated = convert_days_to_dhm(next_update)
-    lines.append(f"[bold yellow]{case_num}[/bold yellow] for [bold]{product}[/bold] in [bold]{next_update_formated}[/bold]")
+    lines.append(f"[bold {sColor}]{case_num}[/bold {sColor}] for [bold]{product}[/bold] in [bold]{next_update_formated}[/bold]")
   if not cases: lines.append(f"   None, your team has it covered!")
   panel_content = "\n".join(lines)
-  panel = Panel(panel_content, title=f"[bold {color}]Queue commitments within {update_threshold} minutes[/bold {color}]", border_style=f"{color}")
+  panel = Panel(panel_content, title=f"[bold {pColor}]Queue commitments within {update_threshold} minutes[/bold {pColor}]", border_style=f"{pColor}")
 
   console.print(Align.center(panel))

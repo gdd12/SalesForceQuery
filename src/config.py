@@ -32,7 +32,7 @@ def request_password():
 
 def background_color():
   try:
-    return get_config_value("background_color")
+    return get_config_value("colors")
   except KeyError as e:
     return "black"
 

@@ -80,7 +80,8 @@ def main():
     url = config["api_url"]
     poll_interval = config["poll_interval"]
     sound_notifications = config["notifications"]["sound"]
-    color = config["background_color"]
+    pColor = config["colors"]["primary"]
+    sColor = config["colors"]["secondary"]
 
     debug = debug_flag if debug_flag else config_debug
     send_notification = args.notify if args.notify else send_notifications
@@ -94,7 +95,7 @@ def main():
       print(f"> Send Notifications:", send_notification)
       print(f"> Notification Sound:", sound_notifications)
       print(f"> Role:", role)
-      print(f"> Color:", color)
+      print(f"> Colors:", pColor, "&", sColor)
       handle_shutdown(0)
 
     logger.info("******************* Setup Complete *******************")
