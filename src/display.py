@@ -59,23 +59,21 @@ def display_personal(cases, update_threshold, color):
   NeedsCommitment = 0
   AboutToMiss = 0
 
-  if not cases:
-    raise ValueError("No cases to display for personal.")
-
   for case in cases:
     status = case.get('Status')
+    status = status.upper()
     commitment_time = case.get('Time_Before_Next_Update_Commitment__c')
 
-    if commitment_time < 1 and status not in ['New', 'Closed']:
+    if commitment_time < 1 and status not in ['NEW', 'CLOSED']:
       if commitment_time < (update_threshold / (24 * 60)):
         AboutToMiss += 1
       else:
         NeedsCommitment += 1
 
-    if status == "In Support":
+    if status == "IN SUPPORT":
       InSupport += 1
 
-    if status == "New":
+    if status == "NEW":
       New += 1
 
   if InSupport + New + NeedsCommitment == 0:
