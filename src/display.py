@@ -59,38 +59,41 @@ def display_personal(cases, update_threshold, color):
   NeedsCommitment = 0
   AboutToMiss = 0
 
-  for case in cases:
-    status = case.get('Status')
-    status = status.upper()
-    commitment_time = case.get('Time_Before_Next_Update_Commitment__c')
-
-    if commitment_time < 1 and status not in ['NEW', 'CLOSED']:
-      if commitment_time < (update_threshold / (24 * 60)):
-        AboutToMiss += 1
-      else:
-        NeedsCommitment += 1
-
-    if status == "IN SUPPORT":
-      InSupport += 1
-
-    if status == "NEW":
-      New += 1
-
-  if InSupport + New + NeedsCommitment == 0:
-    panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
+  if not cases:
+    panel = Panel("You have no assigned cases!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
   else:
-    lines = []
-    if InSupport > 0:
-      lines.append(f"[bold {sColor}]{InSupport}[/bold {sColor}] case(s) are [bold]In Support[/bold]")
-    if New > 0:
-      lines.append(f"[bold {sColor}]{New}[/bold {sColor}] case(s) need an [bold]IC[/bold]")
-    if NeedsCommitment > 0:
-      lines.append(f"[bold {sColor}]{NeedsCommitment}[/bold {sColor}] case(s) need an [bold]update in 24 hours[/bold]")
-    if AboutToMiss > 0:
-      lines.append(f"[bold {sColor}]{AboutToMiss}[/bold {sColor}] case(s) need an [bold red]update right now[/bold red]")
+    for case in cases:
+      status = case.get('Status')
+      status = status.upper()
+      commitment_time = case.get('Time_Before_Next_Update_Commitment__c')
 
-    panel_content = "\n".join(lines)
-    panel = Panel(panel_content, title=f"[bold {pColor}]Personal Queue[/bold {pColor}]", border_style=f"{pColor}")
+      if commitment_time < 1 and status not in ['NEW', 'CLOSED']:
+        if commitment_time < (update_threshold / (24 * 60)):
+          AboutToMiss += 1
+        else:
+          NeedsCommitment += 1
+
+      if status == "IN SUPPORT":
+        InSupport += 1
+
+      if status == "NEW":
+        New += 1
+
+    if InSupport + New + NeedsCommitment == 0:
+      panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
+    else:
+      lines = []
+      if InSupport > 0:
+        lines.append(f"[bold {sColor}]{InSupport}[/bold {sColor}] case(s) are [bold]In Support[/bold]")
+      if New > 0:
+        lines.append(f"[bold {sColor}]{New}[/bold {sColor}] case(s) need an [bold]IC[/bold]")
+      if NeedsCommitment > 0:
+        lines.append(f"[bold {sColor}]{NeedsCommitment}[/bold {sColor}] case(s) need an [bold]update in 24 hours[/bold]")
+      if AboutToMiss > 0:
+        lines.append(f"[bold {sColor}]{AboutToMiss}[/bold {sColor}] case(s) need an [bold red]update right now[/bold red]")
+
+      panel_content = "\n".join(lines)
+      panel = Panel(panel_content, title=f"[bold {pColor}]Personal Queue[/bold {pColor}]", border_style=f"{pColor}")
 
   console.print(Align.center(panel))
 
