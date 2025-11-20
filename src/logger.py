@@ -29,7 +29,7 @@ def setup_logger(log_level=None):
         else:
             file_handler.setLevel(logging.INFO)
 
-        formatter = logging.Formatter('%(asctime)s [%(levelname)s] [%(funcName)s]: %(message)s')
+        formatter = logging.Formatter('%(asctime)s [%(levelname)-5s] [%(funcName)s]: %(message)s')
         file_handler.setFormatter(formatter)
 
         logger.addHandler(file_handler)
@@ -45,7 +45,7 @@ def setup_process_logger(log_level=None):
 
     file_handler = logging.FileHandler(PROCESS_LOG_FILE)
     file_handler.setLevel(logging.DEBUG if log_level == 'debug' else logging.INFO)
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s] [%(funcName)s]: %(message)s')
+    formatter = logging.Formatter('%(asctime)s [%(levelname)-5s] [%(funcName)s]: %(message)s')
     file_handler.setFormatter(formatter)
     process.addHandler(file_handler)
 
