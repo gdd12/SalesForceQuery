@@ -27,14 +27,14 @@ class EngineerHandler:
 			"username": config.get("username", ""),
 			"engineer_name": config.get("engineer_name", "")
 		}
-		self.poll_interval = config.get("poll_interval", 30)
+		self.poll_interval = config.get("rules").get("poll_interval", 30)
 		self.queries = config.get("queries", {})
 		self.debug = debug or config.get("debug", False)
 		self.isTest = isTest
 		self.teams_list = teamsList
 		self.role = config.get("role", "").upper()
 		self.color = config.get("colors", None)
-		self.update_threshold = config.get("update_threshold", 45)
+		self.update_threshold = config.get("rules").get("update_threshold", 45)
 		self.config_password = None
 		
 	def run(self, isTest):
@@ -69,7 +69,7 @@ class EngineerHandler:
 		)
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
-		events_processing_enabled = get_config_value("process_events")
+		events_processing_enabled = get_config_value("events.process_events")
 
 		logger.info(f"Inside engineer handler loop")
 		while True:
@@ -131,14 +131,14 @@ class ManagerHandler:
 			"username": config.get("username", ""),
 			"engineer_name": config.get("engineer_name", "")
 		}
-		self.poll_interval = config.get("poll_interval", 30)
+		self.poll_interval = config.get("rules").get("poll_interval", 30)
 		self.queries = config.get("queries", {})
 		self.debug = debug or config.get("debug", False)
 		self.isTest = isTest
 		self.teams_list = teamsList
 		self.role = config.get("role", "").upper()
 		self.color = config.get("colors", None)
-		self.update_threshold = config.get("update_threshold", 45)
+		self.update_threshold = config.get("rules").get("update_threshold", 45)
 		self.config_password = None
 
 	def run(self, isTest):
@@ -162,7 +162,7 @@ class ManagerHandler:
 		)
 		logger.debug(f"The Manager query has been formated with configured Teams and update thresholds")
 
-		events_processing_enabled = get_config_value("process_events")
+		events_processing_enabled = get_config_value("events.process_events")
 		logger.debug(f"Inside manager handler loop")
 		while True:
 			clear_screen()

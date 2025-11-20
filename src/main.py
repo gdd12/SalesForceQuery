@@ -78,7 +78,7 @@ def main():
     send_notifications = config["notifications"]["send"]
     engineer_name = config["engineer_name"]
     url = config["api_url"]
-    poll_interval = config["poll_interval"]
+    poll_interval = config["rules"]["poll_interval"]
     sound_notifications = config["notifications"]["sound"]
     pColor = config["colors"]["primary"]
     sColor = config["colors"]["secondary"]

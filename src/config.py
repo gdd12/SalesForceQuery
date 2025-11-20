@@ -274,9 +274,14 @@ def rewrite_configuration():
 def get_config_value(key: str, Proc=False):
   active_logger = process if Proc else logger
   try:
+    key_components = key.split(".")
+    if len(key_components) > 1:
+      child = key_components[1]
+    parent = key.split('.')[0]
     config_data = load_json_file(config_path, Proc=Proc)
-    config_value_from_key = config_data.get(key)
+    config_value_from_key = config_data.get(parent)
 
+    if child: config_value_from_key = config_data.get(parent).get(child)
     if config_value_from_key == None:
       raise ConfigurationError(f"Invalid key: {key}")
 
