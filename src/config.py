@@ -273,6 +273,7 @@ def rewrite_configuration():
 
 def get_config_value(key: str, Proc=False):
   active_logger = process if Proc else logger
+  child = ''
   try:
     key_components = key.split(".")
     if len(key_components) > 1:
