@@ -22,12 +22,16 @@
   },
   "username": "",
   "api_url": "",
+  "front_end_board": "",
   "engineer_name": "",
   "debug": false,
   "role": "engineer",
   "rules": {
     "poll_interval": 30,
-    "update_threshold": 45
+    "update_threshold": 45,
+    "vacation_scheduled": false,
+    "back_from_vacation": "",
+    "upload_to_tse_board": false
   },
   "events": {
     "process_events": false,

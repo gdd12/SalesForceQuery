@@ -2,11 +2,11 @@ import shutil
 import os
 from datetime import datetime
 from collections import defaultdict
-from config import background_color
+from config import background_color, get_config_value
 from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
-from helper import convert_days_to_dhm
+from helper import convert_days_to_dhm, convert_vacation
 from logger import logger
 
 console = Console()
@@ -53,11 +53,18 @@ def display_team(cases, update_threshold, color):
 def display_personal(cases, update_threshold, color):
   pColor = color.get("primary")
   sColor = color.get("secondary")
+  VacationFailedValidation = False
+  if get_config_value("rules.vacation_scheduled"):
+    vac_timeframe = get_config_value("rules.back_from_vacation")
+    days_remaining_vac = convert_vacation(vac_timeframe)
+    if type(days_remaining_vac) != int:
+      VacationFailedValidation = True
 
   InSupport = 0
   New = 0
   NeedsCommitment = 0
   AboutToMiss = 0
+  MissDuringVacation = 0
 
   if not cases:
     panel = Panel("You have no assigned cases!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
@@ -78,8 +85,12 @@ def display_personal(cases, update_threshold, color):
 
       if status == "NEW":
         New += 1
+      
+      if (not VacationFailedValidation) and days_remaining_vac > 0 and (days_remaining_vac > commitment_time):
+        MissDuringVacation += 1
 
-    if InSupport + New + NeedsCommitment == 0:
+    print(VacationFailedValidation)
+    if (InSupport + New + NeedsCommitment == 0) and MissDuringVacation < 1:
       panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
     else:
       lines = []
@@ -91,6 +102,10 @@ def display_personal(cases, update_threshold, color):
         lines.append(f"[bold {sColor}]{NeedsCommitment}[/bold {sColor}] case(s) need an [bold]update in 24 hours[/bold]")
       if AboutToMiss > 0:
         lines.append(f"[bold {sColor}]{AboutToMiss}[/bold {sColor}] case(s) need an [bold red]update right now[/bold red]")
+      if MissDuringVacation > 0:
+        lines.append(f"[bold {sColor}]{MissDuringVacation}[/bold {sColor}] case(s) will be missed during your vacation!")
+      if VacationFailedValidation:
+        lines.append(f"Failed validated")
 
       panel_content = "\n".join(lines)
       panel = Panel(panel_content, title=f"[bold {pColor}]Personal Queue[/bold {pColor}]", border_style=f"{pColor}")

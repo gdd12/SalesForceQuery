@@ -1,6 +1,8 @@
 from exceptions import BadQuery, ConfigurationError, MalformedTeamConfiguration
 import sys
 from logger import logger
+import re
+from datetime import datetime, date
 
 def define_query_columns(query):
 	upper_query = query.upper()
@@ -87,3 +89,31 @@ def handle_shutdown(exit_code=0):
 	if exit_code == 1:
 		logger.info(f"Shutdown code: {exit_code}")
 		sys.exit(1)
+
+def convert_vacation(date):
+	months = [
+		"January", "February", "March", "April", "May", "June",
+		"July", "August", "September", "October", "November", "December"
+	]
+	pattern = r'^([A-Za-z]+)\s+(-?\d+)$'
+	match = re.match(pattern, date.strip())
+	
+	if not match:
+		return None
+	
+	month_str, day_str = match.groups()
+	
+	if month_str.capitalize() not in months:
+		return None
+	
+	day = int(day_str)
+	month = months.index(month_str.capitalize()) + 1
+	
+	try:
+		today = datetime.today().date()
+		input_date = datetime(today.year, month, day).date()
+	except ValueError:
+		return None
+	
+	delta = input_date - today
+	return delta.days
