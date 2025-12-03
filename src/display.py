@@ -54,6 +54,7 @@ def display_personal(cases, update_threshold, color):
   pColor = color.get("primary")
   sColor = color.get("secondary")
   VacationFailedValidation = False
+  days_remaining_vac = 0
   if get_config_value("rules.vacation_scheduled"):
     vac_timeframe = get_config_value("rules.back_from_vacation")
     days_remaining_vac = convert_vacation(vac_timeframe)
@@ -89,7 +90,6 @@ def display_personal(cases, update_threshold, color):
       if (not VacationFailedValidation) and days_remaining_vac > 0 and (days_remaining_vac > commitment_time):
         MissDuringVacation += 1
 
-    print(VacationFailedValidation)
     if (InSupport + New + NeedsCommitment == 0) and MissDuringVacation < 1:
       panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
     else:
@@ -105,7 +105,7 @@ def display_personal(cases, update_threshold, color):
       if MissDuringVacation > 0:
         lines.append(f"[bold {sColor}]{MissDuringVacation}[/bold {sColor}] case(s) will be missed during your vacation!")
       if VacationFailedValidation:
-        lines.append(f"Failed validated")
+        lines.append(f"Vacation config validation failed. Check config.json")
 
       panel_content = "\n".join(lines)
       panel = Panel(panel_content, title=f"[bold {pColor}]Personal Queue[/bold {pColor}]", border_style=f"{pColor}")
