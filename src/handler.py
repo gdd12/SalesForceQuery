@@ -1,6 +1,6 @@
 import os
 import time
-from api import http_handler
+from api import http_handler, uploadToTseBoard
 from display import (
 	clear_screen, display_header, display_team, display_personal,
 	display_opened_today, display_team_needs_commitment,
@@ -70,6 +70,7 @@ class EngineerHandler:
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
 		events_processing_enabled = get_config_value("events.process_events")
+		upload_to_tse_board_enabled = get_config_value("rules.upload_to_tse_board")
 
 		logger.info(f"Inside engineer handler loop")
 		while True:
@@ -84,33 +85,35 @@ class EngineerHandler:
 
 			excluded_cases = load_excluded_cases()
 
-			for case in all_cases:
-				owner_name = case.get("Owner", {}).get("Name", "")
-				product = case.get("Product__r", {}).get("Name", "")
-				created_date_str = case.get("CreatedDate", "")
-				case_number = case.get("CaseNumber", "").strip()
+			if upload_to_tse_board_enabled: uploadToTseBoard(all_cases)
+			else:
+				for case in all_cases:
+					owner_name = case.get("Owner", {}).get("Name", "")
+					product = case.get("Product__r", {}).get("Name", "")
+					created_date_str = case.get("CreatedDate", "")
+					case_number = case.get("CaseNumber", "").strip()
+					
+					today = datetime.today()
+					if created_date_str: created_date = datetime.strptime(created_date_str[:10], "%Y-%m-%d")
+					else: raise Exception(f"Invalid CreatedDate: {'Cannot be null' if len(created_date_str) < 1 else f'{created_date_str}'}")
+
+					if (product in supported_products and owner_name in group_list) and (case_number not in excluded_cases):
+						team_cases.append(case)
+
+					if engineer_name.lower() in owner_name.lower():
+						personal_cases.append(case)
+
+					if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
+						opened_today_cases.append(case)
 				
-				today = datetime.today()
-				if created_date_str: created_date = datetime.strptime(created_date_str[:10], "%Y-%m-%d")
-				else: raise Exception(f"Invalid CreatedDate: {'Cannot be null' if len(created_date_str) < 1 else f'{created_date_str}'}")
+				display_team(team_cases, self.update_threshold, self.color)
+				display_personal(personal_cases, self.update_threshold, self.color)
+				display_opened_today(opened_today_cases, self.debug, self.color)
 
-				if (product in supported_products and owner_name in group_list) and (case_number not in excluded_cases):
-					team_cases.append(case)
+				if os.name != "nt" and self.send_notification:
+					notify(team_cases, isTest, self.sound_notifications)
 
-				if engineer_name.lower() in owner_name.lower():
-					personal_cases.append(case)
-
-				if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
-					opened_today_cases.append(case)
-			
-			display_team(team_cases, self.update_threshold, self.color)
-			display_personal(personal_cases, self.update_threshold, self.color)
-			display_opened_today(opened_today_cases, self.debug, self.color)
-
-			if os.name != "nt" and self.send_notification:
-				notify(team_cases, isTest, self.sound_notifications)
-
-			if events_processing_enabled: processEvents(all_cases)
+				if events_processing_enabled: processEvents(all_cases)
 
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)

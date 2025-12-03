@@ -2,7 +2,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 from exceptions import APIError
 from logger import logger
-from config import load_json_file, file_exists, create_json_file, resolve_registry_path, readFileReg
+from config import load_json_file, file_exists, create_json_file, resolve_registry_path, readFileReg, get_config_value
 import json
 
 def http_handler(api_url, username, password, query, isTest: False):
@@ -69,3 +69,23 @@ def _handle_http_error(response, query):
 
   logger.error(f"Unexpected error: {response.status_code} {response.reason} - {response.text}")
   raise APIError(f"Error {response.status_code} {response.reason}. Unable to fetch data.")
+
+def uploadToTseBoard(cases):
+  tseBoardApi = get_config_value('front_end_board')
+  payload = {
+    "nextPollSetting": get_config_value("rules.poll_interval"),
+    "cases": cases
+  }
+  try:
+    response = requests.post(
+      tseBoardApi,
+      json=payload,
+      timeout=5
+    )
+    response.raise_for_status()
+    logger.info("Upload to TSE board successful!")
+    return response.json()
+  except requests.exceptions.RequestException as e:
+    print(f"Error uploading to TSE Board: {e}")
+    logger.error(f"Upload to TSE board failed: {e}")
+    return None
