@@ -61,16 +61,27 @@ class EngineerHandler:
 		group_list = concat_group_list(self.teams_list)
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
 
-		query = self.queries["Engineer"].format(
-			product_name=product_list,
-			support_group=group_list,
-			engineer_name=engineer_name,
-			support_engineer_list=support_engineer_list
-		)
+		upload_to_tse_board_enabled = get_config_value("rules.upload_to_tse_board")
+
+		if upload_to_tse_board_enabled:
+			logger.info("Handler is acting as a forwarding agent to the TSE board")
+			query = self.queries["Engineer_Forwarding"].format(
+				product_name=product_list,
+				support_group=group_list,
+				engineer_name=engineer_name,
+				support_engineer_list=support_engineer_list
+			)
+		else:
+			query = self.queries["Engineer"].format(
+				product_name=product_list,
+				support_group=group_list,
+				engineer_name=engineer_name,
+				support_engineer_list=support_engineer_list
+			)
+
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
 		events_processing_enabled = get_config_value("events.process_events")
-		upload_to_tse_board_enabled = get_config_value("rules.upload_to_tse_board")
 
 		logger.info(f"Inside engineer handler loop")
 		while True:

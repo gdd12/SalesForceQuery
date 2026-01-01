@@ -82,6 +82,7 @@ def main():
     sound_notifications = config["notifications"]["sound"]
     pColor = config["colors"]["primary"]
     sColor = config["colors"]["secondary"]
+    rules = config["rules"]
 
     debug = debug_flag if debug_flag else config_debug
     send_notification = args.notify if args.notify else send_notifications
@@ -96,6 +97,7 @@ def main():
       print(f"> Notification Sound:", sound_notifications)
       print(f"> Role:", role)
       print(f"> Colors:", pColor, "&", sColor)
+      print(f"> Forwarding Engine:", rules["upload_to_tse_board"])
       handle_shutdown(0)
 
     logger.info("******************* Setup Complete *******************")

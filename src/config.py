@@ -228,7 +228,6 @@ def load_json_file(path, fatal=False, context="", Proc=False):
   active_logger = process if Proc else logger
   try:
     with open(path, "r") as f:
-      active_logger.info(f"Loading data from {os.path.split(path)[1]}")
       return json.load(f)
   except Exception as e:
     msg = f"Failed to load JSON file at {path}"
