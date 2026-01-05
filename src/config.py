@@ -244,7 +244,6 @@ def load_json_file(path, fatal=False, context="", Proc=False):
     if fatal:
       print(f"{msg} {e}")
       handle_shutdown(1)
-    return None
   
 def create_json_file(path, data):
   try:
@@ -285,7 +284,7 @@ def get_config_value(key: str, Proc=False):
     if len(key_components) > 1:
       child = key_components[1]
     parent = key.split('.')[0]
-    config_data = load_json_file(config_path, Proc=Proc)
+    config_data = load_json_file(config_path, Proc=Proc, fatal=True)
     config_value_from_key = config_data.get(parent)
 
     if child: config_value_from_key = config_data.get(parent).get(child)
@@ -304,7 +303,7 @@ def register_teams_list(teams_path, teams_template):
   with open(teams_path, 'w') as teams_file:
     json.dump(template_data, teams_file, indent=2)
 
-  error_reason = "Teams list is empty, the program cannot run without it. \nRun the program with '-team update <team_name> viewable' to update!"
+  error_reason = "Teams list is empty, the program cannot run without it. \nRun the program with -t to update!"
   logger.error(error_reason)
   print(error_reason)
   handle_shutdown(0, reason="Team list is not proper, cannot continue")
