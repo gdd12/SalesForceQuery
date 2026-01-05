@@ -54,7 +54,7 @@ def validateFileReg():
     try:
       if not os.path.exists(fileRegSrc):
         logger.error(f"filereg.xml cannot be found in the templates library. Exiting.")
-        handle_shutdown(1)
+        handle_shutdown(1, reason="Missing required config file")
       shutil.copy(fileRegSrc, fileRegDest)
       logger.debug(f"filereg.xml has been pulled from the templates library")
     except FileNotFoundError as e:
@@ -224,7 +224,7 @@ def file_exists(path, fatal=False, message=None, Proc=False):
   if not os.path.exists(path):
     if fatal:
       active_logger.error(message or f"Required file not found: {path}")
-      handle_shutdown(1)
+      handle_shutdown(1, reason="Missing required file")
     else:
       active_logger.debug(f"File {path} does not exist, and is not required at this time.")
       return False
@@ -307,7 +307,7 @@ def register_teams_list(teams_path, teams_template):
   error_reason = "Teams list is empty, the program cannot run without it. \nRun the program with '-team update <team_name> viewable' to update!"
   logger.error(error_reason)
   print(error_reason)
-  handle_shutdown(0)
+  handle_shutdown(0, reason="Team list is not proper, cannot continue")
 
 def load_teams_list():
   registry = readFileReg()

@@ -87,7 +87,7 @@ def handle_shutdown(exit_code=0, reason='Routine exit'):
 		logger.info(f"Shutdown code: {exit_code}. {reason.capitalize()}")
 		sys.exit(0)
 	if exit_code == 1:
-		logger.info(f"Shutdown code: {exit_code}")
+		logger.info(f"Shutdown code: {exit_code}. {reason.capitalize()}")
 		sys.exit(1)
 
 def convert_vacation(date):
