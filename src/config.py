@@ -6,6 +6,7 @@ from exceptions import ConfigurationError
 import xml.etree.ElementTree as ET
 from helper import handle_shutdown
 from logger import logger, process
+from variables import VARS
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 config_path = os.path.join(base_dir, "config", "config.json")
@@ -101,6 +102,10 @@ def load_excluded_cases():
     return set()
 
 def add_excluded_cases(case_name: str):
+  if type(case_name) == bool:
+    print("ERROR - Missing positional argument for -e. Usage: -e <case number or 'RESET>")
+    logger.info("Missing positional argument for -e. Usage: -e <case number>")
+    return
   excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
   existing_cases = set()
 
@@ -109,6 +114,7 @@ def add_excluded_cases(case_name: str):
       existing_cases = {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
 
   if case_name in existing_cases:
+    print(f'\nCase {case_name} already exits in excludedCases.cfg')
     logger.warning(f'Case {case_name} already exits in excludedCases.cfg')
     return
 
@@ -120,7 +126,8 @@ def add_excluded_cases(case_name: str):
         os.remove(excludedCasesFile)
       with open(excludedCasesFile, 'w') as file:
         file.write(template + '\n')
-      logger.warning('Successfully reset excludedCases.cfg')
+      print('Successfully reset excludedCases.cfg')
+      logger.info('Successfully reset excludedCases.cfg')
     except Exception as e:
       logger.error(f"Failed to reset {excludedCasesFile}: {e}")
     return
@@ -308,48 +315,71 @@ def load_teams_list():
   teams = load_json_file(teams_file, fatal=True)
   return teams
 
-def print_or_edit_team_list(Print=False, Update=False, Team=None, Viewable=False):
-  logger.info(
-    f"{'Printing' if Print else 'Updating'} "
-    f"{'team' if Team else 'teams.json configuration'}"
-    f"{f' {Team}' if Team else ''}"
-  )
+def print_configuration():
+  config = load_configuration()
+
+  notifications = config[VARS.Notifications]
+  colors = config[VARS.Colors]
+  rules = config[VARS.Rules]
+
+  logger.info("Printing config to screen")
+
+  print("\n== Current Config ==")
+  print(f"> Name/URL: {config[VARS.EngineerName]} / {config[VARS.ApiUrl]}")
+  print(f"> Products: {[k for k, v in config[VARS.Products].items() if v]}")
+  print(f"> Polling Interval: {rules[VARS.Polling]}")
+  print(f"> Debug: {config[VARS.Debug]}")
+  print(f"> Send Notifications: {notifications[VARS.SendNotif]}")
+  print(f"> Notification Sound: {notifications[VARS.SoundNotif]}")
+  print(f"> Role: {config[VARS.Role]}")
+  print(f"> Colors: {colors[VARS.Primary]} & {colors[VARS.Secondary]}")
+  print(f"> Forwarding Engine: {rules['upload_to_tse_board']}")
+
+  handle_shutdown(0)
+
+def team_tool(Print=False, Update=False):
   try:
     teams = load_teams_list()
+    team_ids = []
 
-    if Print:
-      for team, data in teams.items():
-        print(f"{team.upper()}: {data['list']}")
-    if Update:
-      if not Team:
-        return print(f"Error: 'update' requires one positional argument. Example: -team update b2b")
+    print('Current team configuration:\n')
+    for team, data in teams.items():
+      team_ids.append(team.upper())
+      print(f"{team.upper()}: {data['list']}")
 
-      list_to_update = teams[Team]['list']
-      print(f"Current team: {list_to_update}")
-      new_member = get_non_empty_input("Add team member: ")
-      updated_list = list_to_update + ',' + new_member
+    def request_team_id_from_user():
+      return get_non_empty_input('\nWhich team ID would you like to update? ') if Update == True else handle_shutdown(0)
+
+    while True:
+      team_to_update = request_team_id_from_user()
+      if team_to_update.upper() not in team_ids:
+        print(f"{team_to_update} was not found in the team list. Please provide a valid team ID.")
+        continue
+      break
+
+    team_to_update = team_to_update.lower()
+
+    list_to_update = teams[team_to_update]['list']
+    print(f"\nCurrent team: {list_to_update}")
+    new_member = get_non_empty_input("\nAdd team member: ")
+    updated_list = list_to_update + ',' + new_member
+  
+    registry = readFileReg()
+    teams_file = resolve_registry_path(registry, "teamsPath")
+
+    with open(teams_file, "r") as f:
+      team_file_data = json.load(f)
+
+    team_file_data[team_to_update]['list'] = updated_list
+
+    with open(teams_file, "w") as f:
+      json.dump(team_file_data, f, indent=2)
     
-      registry = readFileReg()
-      teams_file = resolve_registry_path(registry, "teamsPath")
-
-      with open(teams_file, "r") as f:
-        team_file_data = json.load(f)
-
-      team_file_data[Team]['list'] = updated_list
-      
-      if Viewable:
-        team_file_data[Team]['viewable'] = Viewable
-
-      with open(teams_file, "w") as f:
-        json.dump(team_file_data, f, indent=2)
-      
-      print(f"Succesfully added {new_member} to the {Team} team!")
-      if Viewable:
-        print(f"Successfully set 'viewable' to true for {Team}")
+    print(f"Succesfully added {new_member} to the {team_to_update} team!")
+    handle_shutdown(0, reason='Team list has been update, must exit to reload.')
 
   except Exception as e:
     logger.error("Error updating team list", exc_info=True)
-    raise Exception(e)
-
-def set_viewable_team():
-  return
+    raise e
+  except ValueError as e:
+    logger.error("Invalid team ID")

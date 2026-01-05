@@ -12,7 +12,7 @@ from helper import (
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
 from datetime import datetime
-from config import load_excluded_cases, get_config_value
+from config import load_excluded_cases, get_config_value, request_password
 from logger import logger
 from analytics import processEvents
 
@@ -207,7 +207,7 @@ class ManagerHandler:
 	def set_password(self, password):
 		self.config_password = password
 
-def role_handler(role, debug, send_notification, config, password, isTest, teamsList):
+def role_handler(role, debug, send_notification, config, isTest, teamsList):	
 	func = "role_handler()"
 	role = role.upper()
 	if role == "ENGINEER":
@@ -218,5 +218,5 @@ def role_handler(role, debug, send_notification, config, password, isTest, teams
 		logger.error(f"Unsupported role '{role.lower()}'")
 		raise UnsupportedRole(f'{func}; Unsupported role "{role.lower()}"')
 
-	handler.set_password(password)
+	handler.set_password(request_password())
 	handler.run(isTest)

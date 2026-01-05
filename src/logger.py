@@ -33,6 +33,7 @@ def setup_logger(log_level=None):
         file_handler.setFormatter(formatter)
 
         logger.addHandler(file_handler)
+        logger.propagate = False
 
     return logger
 
