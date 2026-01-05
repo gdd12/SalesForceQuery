@@ -51,6 +51,7 @@ signal.signal(signal.SIGINT, signal_handler)
 if __name__ == "__main__":
   user_args = user_defined_args()
   verboseOn = False
+  log_level = None
 
   if 'debug' in user_args:
     log_level = 'info'
