@@ -16,9 +16,9 @@ from helper import handle_shutdown
 from exceptions import APIError, ConfigurationError, UnsupportedRole
 from handler import role_handler
 
-def main(debug, testOn):
-  logger.info("Logger initialized with debug=%s and test=%s", debug, testOn)
-  process.info("Processing logger initialized with debug=%s and test=%s", debug, testOn)
+def main(debug, testOn, verboseOn=False):
+  logger.info("Logger initialized with debug=%s verbose=%s test=%s", debug, verboseOn, testOn)
+  process.info("Processing logger initialized with debug=%s verbose=%s and test=%s", debug, verboseOn, testOn)
 
   try:
     logger.info("******************** Config Setup ********************")
@@ -50,11 +50,16 @@ signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
   user_args = user_defined_args()
-  if 'debug' in user_args or get_config_value('debug'): 
-    log_level = 'debug'
+  verboseOn = False
 
-    setup_logger(log_level)
-    setup_process_logger(log_level)
+  if 'debug' in user_args:
+    log_level = 'info'
+  if 'verbose' in user_args or get_config_value('debug'): 
+    log_level = 'debug'
+    verboseOn = True
+
+  setup_logger(log_level)
+  setup_process_logger(log_level)
 
   logger = base_logger
 
@@ -62,4 +67,4 @@ if __name__ == "__main__":
   debugOn = True if args.get(VARS.Debug, False) or get_config_value('debug') else False
   testOn = args.get(VARS.Test, False)
 
-  main(debugOn, testOn)
+  main(debugOn, testOn, verboseOn=verboseOn)

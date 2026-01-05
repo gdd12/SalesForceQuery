@@ -43,18 +43,22 @@ def user_defined_args():
 def print_help():
   print('\nBelow are the flags available for this tool:\n')
   for short, description in Arg_Definition:
-    print(f"    {short} | {description}")
+    print(f"{'':<2}{short:<3} | {description}")
   handle_shutdown(0)
 
 def argument_handler(arg_obj):
   debug = False
   testMode = False
+  verboseMode = False
   forceNotifications = False
   
   base_logger.info(f"Arguments passed in include: {arg_obj}")
 
   if VARS.Debug in arg_obj: debug = True
   if VARS.Test in arg_obj: testMode = True
+  if VARS.Verbose in arg_obj:
+    verboseMode = True
+    debug = True
 
   if VARS.Config in arg_obj: print_configuration()
   if VARS.Exclude in arg_obj:
@@ -68,4 +72,4 @@ def argument_handler(arg_obj):
   if VARS.Team in arg_obj:
     team_tool(Print=(True if type(arg_obj[VARS.Team]) == bool else False), Update=(True if str(arg_obj[VARS.Team]).lower() == 'update' else False))
 
-  return {VARS.Debug: debug, VARS.Test: testMode, }
+  return {VARS.Debug: debug, VARS.Test: testMode, VARS.Verbose: verboseMode}

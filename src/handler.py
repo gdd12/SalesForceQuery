@@ -207,7 +207,7 @@ class ManagerHandler:
 	def set_password(self, password):
 		self.config_password = password
 
-def role_handler(role, debug, send_notification, config, isTest, teamsList):	
+def role_handler(role, debug, send_notification, config, isTest, teamsList):
 	func = "role_handler()"
 	role = role.upper()
 	if role == "ENGINEER":

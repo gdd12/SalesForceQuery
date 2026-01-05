@@ -20,10 +20,12 @@ class VARS:
   Test = 'test'
   Simulate = 'simulate'
   Team = 'team'
+  Verbose = 'verbose'
 
 Arg_Flag_Alias = {
   '-c': 'config',
   '-d': 'debug',
+  '-dv': 'verbose',
   '-e': 'exclude',
   '-q': 'simulate',
   '-s': 'setup',
@@ -35,6 +37,7 @@ Arg_Flag_Alias = {
 Arg_Definition = (
   ('-c', "Print out the current configuration"),
   ('-d', "Debug mode"),
+  ('-dv', "Debug mode with verbose logging"),
   ('-e', "Add an exclusion case number. Use 'RESET' to reset the file"),
   ('-q', "Enter simulation environment"),
   ('-s', "Re-write configuration"),
