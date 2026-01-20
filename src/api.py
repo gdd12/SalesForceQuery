@@ -14,7 +14,7 @@ def http_handler(api_url, username, password, query, isTest: False):
     logger.debug(f"Using query: {query}")
     logger.debug(f"HTTP request to {api_url}")
     auth = HTTPBasicAuth(username, password)
-    response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query})
+    response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query}, timeout=30)
     return response
 
   response_data = None
@@ -38,6 +38,7 @@ def http_handler(api_url, username, password, query, isTest: False):
         _handle_http_error(response, query)
   else:
     response = hitAPI()
+    logger.debug(f"Response took {response.elapsed}")
 
     if response.status_code == 200:
       response_data = response.json()

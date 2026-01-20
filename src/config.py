@@ -104,7 +104,7 @@ def load_excluded_cases():
 def add_excluded_cases(case_name: str):
   if type(case_name) == bool:
     print("ERROR - Missing positional argument for -e. Usage: -e <case number or 'RESET>")
-    logger.info("Missing positional argument for -e. Usage: -e <case number>")
+    logger.error("Missing positional argument for -e. Usage: -e <case number>")
     return
   excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
   existing_cases = set()
