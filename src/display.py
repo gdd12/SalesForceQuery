@@ -66,6 +66,7 @@ def display_personal(cases, update_threshold, color):
   NeedsCommitment = 0
   AboutToMiss = 0
   MissDuringVacation = 0
+  MissOverWeekend = 0
 
   if not cases:
     panel = Panel("You have no assigned cases!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
@@ -90,7 +91,10 @@ def display_personal(cases, update_threshold, color):
       if (not VacationFailedValidation) and days_remaining_vac > 0 and (days_remaining_vac > commitment_time):
         MissDuringVacation += 1
 
-    if (InSupport + New + NeedsCommitment == 0) and MissDuringVacation < 1:
+      if (datetime.today().strftime('%A').lower() == 'friday' and commitment_time < 3):
+        MissOverWeekend += 1
+
+    if (InSupport + New + NeedsCommitment + MissOverWeekend == 0) and MissDuringVacation < 1:
       panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
     else:
       lines = []
@@ -104,6 +108,8 @@ def display_personal(cases, update_threshold, color):
         lines.append(f"[bold {sColor}]{AboutToMiss}[/bold {sColor}] case(s) need an [bold red]update right now[/bold red]")
       if MissDuringVacation > 0:
         lines.append(f"[bold {sColor}]{MissDuringVacation}[/bold {sColor}] case(s) will be missed during your vacation!")
+      if MissOverWeekend > 0:
+        lines.append(f"[bold {sColor}]{MissOverWeekend}[/bold {sColor}] commitments(s) will be missed over the weekend!")
       if VacationFailedValidation:
         lines.append(f"Vacation config validation failed. Check config.json")
 
@@ -151,7 +157,7 @@ def display_team_needs_commitment(cases, update_threshold, color):
   if not cases: lines.append(f"None, your team is looking good!")
 
   panel_content = "\n".join(lines)
-  panel = Panel(panel_content, title=f"[bold {pColor}]Team commitments within 1 Day[/bold {pColor}]", border_style=f"{pColor}")
+  panel = Panel(Align.center(panel_content), title=f"[bold {pColor}]Team commitments within 1 Day[/bold {pColor}]", border_style=f"{pColor}")
   
   console.print('\n',Align.center(panel))
 
@@ -169,6 +175,6 @@ def display_queue_needs_commitment(cases, update_threshold, color):
     lines.append(f"[bold {sColor}]{case_num}[/bold {sColor}] for [bold]{product}[/bold] in [bold]{next_update_formated}[/bold]")
   if not cases: lines.append(f"   None, your team has it covered!")
   panel_content = "\n".join(lines)
-  panel = Panel(panel_content, title=f"[bold {pColor}]Queue commitments within {update_threshold} minutes[/bold {pColor}]", border_style=f"{pColor}")
+  panel = Panel(Align.center(panel_content), title=f"[bold {pColor}]Queue commitments within {update_threshold} minutes[/bold {pColor}]", border_style=f"{pColor}")
 
   console.print(Align.center(panel))
