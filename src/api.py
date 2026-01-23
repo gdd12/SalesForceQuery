@@ -38,7 +38,7 @@ def http_handler(api_url, username, password, query, isTest: False):
         _handle_http_error(response, query)
   else:
     response = hitAPI()
-    logger.debug(f"Response took {response.elapsed}")
+    logger.debug(f"Response took {response.elapsed} and resulted in HTTP {response.status_code}")
 
     if response.status_code == 200:
       response_data = response.json()
