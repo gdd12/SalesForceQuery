@@ -145,6 +145,23 @@ def add_excluded_cases(case_name: str):
   except Exception as e:
     logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")
 
+def load_excluded_products():
+  excludedProductsFile = os.path.join(base_dir, "config", "excludedProducts.cfg")
+  try:
+    with open(excludedProductsFile, 'r') as file:
+      lines = file.readlines()
+      excluded = {
+        line.strip() for line in lines
+        if line.strip() and not line.strip().startswith('#')
+      }
+      logger.info(f"Loaded {len(excluded)} excluded products from {excludedProductsFile}")
+      logger.debug(f"Excluded products include: {excluded}")
+      return excluded
+  except FileNotFoundError:
+    logger.info(f"Excluded file config cannot be found, displaying all returned products.")
+    return set()
+  return
+
 def interactive_config_setup(config_path, config_template_path, CalledFrom=None):
   if CalledFrom == 'System':
     print("--- Configuration Setup ---")
@@ -160,7 +177,6 @@ def interactive_config_setup(config_path, config_template_path, CalledFrom=None)
   else:
     raise ConfigurationError("No configuration file or template available for setup.")
 
-  products = config.get("products", {})
   send_notifications = config.get("notifications", {}).get("send", False)
 
   while True:
@@ -170,32 +186,6 @@ def interactive_config_setup(config_path, config_template_path, CalledFrom=None)
     else: break
 
   config["role"] = role_response
-
-  if not products:
-    raise ConfigurationError("No 'products' found in the config template.")
-
-  if role_response == 'engineer':
-    while True:
-      print("\nPlease answer with 'y' or 'n' to enable or disable each supported product (default is NO):\n")
-      updated_products = {}
-      for product, enabled in products.items():
-        while True:
-          response = input(f"Enable product {product}? [y/n]: ").strip().lower()
-          if response in ("y", "yes"):
-            updated_products[product] = True
-            break
-          elif response in ("n", "no", ""):
-            updated_products[product] = False
-            break
-      if any(updated_products.values()):
-        break
-      else:
-        print("\nError: At least one product must be enabled.")
-  else:
-    updated_products = {product: True for product in products}
-
-  config.setdefault("products", {})
-  config["products"].update(updated_products)
 
   response_notifications = input(f"Enable notifications? [y/n]: ").strip().lower()
   send_notifications = response_notifications in ("y", "yes")
@@ -324,15 +314,15 @@ def print_configuration():
   logger.info("Printing config to screen")
 
   print("\n== Current Config ==")
-  print(f"> Name/URL: {config[VARS.EngineerName]} / {config[VARS.ApiUrl]}")
-  print(f"> Products: {[k for k, v in config[VARS.Products].items() if v]}")
-  print(f"> Polling Interval: {rules[VARS.Polling]}")
-  print(f"> Debug: {config[VARS.Debug]}")
-  print(f"> Send Notifications: {notifications[VARS.SendNotif]}")
-  print(f"> Notification Sound: {notifications[VARS.SoundNotif]}")
-  print(f"> Role: {config[VARS.Role]}")
-  print(f"> Colors: {colors[VARS.Primary]} & {colors[VARS.Secondary]}")
-  print(f"> Forwarding Engine: {rules['upload_to_tse_board']}")
+  print(f"  Name: {config[VARS.EngineerName]}")
+  print(f"  API: {config[VARS.ApiUrl]}")
+  print(f"  Polling Interval: {rules[VARS.Polling]}")
+  print(f"  Debug: {config[VARS.Debug]}")
+  print(f"  Send Notifications: {notifications[VARS.SendNotif]}")
+  print(f"  Notification Sound: {notifications[VARS.SoundNotif]}")
+  print(f"  Role: {config[VARS.Role]}")
+  print(f"  Colors: {colors[VARS.Primary]} & {colors[VARS.Secondary]}")
+  print(f"  Forwarding Engine: {rules['upload_to_tse_board']}")
 
   handle_shutdown(0)
 

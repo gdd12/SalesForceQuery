@@ -12,13 +12,12 @@ from helper import (
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
 from datetime import datetime
-from config import load_excluded_cases, get_config_value, request_password
+from config import load_excluded_cases, get_config_value, request_password, load_excluded_products
 from logger import logger
 from analytics import processEvents
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification, isTest, teamsList):
-		self.supported_products_dict = config.get("products", {})
 		notifications = config.get("notifications", {})
 		self.send_notification = send_notification or notifications.get("send", False)
 		self.sound_notifications = notifications.get("sound", None)
@@ -39,10 +38,12 @@ class EngineerHandler:
 		
 	def run(self, isTest):
 		func = "EngineerHandler.run()"
-		logger.debug(f"Class {__class__.__name__} has been invoked")
+		logger.debug(f"{func} has been invoked")
+
 		api_url = self.salesforce_config.get("url")
 		username = self.salesforce_config.get("username")
 		engineer_name = self.salesforce_config.get("engineer_name")
+
 		if not api_url:
 			logger.error("API url is missing from the credentials.json")
 			raise ConfigurationError(f"{func}; Missing Salesforce API in the configuration file.")
@@ -51,12 +52,11 @@ class EngineerHandler:
 		if not engineer_name:
 			raise ConfigurationError(f"{func}; Missing engineer name in the configuration file.")
 
-		supported_products = [p for p, is_supported in self.supported_products_dict.items() if is_supported]
-		if not supported_products:
-			raise ConfigurationError("At least one product must be true in supported_products.")
 
-		product_list = "', '".join(supported_products)
-		product_list = f"'{product_list}'"
+		excluded_products = load_excluded_products()
+
+		excluded_product_list = "', '".join(excluded_products)
+		excluded_product_list = f"'{excluded_product_list}'"
 
 		group_list = concat_group_list(self.teams_list)
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
@@ -66,14 +66,14 @@ class EngineerHandler:
 		if upload_to_tse_board_enabled:
 			logger.info("Handler is acting as a forwarding agent to the TSE board")
 			query = self.queries["Engineer_Forwarding"].format(
-				product_name=product_list,
+				excluded_product_list=excluded_product_list,
 				support_group=group_list,
 				engineer_name=engineer_name,
 				support_engineer_list=support_engineer_list
 			)
 		else:
 			query = self.queries["Engineer"].format(
-				product_name=product_list,
+				excluded_product_list=excluded_product_list,
 				support_group=group_list,
 				engineer_name=engineer_name,
 				support_engineer_list=support_engineer_list
@@ -108,7 +108,7 @@ class EngineerHandler:
 					if created_date_str: created_date = datetime.strptime(created_date_str[:10], "%Y-%m-%d")
 					else: raise Exception(f"Invalid CreatedDate: {'Cannot be null' if len(created_date_str) < 1 else f'{created_date_str}'}")
 
-					if (product in supported_products and owner_name in group_list) and (case_number not in excluded_cases):
+					if (product not in excluded_products and owner_name in group_list) and (case_number not in excluded_cases):
 						team_cases.append(case)
 
 					if engineer_name.lower() in owner_name.lower():
@@ -134,9 +134,6 @@ class EngineerHandler:
 
 class ManagerHandler:
 	def __init__(self, config, debug, send_notification, isTest, teamsList):
-
-		# May need to re-evaluate if all of these are needed in this handler #
-		self.supported_products_dict = config.get("products", {})
 		notifications = config.get("notifications", {})
 		self.send_notification = send_notification or notifications.get("send", False)
 		self.sound_notifications = notifications.get("sound", None)

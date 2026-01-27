@@ -1,4 +1,5 @@
 config/*
 !config/excludedCases.cfg
+!config/excludedProducts.cfg
 todo
 *.log
