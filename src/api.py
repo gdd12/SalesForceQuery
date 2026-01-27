@@ -5,45 +5,41 @@ from logger import logger
 from config import load_json_file, file_exists, create_json_file, resolve_registry_path, readFileReg, get_config_value
 import json
 
-def http_handler(api_url, username, password, query, isTest: False):
+def http_handler(api_url, username, password, query, isTest=False):
   fileReg = readFileReg()
-  mock_data = resolve_registry_path(fileReg, "mockData")
+  last_query_result = resolve_registry_path(fileReg, "dataBuffer")
 
-  def hitAPI():
+  def hit_api():
     logger.debug("API call invoked!")
     logger.debug(f"Using query: {query}")
     logger.debug(f"HTTP request to {api_url}")
+
     auth = HTTPBasicAuth(username, password)
     response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query}, timeout=30)
+
+    logger.debug(f"Response took {response.elapsed} and resulted in HTTP {response.status_code}")
     return response
 
-  response_data = None
-
-  if isTest:
-    if file_exists(mock_data):
-      try:
-        response_data = load_json_file(mock_data, fatal=True)
-        logger.info(f"Test mode enabled. Loaded mock data from {mock_data}")
-      except json.JSONDecodeError as e:
-        logger.error(f"Failed to decode JSON from {mock_data}: {e}")
-        raise APIError("Invalid test response file format.")
-    else:
-      logger.info("Test mode enabled, no mock data file found! Hitting API.")
-      response = hitAPI()
-
-      if response.status_code == 200:
-        response_data = response.json()
-        create_json_file(mock_data, response_data)
-      else:
-        _handle_http_error(response, query)
-  else:
-    response = hitAPI()
-    logger.debug(f"Response took {response.elapsed} and resulted in HTTP {response.status_code}")
-
-    if response.status_code == 200:
-      response_data = response.json()
-    else:
+  def fetch_from_api():
+    response = hit_api()
+    if response.status_code != 200:
       _handle_http_error(response, query)
+
+    data = response.json()
+    create_json_file(last_query_result, data)
+    return data
+
+  if isTest and file_exists(last_query_result):
+    try:
+      logger.info(f"Test mode enabled. Loaded mock data from {last_query_result}")
+      response_data = load_json_file(last_query_result, fatal=True)
+    except json.JSONDecodeError as e:
+      logger.error(f"Failed to decode JSON from {last_query_result}: {e}")
+      raise APIError("Invalid test response file format.")
+  else:
+    if isTest:
+      logger.info("Test mode enabled but no cached data found. Hitting the API.")
+    response_data = fetch_from_api()
 
   return response_data.get('records', [])
 
