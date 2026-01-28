@@ -5,7 +5,7 @@ warnings.filterwarnings("ignore")
 from logger import logger as base_logger
 from helper import handle_shutdown
 from variables import Arg_Flag_Alias, Arg_Definition, VARS
-from config import add_excluded_cases, rewrite_configuration, load_configuration, load_teams_list, request_password, print_configuration, team_tool
+from config import add_excluded_cases, rewrite_configuration, load_configuration, load_teams_list, request_password, print_configuration, team_tool, toggle_role
 
 def user_defined_args():
   parsed = {}
@@ -75,5 +75,7 @@ def argument_handler(arg_obj):
       Update=(True if str(arg_obj[VARS.Team]).lower() == 'update' else False),
       Viewable=(True if str(arg_obj[VARS.Team]).lower() == 'viewable' else False)
     )
+  if VARS.Role in arg_obj:
+    toggle_role()
 
   return {VARS.Debug: debug, VARS.Test: testMode, VARS.Verbose: verboseMode}

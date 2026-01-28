@@ -396,3 +396,26 @@ def team_tool(Print=False, Update=False, Viewable=False):
     raise e
   except ValueError as e:
     logger.error("Invalid team ID")
+
+def toggle_role():
+  if not file_exists(config_path): raise FileNotFoundError("Config file not found")
+  current_role = get_config_value(VARS.Role)
+  print(f'Current role: {current_role}')
+
+  while True:
+    updated_role = get_non_empty_input("\nNew role (Engineer or Manager): ").lower()
+    if updated_role in ('engineer', 'manager'):
+      break
+    print(f"{updated_role} is not a valid role")
+
+  with open(config_path, "r") as f:
+    config_data = json.load(f)
+
+  config_data[VARS.Role] = updated_role
+  logger.info(f"Updating user role from {current_role} to {updated_role}")
+
+  with open(config_path, "w") as f:
+    json.dump(config_data, f, indent=2)
+
+  print(f"\nSuccessfully updated the user role to {updated_role}")
+  handle_shutdown(0)
