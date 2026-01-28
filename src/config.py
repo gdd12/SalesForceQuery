@@ -326,46 +326,70 @@ def print_configuration():
 
   handle_shutdown(0)
 
-def team_tool(Print=False, Update=False):
+def team_tool(Print=False, Update=False, Viewable=False):
   try:
     teams = load_teams_list()
+    registry = readFileReg()
     team_ids = []
 
     print('Current team configuration:\n')
     for team, data in teams.items():
       team_ids.append(team.upper())
-      print(f"{team.upper()}: {data['list']}")
+      if team.upper() != 'GROUP':
+        print(
+          f"{team.upper()}:\n"
+          f" Viewable: {'Y' if data['viewable'] else 'N'}\n"
+          f" List: {data['list']}\n"
+        )
 
     def request_team_id_from_user():
-      return get_non_empty_input('\nWhich team ID would you like to update? ') if Update == True else handle_shutdown(0)
+      if Update: return get_non_empty_input('\nWhich team ID would you like to update? ')
+      if Viewable: return get_non_empty_input('\nWhich team ID would you like to toggle the visibility? ')
+      handle_shutdown(0)
 
-    while True:
-      team_to_update = request_team_id_from_user()
-      if team_to_update.upper() not in team_ids:
-        print(f"{team_to_update} was not found in the team list. Please provide a valid team ID.")
-        continue
-      break
+    def get_valid_team_id(team_ids):
+      while True:
+        team_id = request_team_id_from_user().upper()
+        if team_id in team_ids:
+          return team_id.lower()
+        print(f"{team_id} was not found in the team list. Please provide a valid team ID.")
 
-    team_to_update = team_to_update.lower()
+    def update_team_file(registry, updater):
+      teams_file = resolve_registry_path(registry, "teamsPath")
 
-    list_to_update = teams[team_to_update]['list']
-    print(f"\nCurrent team: {list_to_update}")
-    new_member = get_non_empty_input("\nAdd team member: ")
-    updated_list = list_to_update + ',' + new_member
-  
-    registry = readFileReg()
-    teams_file = resolve_registry_path(registry, "teamsPath")
+      with open(teams_file, "r") as f:
+        team_file_data = json.load(f)
 
-    with open(teams_file, "r") as f:
-      team_file_data = json.load(f)
+      updater(team_file_data)
 
-    team_file_data[team_to_update]['list'] = updated_list
+      with open(teams_file, "w") as f:
+        json.dump(team_file_data, f, indent=2)
 
-    with open(teams_file, "w") as f:
-      json.dump(team_file_data, f, indent=2)
-    
-    print(f"Succesfully added {new_member} to the {team_to_update} team!")
-    handle_shutdown(0, reason='Team list has been update, must exit to reload.')
+    team_to_update = get_valid_team_id(team_ids)
+
+    if Update:
+      list_to_update = teams[team_to_update]['list']
+      print(f"\nCurrent team: {list_to_update}")
+
+      new_member = get_non_empty_input("\nAdd team member: ")
+      updated_list = list_to_update + new_member + ','
+
+      def updater(data):
+        data[team_to_update]['list'] = updated_list
+
+      update_team_file(registry, updater)
+      print(f"Successfully added {new_member} to the {team_to_update} team!")
+
+    if Viewable:
+      team_is_viewable = teams[team_to_update]['viewable']
+
+      def updater(data):
+        data[team_to_update]['viewable'] = not team_is_viewable
+
+      update_team_file(registry, updater)
+      print(f"Successfully toggled visibility of {team_to_update} team!")
+
+    handle_shutdown(0, reason='Team list has been updated, must exit to reload.')
 
   except Exception as e:
     logger.error("Error updating team list", exc_info=True)

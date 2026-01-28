@@ -70,6 +70,10 @@ def argument_handler(arg_obj):
     from simulation import simulate
     simulate(base_logger)
   if VARS.Team in arg_obj:
-    team_tool(Print=(True if type(arg_obj[VARS.Team]) == bool else False), Update=(True if str(arg_obj[VARS.Team]).lower() == 'update' else False))
+    team_tool(
+      Print=(True if type(arg_obj[VARS.Team]) == bool else False),
+      Update=(True if str(arg_obj[VARS.Team]).lower() == 'update' else False),
+      Viewable=(True if str(arg_obj[VARS.Team]).lower() == 'viewable' else False)
+    )
 
   return {VARS.Debug: debug, VARS.Test: testMode, VARS.Verbose: verboseMode}

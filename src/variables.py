@@ -41,7 +41,7 @@ Arg_Definition = (
   ('-e', "Add an exclusion case number. Use 'RESET' to reset the file"),
   ('-q', "Enter simulation environment"),
   ('-s', "Re-write configuration"),
-  ('-t', "Add to the team list. Usage: -t update, or simply -t to view configuration"),
-  ('-x', "Enable test mode, results in no API calls only if a mockData.json is present in /config/"),
+  ('-t', "Add to the team list. Usage: -t, -t update, or -t viewable"),
+  ('-x', "Enable test mode, results in no API calls only if a /config/dataBuffer.json exists"),
   ('-h', "Help page"),
 )
