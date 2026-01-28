@@ -102,10 +102,6 @@ def load_excluded_cases():
     return set()
 
 def add_excluded_cases(case_name: str):
-  if type(case_name) == bool:
-    print("ERROR - Missing positional argument for -e. Usage: -e <case number or 'RESET>")
-    logger.error("Missing positional argument for -e. Usage: -e <case number>")
-    return
   excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
   existing_cases = set()
 
@@ -118,7 +114,6 @@ def add_excluded_cases(case_name: str):
     logger.warning(f'Case {case_name} already exits in excludedCases.cfg')
     return
 
-  # Add a reset mechanism for the excludedCases
   if case_name.upper() == 'RESET':
     template = '# Any cases you do not want to be notified about can be placed here.'
     try:
@@ -133,7 +128,9 @@ def add_excluded_cases(case_name: str):
     return
 
   if not case_name.isdigit():
-    logger.warning(f"Invalid argument '{case_name}'. Must be an INTEGER. Did you mean to type 'RESET'?")
+    msg = f"Invalid argument '{case_name}'. Must be an INTEGER. Did you mean to type 'RESET'?"
+    logger.warning(msg)
+    print(msg)
     return
   
   try:
@@ -161,6 +158,42 @@ def load_excluded_products():
     logger.info(f"Excluded file config cannot be found, displaying all returned products.")
     return set()
   return
+
+def add_excluded_product():
+  excludedProductsFile = os.path.join(base_dir, "config", "excludedProducts.cfg")
+  product_to_exclude = get_non_empty_input("Enter a product to exclude (RESET to reset the file): ")
+
+  existing_products = set()
+
+  if os.path.exists(excludedProductsFile):
+    with open(excludedProductsFile, 'r') as file:
+      existing_products = {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
+
+  if product_to_exclude in existing_products:
+    print(f'\nProduct {product_to_exclude} already exits in excludedProducts.cfg')
+    logger.warning(f'Product {product_to_exclude} already exits in excludedProducts.cfg')
+    return
+
+  if product_to_exclude.upper() == 'RESET':
+    template = '# Any products you do not support can be placed in this file on new lines'
+    try:
+      if file_exists(excludedProductsFile):
+        os.remove(excludedProductsFile)
+      with open(excludedProductsFile, 'w') as file:
+        file.write(template + '\n')
+      print('Successfully reset excludedProducts.cfg')
+      logger.info('Successfully reset excludedProducts.cfg')
+    except Exception as e:
+      logger.error(f"Failed to reset {excludedProductsFile}: {e}")
+    return
+  try:
+    with open(excludedProductsFile, 'a') as file:
+      file.write(product_to_exclude + '\n')
+    logger.info(f"Added '{product_to_exclude}' to {excludedProductsFile}.")
+    print(f'\nProduct {product_to_exclude} added to excludedProducts.cfg')
+
+  except Exception as e:
+    logger.error(f"Failed to add '{product_to_exclude}' to {excludedProductsFile}: {e}")
 
 def interactive_config_setup(config_path, config_template_path, CalledFrom=None):
   if CalledFrom == 'System':
@@ -419,3 +452,10 @@ def toggle_role():
 
   print(f"\nSuccessfully updated the user role to {updated_role}")
   handle_shutdown(0)
+
+def add_exclusion(exclusion):
+  type = exclusion[0]
+
+  if str(type).upper() not in ["PRODUCT", "CASE"]: print("Invalid request, exclusion TYPE must be 'Product' or 'Case'")
+  if str(type).upper() == "CASE": add_excluded_cases(exclusion[1])
+  if str(type).upper() == "PRODUCT": add_excluded_product()

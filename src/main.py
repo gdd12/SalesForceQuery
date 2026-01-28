@@ -53,9 +53,9 @@ if __name__ == "__main__":
   verboseOn = False
   log_level = None
 
-  if 'debug' in user_args:
+  if user_args['debug']:
     log_level = 'info'
-  if 'verbose' in user_args or get_config_value('debug'): 
+  if user_args['debug_verbose'] or get_config_value('debug'):
     log_level = 'debug'
     verboseOn = True
 

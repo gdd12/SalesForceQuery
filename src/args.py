@@ -1,81 +1,122 @@
 import sys
 import warnings
+import argparse
+
 warnings.filterwarnings("ignore")
 
 from logger import logger as base_logger
 from helper import handle_shutdown
-from variables import Arg_Flag_Alias, Arg_Definition, VARS
-from config import add_excluded_cases, rewrite_configuration, load_configuration, load_teams_list, request_password, print_configuration, team_tool, toggle_role
+from variables import Arg_Definition, VARS
+from config import add_excluded_cases, rewrite_configuration, load_configuration, load_teams_list, request_password, print_configuration, team_tool, toggle_role, add_exclusion
 
 def user_defined_args():
-  parsed = {}
-  i = 1
-  argv = sys.argv
+  parser = argparse.ArgumentParser(
+    prog="main.py",
+    formatter_class=argparse.RawTextHelpFormatter
+  )
 
-  while i < len(argv):
-    arg = argv[i]
+  config = parser.add_argument_group("Configuration")
+  config.add_argument(
+    "-c", "--config",
+    action="store_true",
+    help="Print the current config.json configuration"
+  )
+  config.add_argument(
+    "-r", "--role",
+    action="store_true",
+    help="Change role"
+  )
+  config.add_argument(
+    "-t", "--team",
+    metavar="TEAM",
+    help="Edit the teams list (update | viewable)"
+  )
+  config.add_argument(
+    "-e", "--exclude",
+    nargs='+',
+    metavar=("TYPE", "VALUE"),
+    help=(
+      "Exclude item by type and value.\n"
+      "TYPE must be 'Product' or 'Case'\n"
+      "  Ex: -e Product B2Bi\n"
+      "  Ex: -e Case 01738532"
+    )
+  )
 
-    if arg.startswith('-'):
-      normalized = arg.lower()
+  runtime = parser.add_argument_group("Runtime Options")
+  runtime.add_argument(
+    "-q", "--simulate",
+    action="store_true",
+    help="Simulate SQL against runtime server"
+  )
+  runtime.add_argument(
+    "-s", "--setup",
+    action="store_true",
+    help="Interactive config setup"
+  )
+  runtime.add_argument(
+    "-x", "--test",
+    action="store_true",
+    help="Run in test mode"
+  )
 
-      if normalized not in Arg_Flag_Alias:
-        print(f'WARNING - Unknown flag `{arg}`. Valid values can be found through -h')
-        handle_shutdown(0, reason="Unknown argument flag")
+  debug = parser.add_argument_group("Debug Options")
 
-      key = Arg_Flag_Alias[normalized]
-      if key.lower() == 'help':
-        print_help()
-        break
-      value = True
+  debug.add_argument(
+    "-d", "--debug",
+    action="store_true",
+    help="Enable logging"
+  )
 
-      if i + 1 < len(argv) and not argv[i + 1].startswith('-'):
-        value = argv[i + 1]
-        i += 1
+  debug.add_argument(
+    "-dv", "--debug-verbose",
+    action="store_true",
+    help="Enable verbose logging"
+  )
 
-      parsed[key] = value
-    else:
-      parsed.setdefault('_positional', []).append(arg)
-
-    i += 1
-
-  return parsed
-
-def print_help():
-  print('\nBelow are the flags available for this tool:\n')
-  for short, description in Arg_Definition:
-    print(f"{'':<2}{short:<3} | {description}")
-  handle_shutdown(0)
+  args = parser.parse_args()
+  return vars(args)
 
 def argument_handler(arg_obj):
   debug = False
   testMode = False
   verboseMode = False
   forceNotifications = False
-  
+
   base_logger.info(f"Arguments passed in include: {arg_obj}")
 
-  if VARS.Debug in arg_obj: debug = True
-  if VARS.Test in arg_obj: testMode = True
-  if VARS.Verbose in arg_obj:
+  if arg_obj[VARS.Debug]:
+    debug = True
+
+  if arg_obj[VARS.Test]:
+    testMode = True
+
+  if arg_obj[VARS.Verbose]:
     verboseMode = True
     debug = True
 
-  if VARS.Config in arg_obj: print_configuration()
-  if VARS.Exclude in arg_obj:
-    add_excluded_cases(arg_obj[VARS.Exclude])
+  if arg_obj[VARS.Config]:
+    print_configuration()
+
+  if arg_obj[VARS.Exclude]:
+    add_exclusion(arg_obj[VARS.Exclude])
     handle_shutdown(0, reason="Must exit to reload configuration")
-  if VARS.Setup in arg_obj:
+
+  if arg_obj[VARS.Setup]:
     rewrite_configuration()
-  if VARS.Simulate in arg_obj:
+
+  if arg_obj[VARS.Simulate]:
     from simulation import simulate
     simulate(base_logger)
-  if VARS.Team in arg_obj:
+
+  if arg_obj[VARS.Team]:
     team_tool(
       Print=(True if type(arg_obj[VARS.Team]) == bool else False),
       Update=(True if str(arg_obj[VARS.Team]).lower() == 'update' else False),
       Viewable=(True if str(arg_obj[VARS.Team]).lower() == 'viewable' else False)
     )
-  if VARS.Role in arg_obj:
+
+  if arg_obj[VARS.Role]:
     toggle_role()
 
   return {VARS.Debug: debug, VARS.Test: testMode, VARS.Verbose: verboseMode}

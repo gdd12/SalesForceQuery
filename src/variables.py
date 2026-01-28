@@ -20,20 +20,7 @@ class VARS:
   Test = 'test'
   Simulate = 'simulate'
   Team = 'team'
-  Verbose = 'verbose'
-
-Arg_Flag_Alias = {
-  '-c': 'config',
-  '-d': 'debug',
-  '-dv': 'verbose',
-  '-e': 'exclude',
-  '-q': 'simulate',
-  '-r': 'role',
-  '-s': 'setup',
-  '-t': 'team',
-  '-x': 'test',
-  '-h': 'help'
-}
+  Verbose = 'debug_verbose'
 
 Arg_Definition = (
   ('-c', "Print out the current configuration"),
