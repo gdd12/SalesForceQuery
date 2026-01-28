@@ -38,6 +38,9 @@ def setup_logger(log_level=None):
     return logger
 
 def setup_process_logger(log_level=None):
+    if log_level not in ('info', 'debug'):
+        return process
+
     process.setLevel(logging.DEBUG)
 
     for h in list(process.handlers):
