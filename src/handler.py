@@ -45,7 +45,7 @@ class EngineerHandler:
 		engineer_name = self.salesforce_config.get("engineer_name")
 
 		if not api_url:
-			logger.error("API url is missing from the credentials.json")
+			logger.error("API url is missing from the config.json")
 			raise ConfigurationError(f"{func}; Missing Salesforce API in the configuration file.")
 		if not username:
 			raise ConfigurationError(f"{func}; Missing username in the configuration file.")
@@ -61,23 +61,7 @@ class EngineerHandler:
 		group_list = concat_group_list(self.teams_list)
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
 
-		upload_to_tse_board_enabled = get_config_value("rules.upload_to_tse_board")
-
-		if upload_to_tse_board_enabled:
-			logger.info("Handler is acting as a forwarding agent to the TSE board")
-			query = self.queries["Engineer_Forwarding"].format(
-				excluded_product_list=excluded_product_list,
-				support_group=group_list,
-				engineer_name=engineer_name,
-				support_engineer_list=support_engineer_list
-			)
-		else:
-			query = self.queries["Engineer"].format(
-				excluded_product_list=excluded_product_list,
-				support_group=group_list,
-				engineer_name=engineer_name,
-				support_engineer_list=support_engineer_list
-			)
+	
 
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
@@ -88,6 +72,15 @@ class EngineerHandler:
 			clear_screen()
 			display_header(self.poll_interval)
 
+			excluded_products = load_excluded_products()
+
+			query = self.build_query(
+				excluded_products,
+				group_list,
+				engineer_name,
+				support_engineer_list
+			)
+
 			team_cases = []
 			personal_cases = []
 			opened_today_cases = []
@@ -96,7 +89,7 @@ class EngineerHandler:
 
 			excluded_cases = load_excluded_cases()
 
-			if upload_to_tse_board_enabled: uploadToTseBoard(all_cases)
+			if get_config_value("rules.upload_to_tse_board"): uploadToTseBoard(all_cases)
 			else:
 				for case in all_cases:
 					owner_name = case.get("Owner", {}).get("Name", "")
@@ -126,11 +119,42 @@ class EngineerHandler:
 
 				if events_processing_enabled: processEvents(all_cases)
 
-			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
-			time.sleep(self.poll_interval * 60)
+			num_excluded_products = len(load_excluded_products())
+			total_seconds = self.poll_interval * 60
+			elapsed = 0
+
+			while elapsed < total_seconds:
+				logger.debug(f"WatchDog on excludedProducts.cfg executed")
+				time.sleep(10)
+				elapsed += 10
+
+				if len(load_excluded_products()) != num_excluded_products:
+					logger.info(f"WatchDog found excludedProducts.cfg was updated - rebuilding query.")
+					break
 
 	def set_password(self, password):
 		self.config_password = password
+
+	def build_query(self, excluded_products, group_list, engineer_name, support_engineer_list):
+		excluded_product_list = "', '".join(excluded_products)
+		excluded_product_list = f"'{excluded_product_list}'"
+
+		upload_to_tse_board_enabled = get_config_value("rules.upload_to_tse_board")
+
+		if upload_to_tse_board_enabled:
+			return self.queries["Engineer_Forwarding"].format(
+				excluded_product_list=excluded_product_list,
+				support_group=group_list,
+				engineer_name=engineer_name,
+				support_engineer_list=support_engineer_list
+			)
+		else:
+			return self.queries["Engineer"].format(
+				excluded_product_list=excluded_product_list,
+				support_group=group_list,
+				engineer_name=engineer_name,
+				support_engineer_list=support_engineer_list
+			)
 
 class ManagerHandler:
 	def __init__(self, config, debug, send_notification, isTest, teamsList):

@@ -151,8 +151,7 @@ def load_excluded_products():
         line.strip() for line in lines
         if line.strip() and not line.strip().startswith('#')
       }
-      logger.info(f"Loaded {len(excluded)} excluded products from {excludedProductsFile}")
-      logger.debug(f"Excluded products include: {excluded}")
+      logger.debug(f"Total: {len(excluded)}. Excluded products include: {excluded}")
       return excluded
   except FileNotFoundError:
     logger.info(f"Excluded file config cannot be found, displaying all returned products.")
