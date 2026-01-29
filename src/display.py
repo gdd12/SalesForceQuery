@@ -2,7 +2,7 @@ import shutil
 import os
 from datetime import datetime
 from collections import defaultdict
-from config import background_color, get_config_value
+from config import get_config_value
 from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align

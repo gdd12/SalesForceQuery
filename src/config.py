@@ -31,12 +31,6 @@ def request_password():
   password = getpass("API Password: ")
   return password
 
-def background_color():
-  try:
-    return get_config_value("colors")
-  except KeyError as e:
-    return "black"
-
 def validateFileReg():
   base_dir = os.path.dirname(__file__)
   logger.debug(f"Local machine OS is {os.name}")
