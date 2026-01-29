@@ -28,7 +28,7 @@ def user_defined_args():
   )
   config.add_argument(
     "-t", "--team",
-    metavar="TEAM",
+    metavar="METHOD",
     help="Edit the teams list (update | viewable)"
   )
   config.add_argument(
