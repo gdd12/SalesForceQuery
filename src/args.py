@@ -6,7 +6,7 @@ warnings.filterwarnings("ignore")
 
 from logger import logger as base_logger
 from helper import handle_shutdown
-from variables import Arg_Definition, VARS
+from variables import Arg_Definition, VARS, FileNames
 from config import add_excluded_cases, rewrite_configuration, load_configuration, load_teams_list, request_password, print_configuration, team_tool, toggle_role, add_exclusion
 
 def user_defined_args():
@@ -19,7 +19,7 @@ def user_defined_args():
   config.add_argument(
     "-c", "--config",
     action="store_true",
-    help="Print the current config.json configuration"
+    help=f"Print the current {FileNames.Config} configuration"
   )
   config.add_argument(
     "-r", "--role",

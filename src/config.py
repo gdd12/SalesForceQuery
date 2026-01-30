@@ -6,10 +6,10 @@ from exceptions import ConfigurationError
 import xml.etree.ElementTree as ET
 from helper import handle_shutdown
 from logger import logger, process
-from variables import VARS
+from variables import VARS, FileNames
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-config_path = os.path.join(base_dir, "config", "config.json")
+config_path = os.path.join(base_dir, "config", FileNames.Config)
 
 def load_configuration():
   validateFileReg()
@@ -18,7 +18,7 @@ def load_configuration():
   config_template = resolve_registry_path(registry, "configTemplate")
   teams_template = resolve_registry_path(registry, "teamsTemplate")
   teams_path = resolve_registry_path(registry, "teamsPath")
-  logger.debug("Returned the full path from filereg.xml children")
+  logger.debug(f"Returned the full path from {FileNames.FileReg} children")
 
   if not file_exists(config_path): interactive_config_setup(config_path, config_template, CalledFrom='System') 
   if not file_exists(teams_path): register_teams_list(teams_path, teams_template)
@@ -35,22 +35,22 @@ def validateFileReg():
   base_dir = os.path.dirname(__file__)
   logger.debug(f"Local machine OS is {os.name}")
   if os.name != "nt":
-    fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", "filereg.xml"))
+    fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", FileNames.FileReg))
   else:
-    fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", "fileregwin.xml"))
+    fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", FileNames.FileRegWin))
 
-  logger.debug(f"Location of the template filereg.xml is {fileRegSrc}")
+  logger.debug(f"Location of the template {FileNames.FileReg} is {fileRegSrc}")
 
-  fileRegDest = os.path.abspath(os.path.join(base_dir, "..", "config", "filereg.xml"))
+  fileRegDest = os.path.abspath(os.path.join(base_dir, "..", "config", FileNames.FileReg))
 
   if not os.path.exists(fileRegDest):
-    logger.debug(f"This is the first startup and filereg.xml does not exist. Pulling from the templates library.")
+    logger.debug(f"This is the first startup and {FileNames.FileReg} does not exist. Pulling from the templates library.")
     try:
       if not os.path.exists(fileRegSrc):
-        logger.error(f"filereg.xml cannot be found in the templates library. Exiting.")
+        logger.error(f"{FileNames.FileReg} cannot be found in the templates library. Exiting.")
         handle_shutdown(1, reason="Missing required config file")
       shutil.copy(fileRegSrc, fileRegDest)
-      logger.debug(f"filereg.xml has been pulled from the templates library")
+      logger.debug(f"{FileNames.FileReg} has been pulled from the templates library")
     except FileNotFoundError as e:
       print(f"[Init Startup] ERROR: {e}")
       raise
@@ -58,10 +58,10 @@ def validateFileReg():
 def readFileReg(Proc=False):
   active_logger = process if Proc else logger
   base_dir = os.path.dirname(__file__)
-  file_path = os.path.abspath(os.path.join(base_dir, "..", "config", "filereg.xml"))
+  file_path = os.path.abspath(os.path.join(base_dir, "..", "config", FileNames.FileReg))
 
   if not os.path.exists(file_path):
-    raise FileExistsError(f"filereg.xml not found at {file_path}")
+    raise FileExistsError(f"{FileNames.FileReg} not found at {file_path}")
 
   try:
     tree = ET.parse(file_path)
@@ -74,13 +74,13 @@ def readFileReg(Proc=False):
       if not name or not path:
         raise ConfigurationError(f"Missing 'name' or 'path' attribute in one of the <File> entries.")
       file_paths[name] = path.strip()
-    active_logger.debug("filereg.xml has been loaded")
+    active_logger.debug(f"{FileNames.FileReg} has been loaded")
     return file_paths
   except ET.ParseError as e:
     raise ConfigurationError(f"Error parsing XML: {e}")
 
 def load_excluded_cases():
-  excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
+  excludedCasesFile = os.path.join(base_dir, "config", FileNames.ExCases)
   try:
     with open(excludedCasesFile, 'r') as file:
       lines = file.readlines()
@@ -96,7 +96,7 @@ def load_excluded_cases():
     return set()
 
 def add_excluded_cases(case_name: str):
-  excludedCasesFile = os.path.join(base_dir, "config", "excludedCases.cfg")
+  excludedCasesFile = os.path.join(base_dir, "config", FileNames.ExCases)
   existing_cases = set()
 
   if os.path.exists(excludedCasesFile):
@@ -104,8 +104,8 @@ def add_excluded_cases(case_name: str):
       existing_cases = {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
 
   if case_name in existing_cases:
-    print(f'\nCase {case_name} already exits in excludedCases.cfg')
-    logger.warning(f'Case {case_name} already exits in excludedCases.cfg')
+    print(f'\nCase {case_name} already exits in {FileNames.ExCases}')
+    logger.warning(f'Case {case_name} already exits in {FileNames.ExCases}')
     return
 
   if case_name.upper() == 'RESET':
@@ -115,8 +115,8 @@ def add_excluded_cases(case_name: str):
         os.remove(excludedCasesFile)
       with open(excludedCasesFile, 'w') as file:
         file.write(template + '\n')
-      print('Successfully reset excludedCases.cfg')
-      logger.info('Successfully reset excludedCases.cfg')
+      print(f'Successfully reset {FileNames.ExCases}')
+      logger.info(f'Successfully reset {FileNames.ExCases}')
     except Exception as e:
       logger.error(f"Failed to reset {excludedCasesFile}: {e}")
     return
@@ -131,13 +131,13 @@ def add_excluded_cases(case_name: str):
     with open(excludedCasesFile, 'a') as file:
       file.write(case_name + '\n')
     logger.info(f"Added '{case_name}' to {excludedCasesFile}.")
-    print(f'\nCase {case_name} added to excludedCases.cfg')
+    print(f'\nCase {case_name} added to {FileNames.ExCases}')
 
   except Exception as e:
     logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")
 
 def load_excluded_products():
-  excludedProductsFile = os.path.join(base_dir, "config", "excludedProducts.cfg")
+  excludedProductsFile = os.path.join(base_dir, "config", FileNames.ExProducts)
   try:
     with open(excludedProductsFile, 'r') as file:
       lines = file.readlines()
@@ -153,7 +153,7 @@ def load_excluded_products():
   return
 
 def add_excluded_product():
-  excludedProductsFile = os.path.join(base_dir, "config", "excludedProducts.cfg")
+  excludedProductsFile = os.path.join(base_dir, "config", FileNames.ExProducts)
   product_to_exclude = get_non_empty_input("Enter a product to exclude (RESET to reset the file): ")
 
   existing_products = set()
@@ -163,8 +163,8 @@ def add_excluded_product():
       existing_products = {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
 
   if product_to_exclude in existing_products:
-    print(f'\nProduct {product_to_exclude} already exits in excludedProducts.cfg')
-    logger.warning(f'Product {product_to_exclude} already exits in excludedProducts.cfg')
+    print(f'\nProduct {product_to_exclude} already exits in {FileNames.ExProducts}')
+    logger.warning(f'Product {product_to_exclude} already exits in {FileNames.ExProducts}')
     return
 
   if product_to_exclude.upper() == 'RESET':
@@ -174,8 +174,8 @@ def add_excluded_product():
         os.remove(excludedProductsFile)
       with open(excludedProductsFile, 'w') as file:
         file.write(template + '\n')
-      print('Successfully reset excludedProducts.cfg')
-      logger.info('Successfully reset excludedProducts.cfg')
+      print(f'Successfully reset {FileNames.ExProducts}')
+      logger.info(f'Successfully reset {FileNames.ExProducts}')
     except Exception as e:
       logger.error(f"Failed to reset {excludedProductsFile}: {e}")
     return
@@ -183,7 +183,7 @@ def add_excluded_product():
     with open(excludedProductsFile, 'a') as file:
       file.write(product_to_exclude + '\n')
     logger.info(f"Added '{product_to_exclude}' to {excludedProductsFile}.")
-    print(f'\nProduct {product_to_exclude} added to excludedProducts.cfg')
+    print(f'\nProduct {product_to_exclude} added to {FileNames.ExProducts}')
 
   except Exception as e:
     logger.error(f"Failed to add '{product_to_exclude}' to {excludedProductsFile}: {e}")
@@ -191,7 +191,7 @@ def add_excluded_product():
 def interactive_config_setup(config_path, config_template_path, CalledFrom=None):
   if CalledFrom == 'System':
     print("--- Configuration Setup ---")
-    logger.info("Config does not exist. Starting interactive setup for config.json")
+    logger.info(f"Config does not exist. Starting interactive setup for {FileNames.Config}")
   if CalledFrom == 'User': print("\n--- Re-writing configuration ---")
 
   if os.path.exists(config_path):
@@ -225,7 +225,7 @@ def interactive_config_setup(config_path, config_template_path, CalledFrom=None)
   with open(config_path, "w") as f:
     json.dump(config, f, indent=2)
 
-  logger.info("Initial configuration completed and saved to config.json.")
+  logger.info(f"Initial configuration completed and saved to {FileNames.Config}")
   print("\nConfiguration saved successfully.\n")
 
 def get_non_empty_input(prompt):

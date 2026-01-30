@@ -15,6 +15,7 @@ from datetime import datetime
 from config import load_excluded_cases, get_config_value, request_password, load_excluded_products
 from logger import logger
 from analytics import processEvents
+from variables import FileNames
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification, isTest, teamsList):
@@ -45,7 +46,7 @@ class EngineerHandler:
 		engineer_name = self.salesforce_config.get("engineer_name")
 
 		if not api_url:
-			logger.error("API url is missing from the config.json")
+			logger.error(f"API url is missing from the {FileNames.Config}")
 			raise ConfigurationError(f"{func}; Missing Salesforce API in the configuration file.")
 		if not username:
 			raise ConfigurationError(f"{func}; Missing username in the configuration file.")
@@ -124,12 +125,12 @@ class EngineerHandler:
 			elapsed = 0
 
 			while elapsed < total_seconds:
-				logger.debug(f"WatchDog on excludedProducts.cfg executed")
+				logger.debug(f"WatchDog on {FileNames.ExProducts} executed")
 				time.sleep(10)
 				elapsed += 10
 
 				if len(load_excluded_products()) != num_excluded_products:
-					logger.info(f"WatchDog found excludedProducts.cfg was updated - rebuilding query.")
+					logger.info(f"WatchDog found {FileNames.ExProducts} was updated - rebuilding query.")
 					break
 
 	def set_password(self, password):

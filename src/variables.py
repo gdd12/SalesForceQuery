@@ -34,3 +34,12 @@ Arg_Definition = (
   ('-x', "Enable test mode, results in no API calls only if a /config/dataBuffer.json exists"),
   ('-h', "Help page"),
 )
+
+class FileNames:
+  Config = "config.json"
+  QueryResults = "dataBuffer.json"
+  ExCases = "excludedCases.cfg"
+  ExProducts = "excludedProducts.cfg"
+  FileReg = "filereg.xml"
+  FileRegWin = "fileregwin.xml"
+  Teams = "teams.json"
