@@ -450,5 +450,8 @@ def add_exclusion(exclusion):
   type = exclusion[0]
 
   if str(type).upper() not in ["PRODUCT", "CASE"]: print("Invalid request, exclusion TYPE must be 'Product' or 'Case'")
-  if str(type).upper() == "CASE": add_excluded_cases(exclusion[1])
+  if str(type).upper() == "CASE":
+    if len(exclusion) < 2:
+      return print("Case argument must be followed by a case number!")
+    add_excluded_cases(exclusion[1])
   if str(type).upper() == "PRODUCT": add_excluded_product()
