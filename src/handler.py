@@ -1,18 +1,32 @@
 import os
 import time
-from api import http_handler, uploadToTseBoard
+from api import (
+  http_handler,
+  uploadToTseBoard
+)
 from display import (
-	clear_screen, display_header, display_team, display_personal,
-	display_opened_today, display_team_needs_commitment,
+	clear_screen,
+	display_header,
+	display_team,
+	display_personal,
+	display_opened_today,
+	display_team_needs_commitment,
 	display_queue_needs_commitment
 )
 from helper import (
-  concat_team_list, concat_group_list, concat_support_engineer_list
+  concat_team_list,
+	concat_group_list,
+	concat_support_engineer_list
 )
 from notification import notify
 from exceptions import ConfigurationError, UnsupportedRole
 from datetime import datetime
-from config import load_excluded_cases, get_config_value, request_password, load_excluded_products
+from config import (
+  load_excluded_cases,
+	get_config_value,
+	request_password,
+	load_excluded_products
+)
 from logger import logger
 from analytics import processEvents
 from variables import FileNames
@@ -53,7 +67,6 @@ class EngineerHandler:
 		if not engineer_name:
 			raise ConfigurationError(f"{func}; Missing engineer name in the configuration file.")
 
-
 		excluded_products = load_excluded_products()
 
 		excluded_product_list = "', '".join(excluded_products)
@@ -61,8 +74,6 @@ class EngineerHandler:
 
 		group_list = concat_group_list(self.teams_list)
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
-
-	
 
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
