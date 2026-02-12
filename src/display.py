@@ -34,7 +34,9 @@ def display_team(cases, update_threshold, color):
 
   for case in cases:
     product = case.get('Product__r', {}).get('Name', 'No Product')
-    if case.get('Time_Before_Next_Update_Commitment__c') < (update_threshold / (24 * 60)):
+    commitment = case.get('Time_Before_Next_Update_Commitment__c')
+
+    if commitment and (commitment < (update_threshold / (24 * 60))):
       needs_commitment += 1
     product_count[product] += 1
 
@@ -76,7 +78,7 @@ def display_personal(cases, update_threshold, color):
       status = status.upper()
       commitment_time = case.get('Time_Before_Next_Update_Commitment__c')
 
-      if commitment_time < 1 and status not in ['NEW', 'CLOSED']:
+      if commitment_time and (commitment_time < 1 and status not in ['NEW', 'CLOSED']):
         if commitment_time < (update_threshold / (24 * 60)):
           AboutToMiss += 1
         else:
@@ -109,7 +111,7 @@ def display_personal(cases, update_threshold, color):
       if MissDuringVacation > 0:
         lines.append(f"[bold {sColor}]{MissDuringVacation}[/bold {sColor}] case(s) will be missed during your vacation!")
       if MissOverWeekend > 0:
-        lines.append(f"[bold {sColor}]{MissOverWeekend}[/bold {sColor}] commitments(s) will be missed over the weekend!")
+        lines.append(f"[bold {sColor}]{MissOverWeekend}[/bold {sColor}] commitments(s) are due on/before Monday!")
       if VacationFailedValidation:
         lines.append(f"Vacation config validation failed. Check config.json")
 
@@ -152,7 +154,9 @@ def display_team_needs_commitment(cases, update_threshold, color):
     case_num = case.get("CaseNumber")
     owner = case.get("Owner", {}).get("Name", "n/a")
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
-    next_update_formated = convert_days_to_dhm(next_update)
+    if next_update:
+      next_update_formated = convert_days_to_dhm(next_update)
+    else: next_update_formated = 'Null'
     lines.append(f"[bold {sColor}]{case_num}[/bold {sColor}] w/ {owner} in [bold]{next_update_formated}[/bold]")
   if not cases: lines.append(f"None, your team is looking good!")
 
@@ -171,10 +175,28 @@ def display_queue_needs_commitment(cases, update_threshold, color):
     case_num = case.get("CaseNumber")
     product = case.get('Product__r', {}).get('Name', 'No Product')
     next_update = case.get("Time_Before_Next_Update_Commitment__c")
-    next_update_formated = convert_days_to_dhm(next_update)
+    
+    if next_update: next_update_formated = convert_days_to_dhm(next_update)
+    else: next_update_formated = 'Null'
+
     lines.append(f"[bold {sColor}]{case_num}[/bold {sColor}] for [bold]{product}[/bold] in [bold]{next_update_formated}[/bold]")
   if not cases: lines.append(f"   None, your team has it covered!")
   panel_content = "\n".join(lines)
   panel = Panel(Align.center(panel_content), title=f"[bold {pColor}]Queue commitments within {update_threshold} minutes[/bold {pColor}]", border_style=f"{pColor}")
 
   console.print(Align.center(panel))
+
+def display_failed_validation_cases(cases, color):
+  pColor = color.get("primary")
+  sColor = color.get("secondary")
+
+  lines = []
+  for case in cases:
+    case_num = case.get("CaseNumber") or "Empty"
+    case_idx = case.get("Index")
+    lines.append(f"[bold {sColor}]{case_num}[/bold {sColor}] at index [bold]{case_idx}[/bold]")
+  if cases: 
+    panel_content = "\n".join(lines)
+    panel = Panel(Align.center(panel_content), title=f"[bold {pColor}]Cases Failed Validation [/bold {pColor}]", border_style=f"{pColor}")
+    console.print(Align.center(panel))
+  return

@@ -11,7 +11,8 @@ from display import (
 	display_personal,
 	display_opened_today,
 	display_team_needs_commitment,
-	display_queue_needs_commitment
+	display_queue_needs_commitment,
+	display_failed_validation_cases
 )
 from helper import (
   concat_team_list,
@@ -103,16 +104,21 @@ class EngineerHandler:
 
 			if get_config_value("rules.upload_to_tse_board"): uploadToTseBoard(all_cases)
 			else:
-				for case in all_cases:
+				case_validation_failed_list = []
+				for idx, case in enumerate(all_cases):
 					owner_name = case.get("Owner", {}).get("Name", "")
 					product = case.get("Product__r", {}).get("Name", "")
 					created_date_str = case.get("CreatedDate", "")
-					case_number = case.get("CaseNumber", "").strip()
+					case_number = (case.get("CaseNumber", "") or "").strip()
 					
 					today = datetime.today()
 					if created_date_str: created_date = datetime.strptime(created_date_str[:10], "%Y-%m-%d")
-					else: raise Exception(f"Invalid CreatedDate: {'Cannot be null' if len(created_date_str) < 1 else f'{created_date_str}'}")
 
+					if not owner_name or not product or not created_date_str or not case_number:
+						logger.warning(f"Invalid Case Properties at idx {idx} of the {FileNames.QueryResults}. Skipping this case.")
+						case_validation_failed_list.append({"CaseNumber": case_number, "Index": idx})
+						continue
+		
 					if (product not in excluded_products and owner_name in group_list) and (case_number not in excluded_cases):
 						team_cases.append(case)
 
@@ -121,10 +127,14 @@ class EngineerHandler:
 
 					if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
 						opened_today_cases.append(case)
-				
+
 				display_team(team_cases, self.update_threshold, self.color)
 				display_personal(personal_cases, self.update_threshold, self.color)
 				display_opened_today(opened_today_cases, self.debug, self.color)
+
+				if len(case_validation_failed_list) > 0:
+					logger.info(f"Cases failed validation: {case_validation_failed_list}")
+					display_failed_validation_cases(case_validation_failed_list, self.color)
 
 				if os.name != "nt" and self.send_notification:
 					notify(team_cases, isTest, self.sound_notifications)
