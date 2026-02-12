@@ -39,9 +39,12 @@ def main(debug, testOn, verboseOn=False):
     print(f"API Error: {e}")
   except UnsupportedRole as e:
     print(f"Role Error: {e}")
+  except TypeError as e:
+    logger.exception(f"TypeError {e}")
+    print(f"TypeError {e}")
   except Exception as e:
-    logger.exception("Unexpected error")
-    print(f"Unexpected Error: {e}")
+    logger.exception(f"UnexpectedError: {e}")
+    print(f"Exception {e}")
 
 def signal_handler(sig, frame):
   handle_shutdown(0)
