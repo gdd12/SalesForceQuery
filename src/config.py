@@ -250,8 +250,9 @@ def file_exists(path, fatal=False, message=None, Proc=False):
 def load_json_file(path, fatal=False, context="", Proc=False):
   active_logger = process if Proc else logger
   try:
-    with open(path, "r") as f:
-      return json.load(f)
+    if os.path.exists(path):
+      with open(path, "r") as f:
+        return json.load(f)
   except Exception as e:
     msg = f"Failed to load JSON file at {path}"
     if context:
@@ -301,14 +302,16 @@ def get_config_value(key: str, Proc=False):
       child = key_components[1]
     parent = key.split('.')[0]
     config_data = load_json_file(config_path, Proc=Proc, fatal=True)
-    config_value_from_key = config_data.get(parent)
+    if config_data:
+      config_value_from_key = config_data.get(parent)
 
-    if child: config_value_from_key = config_data.get(parent).get(child)
-    if config_value_from_key == None:
-      raise ConfigurationError(f"Invalid key: {key}")
+      if child: config_value_from_key = config_data.get(parent).get(child)
+      if config_value_from_key == None:
+        raise ConfigurationError(f"Invalid key: {key}")
 
-    active_logger.debug(f"Returning value {config_value_from_key} from {key} ")
-    return config_value_from_key
+      active_logger.debug(f"Returning value {config_value_from_key} from {key} ")
+      return config_value_from_key
+    return
   except ConfigurationError as e:
     raise e
 
