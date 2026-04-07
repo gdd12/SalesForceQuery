@@ -36,7 +36,6 @@ def user_defined_args():
     nargs='+',
     metavar=("TYPE", "VALUE"),
     help=(
-      "Exclude item by type and value.\n"
       "TYPE must be 'Product' or 'Case'\n"
       "  Ex: -e Product B2Bi\n"
       "  Ex: -e Case 01738532"

@@ -152,9 +152,12 @@ def load_excluded_products():
     return set()
   return
 
-def add_excluded_product():
+def add_excluded_product(product=None):
   excludedProductsFile = os.path.join(base_dir, "config", FileNames.ExProducts)
-  product_to_exclude = get_non_empty_input("Enter a product to exclude (RESET to reset the file): ")
+
+  product_to_exclude = product
+  if not product:
+    product_to_exclude = get_non_empty_input("Enter a product to exclude (RESET to reset the file): ")  
 
   existing_products = set()
 
@@ -451,10 +454,13 @@ def toggle_role():
 
 def add_exclusion(exclusion):
   type = exclusion[0]
+  
+  product = None
+  if len(exclusion) > 1: product = exclusion[1]
 
   if str(type).upper() not in ["PRODUCT", "CASE"]: print("Invalid request, exclusion TYPE must be 'Product' or 'Case'")
   if str(type).upper() == "CASE":
     if len(exclusion) < 2:
       return print("Case argument must be followed by a case number!")
     add_excluded_cases(exclusion[1])
-  if str(type).upper() == "PRODUCT": add_excluded_product()
+  if str(type).upper() == "PRODUCT": add_excluded_product(product)
