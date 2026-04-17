@@ -68,11 +68,6 @@ class EngineerHandler:
 		if not engineer_name:
 			raise ConfigurationError(f"{func}; Missing engineer name in the configuration file.")
 
-		excluded_products = load_excluded_products()
-
-		excluded_product_list = "', '".join(excluded_products)
-		excluded_product_list = f"'{excluded_product_list}'"
-
 		group_list = concat_group_list(self.teams_list)
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
 
