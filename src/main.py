@@ -13,7 +13,7 @@ from config import (
   get_config_value
 )
 from helper import handle_shutdown
-from exceptions import APIError, ConfigurationError, UnsupportedRole
+import exceptions
 from handler import role_handler
 
 def main(debug, testOn, verboseOn=False):
@@ -33,11 +33,11 @@ def main(debug, testOn, verboseOn=False):
 
     role_handler(role, debug, send_notifications, config, testOn, teamsList)
 
-  except ConfigurationError as e:
+  except exceptions.ConfigurationError as e:
     print(f"Configuration Error: {e}")
-  except APIError as e:
+  except exceptions.APIError as e:
     print(f"API Error: {e}")
-  except UnsupportedRole as e:
+  except exceptions.UnsupportedRole as e:
     print(f"Role Error: {e}")
   except TypeError as e:
     logger.exception(f"TypeError {e}")

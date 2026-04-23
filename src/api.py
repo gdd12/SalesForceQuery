@@ -4,6 +4,7 @@ from exceptions import APIError
 from logger import logger
 from config import load_json_file, file_exists, create_json_file, resolve_registry_path, readFileReg, get_config_value
 import json
+from variables import FileNames
 
 def http_handler(api_url, username, password, query, isTest=False):
   fileReg = readFileReg()
@@ -25,9 +26,17 @@ def http_handler(api_url, username, password, query, isTest=False):
     if response.status_code != 200:
       _handle_http_error(response, query)
 
-    data = response.json()
-    create_json_file(last_query_result, data)
-    return data
+    max_size = get_config_value("rules.max_buffer_size_bytes")
+
+    content = response.content
+    response_data = response.json()
+
+    if len(content) > max_size:
+      logger.error(f"Response size {len(content)} exceeds {max_size}. {FileNames.QueryResults} will not be written to.")
+      return response_data
+    
+    create_json_file(path=last_query_result, data=response_data)
+    return response_data
 
   if isTest and file_exists(last_query_result):
     try:
