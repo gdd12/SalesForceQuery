@@ -82,12 +82,14 @@ def concat_support_engineer_list(teams_list):
 	except Exception as e:
 		raise
 
-def handle_shutdown(exit_code=0, reason='Routine exit'):
+def handle_shutdown(exit_code=0, reason=''):
 	if exit_code == 0:
 		logger.info(f"Shutdown code: {exit_code}. {reason.capitalize()}")
+		if reason: print(reason)
 		sys.exit(0)
 	if exit_code == 1:
 		logger.info(f"Shutdown code: {exit_code}. {reason.capitalize()}")
+		if reason: print(reason)
 		sys.exit(1)
 
 def convert_vacation(date):
