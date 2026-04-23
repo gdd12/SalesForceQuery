@@ -96,7 +96,7 @@ def display_personal(cases, update_threshold, color):
       if (datetime.today().strftime('%A').lower() == 'friday' and commitment_time < 3):
         MissOverWeekend += 1
 
-    if (InSupport + New + NeedsCommitment + MissOverWeekend == 0) and MissDuringVacation < 1:
+    if (InSupport + New + NeedsCommitment + MissOverWeekend + AboutToMiss == 0) and MissDuringVacation < 1:
       panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
     else:
       lines = []
