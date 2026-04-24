@@ -85,6 +85,7 @@ role               string                    Determines which query logic us use
 ```
 
 ```rules``` Object
+
 Controls runtime behavior and polling logic.
 
 ```bash
@@ -99,6 +100,7 @@ max_buffer_size_bytes     int (bytes)               Maximum size for on-disk res
 ```
 
 ```colors``` Object
+
 Defines UI themeing using the ```rich``` library. For the full list of colors, consult with the 3rd-party library documentation: https://rich.readthedocs.io/en/stable/appendix/colors.html
 ```bash
 Key              Type                Description
@@ -113,6 +115,7 @@ The ```teams.json``` file defines which teams and groups are included in query c
 This file can be edited manually or managed via CLI flags:
 
 -t add → Add team members
+
 -t view → Toggle whether a team is included in queries
 
 The ```viewable``` flag must be a boolean type and the ```list``` flag must be comma separated with full engineer names as seen in SalesForce.
