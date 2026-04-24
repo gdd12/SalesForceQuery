@@ -1,80 +1,93 @@
 import sys
 import warnings
-import argparse
 
 warnings.filterwarnings("ignore")
 
 from logger import logger as base_logger
 from helper import handle_shutdown
-from variables import Arg_Definition, VARS, FileNames
-from config import add_excluded_cases, rewrite_configuration, load_configuration, load_teams_list, request_password, print_configuration, team_tool, toggle_role, add_exclusion
+from variables import VARS, FileNames
+from config import rewrite_configuration, print_configuration, team_tool, toggle_role, add_exclusion
 
-def user_defined_args():
-  parser = argparse.ArgumentParser(
-    prog="main.py",
-    formatter_class=argparse.RawTextHelpFormatter
-  )
+def user_defined_args(args):
+  arg_obj = {
+    VARS.Config: False,
+    VARS.Debug: False,
+    VARS.Verbose: False,
+    VARS.Test: False,
+    VARS.Setup: False,
+    VARS.Team: False,
+    VARS.Simulate: False,
+    VARS.Role: False,
+    VARS.Exclude: False
+  }
+  if "-H" in args or "-h" in args:
+    print_help_page()
+    handle_shutdown()
+  for idx, arg in enumerate(args[1:]):
+    arg = arg.strip()
+    if '-' not in arg: continue
 
-  config = parser.add_argument_group("Configuration")
-  config.add_argument(
-    "-c", "--config",
-    action="store_true",
-    help=f"Print the current {FileNames.Config} configuration"
-  )
-  config.add_argument(
-    "-r", "--role",
-    action="store_true",
-    help="Change role"
-  )
-  config.add_argument(
-    "-t", "--team",
-    metavar="METHOD",
-    help="Edit the teams list (update | viewable)"
-  )
-  config.add_argument(
-    "-e", "--exclude",
-    nargs='+',
-    metavar=("TYPE", "VALUE"),
-    help=(
-      "TYPE must be 'Product' or 'Case'\n"
-      "  Ex: -e Product B2Bi\n"
-      "  Ex: -e Case 01738532"
-    )
-  )
+    if arg in ["-C", "-c"]:
+      arg_obj[VARS.Config] = True
 
-  runtime = parser.add_argument_group("Runtime Options")
-  runtime.add_argument(
-    "-q", "--simulate",
-    action="store_true",
-    help="Simulate SQL against runtime server"
-  )
-  runtime.add_argument(
-    "-s", "--setup",
-    action="store_true",
-    help="Interactive config setup"
-  )
-  runtime.add_argument(
-    "-x", "--test",
-    action="store_true",
-    help="Run in test mode"
-  )
+    elif arg in ["-R", "-r"]:
+      arg_obj[VARS.Role] = True
+    
+    elif arg in ["-D", "-d"]:
+      arg_obj[VARS.Debug] = True
 
-  debug = parser.add_argument_group("Debug Options")
+    elif arg.lower() in ["-dv", "-vd"]:
+      arg_obj[VARS.Debug] = True
+      arg_obj[VARS.Verbose] = True
 
-  debug.add_argument(
-    "-d", "--debug",
-    action="store_true",
-    help="Enable logging"
-  )
+    elif arg in ["-X", "-x"]:
+      arg_obj[VARS.Test] = True
+    
+    elif arg in ["-S", "-s"]:
+      arg_obj[VARS.Setup] = True
+    
+    elif arg in ["-Q", "-q"]:
+      arg_obj[VARS.Simulate] = True
+    
+    elif arg in ["-T", "-t"]:
+      if idx + 2 >= len(args):
+        arg_obj[VARS.Team] = True
+      else:
+        val = args[idx + 2].lower()
+        if val == 'add':
+          arg_obj[VARS.Team] = 'add'
+        elif val == 'view':
+          arg_obj[VARS.Team] = 'view'
+        else:
+          arg_obj[VARS.Team] = True
 
-  debug.add_argument(
-    "-dv", "--debug-verbose",
-    action="store_true",
-    help="Enable verbose logging"
-  )
+    elif arg in ["-E", "-e"]:
+      if idx + 1 >= len(args[1:]):
+        handle_shutdown(1, reason="Error: '-e' must be followed by 'case' or 'product'!")
 
-  args = parser.parse_args()
-  return vars(args)
+      next_arg = str(args[idx + 2]).lower()
+
+      if next_arg == "product":
+        arg_obj[VARS.Exclude] = {"type": "product"}
+
+      elif next_arg == "case":
+        case_value_idx = idx + 3
+        if case_value_idx >= len(args):          
+          handle_shutdown(1, reason="Error: '-e case' must be followed by a case number or 'RESET'!")
+
+        case_value = args[case_value_idx]
+
+        arg_obj[VARS.Exclude] = {
+          "type": "case",
+          "value": case_value
+        }
+
+      else:
+        handle_shutdown(1, reason=f"Error: Invalid exclusion type '{next_arg}'. Must be 'Case' or 'Product'")
+    else:
+      print_help_page()
+      handle_shutdown(1, reason=f"Unknown argument: {arg}")
+  return arg_obj
 
 def argument_handler(arg_obj):
   debug = False
@@ -111,11 +124,38 @@ def argument_handler(arg_obj):
   if arg_obj[VARS.Team]:
     team_tool(
       Print=(True if type(arg_obj[VARS.Team]) == bool else False),
-      Update=(True if str(arg_obj[VARS.Team]).lower() == 'update' else False),
-      Viewable=(True if str(arg_obj[VARS.Team]).lower() == 'viewable' else False)
+      Update=(True if str(arg_obj[VARS.Team]).lower() == 'add' else False),
+      Viewable=(True if str(arg_obj[VARS.Team]).lower() == 'view' else False)
     )
 
   if arg_obj[VARS.Role]:
     toggle_role()
 
   return {VARS.Debug: debug, VARS.Test: testMode, VARS.Verbose: verboseMode}
+
+def print_help_page():
+  print("""
+Usage: main.py [any of the below arguments]
+
+Configuration:
+  -c                    Print the current config.json configuration
+  -r                    Change role
+  -t <OPTION>           Edit the teams list ('add' or 'view')
+                          Ex: -t view
+                          Ex: -t add
+  -e <TYPE> <OPT>       Add an exclusion of a case or product. The 'case' option must be followed by a case #.
+                        Use the 'RESET' option to reset the file
+                          Ex: -e Case 0156872
+                          Ex: -e Case RESET
+                          Ex: -e Product
+
+Runtime Options:
+  -q                    Simulate SQL against SalesForce
+  -s                    Interactive config setup
+  -x                    Run in test mode, no API call is made ONLY if the ~/config/dataBuffer.json does not exist
+
+Debug Options:
+  -d                    Enable logging
+  -dv                   Enable verbose logging
+""")
+  return

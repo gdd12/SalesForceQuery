@@ -125,7 +125,7 @@ def add_excluded_cases(case_name: str):
     msg = f"Invalid argument '{case_name}'. Must be an INTEGER. Did you mean to type 'RESET'?"
     logger.warning(msg)
     print(msg)
-    return
+    handle_shutdown()
   
   try:
     with open(excludedCasesFile, 'a') as file:
@@ -263,7 +263,7 @@ def load_json_file(path, fatal=False, context="", Proc=False):
     active_logger.error(f"{msg}: {e}")
     if fatal:
       print(f"{msg} {e}")
-      handle_shutdown(1)
+      handle_shutdown(1, reason=e)
   
 def create_json_file(path, data):
   try:
@@ -325,10 +325,9 @@ def register_teams_list(teams_path, teams_template):
   with open(teams_path, 'w') as teams_file:
     json.dump(template_data, teams_file, indent=2)
 
-  error_reason = "Teams list is empty, the program cannot run without it. \nRun the program with -t to update!"
+  error_reason = "Teams list is empty, the program cannot run without it. \nRun the program with -t to update. Consult with the help page via the -h arguments for assistance."
   logger.error(error_reason)
-  print(error_reason)
-  handle_shutdown(0, reason="Team list is not proper, cannot continue")
+  handle_shutdown(0, reason=error_reason)
 
 def load_teams_list():
   registry = readFileReg()
@@ -364,6 +363,9 @@ def team_tool(Print=False, Update=False, Viewable=False):
     registry = readFileReg()
     team_ids = []
 
+    if not teams:
+      handle_shutdown(1, reason=f"Error: Teams file cannot be found. Please run the program without flags to re-build default config.")
+
     print('Current team configuration:\n')
     for team, data in teams.items():
       team_ids.append(team.upper())
@@ -375,7 +377,7 @@ def team_tool(Print=False, Update=False, Viewable=False):
         )
 
     def request_team_id_from_user():
-      if Update: return get_non_empty_input('\nWhich team ID would you like to update? ')
+      if Update: return get_non_empty_input('\nWhich team ID would you like to add a member to? ')
       if Viewable: return get_non_empty_input('\nWhich team ID would you like to toggle the visibility? ')
       handle_shutdown(0)
 
@@ -403,7 +405,7 @@ def team_tool(Print=False, Update=False, Viewable=False):
       list_to_update = teams[team_to_update]['list']
       print(f"\nCurrent team: {list_to_update}")
 
-      new_member = get_non_empty_input("\nAdd team member: ")
+      new_member = get_non_empty_input("\nAdd team member (comma separate multiple members): ")
       updated_list = list_to_update + new_member + ','
 
       def updater(data):
@@ -453,14 +455,10 @@ def toggle_role():
   handle_shutdown(0)
 
 def add_exclusion(exclusion):
-  type = exclusion[0]
-  
-  product = None
-  if len(exclusion) > 1: product = exclusion[1]
+  type = exclusion.get('type')
 
   if str(type).upper() not in ["PRODUCT", "CASE"]: print("Invalid request, exclusion TYPE must be 'Product' or 'Case'")
   if str(type).upper() == "CASE":
-    if len(exclusion) < 2:
-      return print("Case argument must be followed by a case number!")
-    add_excluded_cases(exclusion[1])
-  if str(type).upper() == "PRODUCT": add_excluded_product(product)
+    case_number = exclusion.get('value')
+    add_excluded_cases(str(case_number))
+  if str(type).upper() == "PRODUCT": add_excluded_product()

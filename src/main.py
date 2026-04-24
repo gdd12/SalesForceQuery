@@ -1,6 +1,6 @@
 import warnings
 import signal
-import argparse
+import sys
 
 from args import user_defined_args, argument_handler
 from logger import setup_logger, setup_process_logger, logger as base_logger, process
@@ -33,18 +33,9 @@ def main(debug, testOn, verboseOn=False):
 
     role_handler(role, debug, send_notifications, config, testOn, teamsList)
 
-  except exceptions.ConfigurationError as e:
-    print(f"Configuration Error: {e}")
-  except exceptions.APIError as e:
-    print(f"API Error: {e}")
-  except exceptions.UnsupportedRole as e:
-    print(f"Role Error: {e}")
-  except TypeError as e:
-    logger.exception(f"TypeError {e}")
-    print(f"TypeError {e}")
   except Exception as e:
-    logger.exception(f"UnexpectedError: {e}")
-    print(f"Exception {e}")
+    logger.exception(f"{type(e).__name__}: {e}")
+    print(f"{type(e).__name__}: {e}")
 
 def signal_handler(sig, frame):
   handle_shutdown(0)
@@ -52,13 +43,13 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
-  user_args = user_defined_args()
+  user_args = user_defined_args(sys.argv)
   verboseOn = False
   log_level = None
 
-  if user_args['debug']:
+  if user_args.get(VARS.Debug):
     log_level = 'info'
-  if user_args['debug_verbose'] or get_config_value('debug'):
+  if user_args.get(VARS.Verbose) or get_config_value('debug'):
     log_level = 'debug'
     verboseOn = True
 

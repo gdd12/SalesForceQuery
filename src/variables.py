@@ -22,19 +22,6 @@ class VARS:
   Team = 'team'
   Verbose = 'debug_verbose'
 
-Arg_Definition = (
-  ('-c', "Print out the current configuration"),
-  ('-d', "Debug mode"),
-  ('-dv', "Debug mode with verbose logging"),
-  ('-e', "Add an exclusion case number. Use 'RESET' to reset the file"),
-  ('-q', "Enter simulation environment"),
-  ('-r', "Change user role"),
-  ('-s', "Re-write configuration"),
-  ('-t', "Add to the team list. Usage: -t, -t update, or -t viewable"),
-  ('-x', "Enable test mode, results in no API calls only if a /config/dataBuffer.json exists"),
-  ('-h', "Help page"),
-)
-
 class FileNames:
   Config = "config.json"
   QueryResults = "dataBuffer.json"
