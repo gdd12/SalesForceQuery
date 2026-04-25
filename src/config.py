@@ -48,11 +48,10 @@ def validateFileReg():
     try:
       if not os.path.exists(fileRegSrc):
         logger.error(f"{FileNames.FileReg} cannot be found in the templates library. Exiting.")
-        handle_shutdown(1, reason="Missing required config file")
+        FileNotFoundError()
       shutil.copy(fileRegSrc, fileRegDest)
       logger.debug(f"{FileNames.FileReg} has been pulled from the templates library")
     except FileNotFoundError as e:
-      print(f"[Init Startup] ERROR: {e}")
       raise
 
 def readFileReg(Proc=False):
@@ -77,7 +76,7 @@ def readFileReg(Proc=False):
     active_logger.debug(f"{FileNames.FileReg} has been loaded")
     return file_paths
   except ET.ParseError as e:
-    raise ConfigurationError(f"Error parsing XML: {e}")
+    raise ConfigurationError(f"Error parsing XML: {FileNames.FileReg} {e}")
 
 def load_excluded_cases():
   excludedCasesFile = os.path.join(base_dir, "config", FileNames.ExCases)
@@ -92,7 +91,7 @@ def load_excluded_cases():
       logger.debug(f"Excluded cases include: {excluded}")
       return excluded
   except FileNotFoundError:
-    logger.info(f"Excluded file config cannot be found, displaying all returned cases.")
+    logger.warning(f"Excluded file config cannot be found, displaying all returned cases.")
     return set()
 
 def add_excluded_cases(case_name: str):
@@ -148,7 +147,7 @@ def load_excluded_products():
       logger.debug(f"Total: {len(excluded)}. Excluded products include: {excluded}")
       return excluded
   except FileNotFoundError:
-    logger.info(f"Excluded file config cannot be found, displaying all returned products.")
+    logger.warning(f"Excluded file config cannot be found, displaying all returned products.")
     return set()
   return
 
@@ -310,12 +309,12 @@ def get_config_value(key: str, Proc=False):
 
       if child: config_value_from_key = config_data.get(parent).get(child)
       if config_value_from_key == None:
-        raise ConfigurationError(f"Invalid key: {key}")
+        raise KeyError(f"Invalid key: {key}")
 
       active_logger.debug(f"Returning value {config_value_from_key} from {key} ")
       return config_value_from_key
     return
-  except ConfigurationError as e:
+  except KeyError as e:
     raise e
 
 def register_teams_list(teams_path, teams_template):
