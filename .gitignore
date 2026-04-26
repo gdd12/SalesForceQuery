@@ -3,3 +3,4 @@ config/*
 !config/excludedProducts.cfg
 todo
 *.log
+.env
