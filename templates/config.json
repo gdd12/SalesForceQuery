@@ -13,9 +13,6 @@
     "upload_to_tse_board": false,
     "max_buffer_size_bytes": 40000
   },
-  "events": {
-    "max_event_file_size_in_Bytes": 100000
-  },
   "colors": {
     "primary": "black",
     "secondary": "yellow"
