@@ -10,7 +10,7 @@ from config.config import Config, load_teams_list
 from config.filereg import FileReg
 from utils.helper import handle_shutdown
 import exceptions as exceptions
-from handler import role_handler
+from handlers.handler import role_handler
 
 def main(debug, testOn, verboseOn=False):
   logger.info("Logger initialized with debug=%s verbose=%s test=%s", debug, verboseOn, testOn)
