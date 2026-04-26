@@ -6,7 +6,7 @@ warnings.filterwarnings("ignore")
 from logger import logger as base_logger
 from helper import handle_shutdown
 from variables import VARS, FileNames
-from config import rewrite_configuration, print_configuration, team_tool, toggle_role, add_exclusion
+from config import rewrite_configuration, print_configuration, TeamTool, toggle_role, add_exclusion
 
 def user_defined_args(args):
   arg_obj = {
@@ -122,11 +122,11 @@ def argument_handler(arg_obj):
     simulate(base_logger)
 
   if arg_obj[VARS.Team]:
-    team_tool(
+    TeamTool(
       Print=(True if type(arg_obj[VARS.Team]) == bool else False),
       Update=(True if str(arg_obj[VARS.Team]).lower() == 'add' else False),
       Viewable=(True if str(arg_obj[VARS.Team]).lower() == 'view' else False)
-    )
+    ).run()
 
   if arg_obj[VARS.Role]:
     toggle_role()

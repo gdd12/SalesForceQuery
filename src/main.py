@@ -3,14 +3,14 @@ import signal
 import sys
 
 from args import user_defined_args, argument_handler
-from logger import setup_logger, setup_process_logger, logger as base_logger, process
+from logger import setup_logger, logger as base_logger
 from variables import VARS
 
 from config import (
   load_configuration,
-  request_password,
   load_teams_list,
-  get_config_value
+  get_config_value,
+  FileReg
 )
 from helper import handle_shutdown
 import exceptions
@@ -18,10 +18,11 @@ from handler import role_handler
 
 def main(debug, testOn, verboseOn=False):
   logger.info("Logger initialized with debug=%s verbose=%s test=%s", debug, verboseOn, testOn)
-  process.info("Processing logger initialized with debug=%s verbose=%s and test=%s", debug, verboseOn, testOn)
 
   try:
     logger.info("******************** Config Setup ********************")
+    FileReg().validate()
+
     config = load_configuration()
     teamsList = load_teams_list()
 
@@ -54,7 +55,6 @@ if __name__ == "__main__":
     verboseOn = True
 
   setup_logger(log_level)
-  setup_process_logger(log_level)
 
   logger = base_logger
 

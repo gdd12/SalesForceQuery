@@ -5,19 +5,19 @@ from getpass import getpass
 from exceptions import ConfigurationError
 import xml.etree.ElementTree as ET
 from helper import handle_shutdown
-from logger import logger, process
+from logger import logger
 from variables import VARS, FileNames
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 config_path = os.path.join(base_dir, "config", FileNames.Config)
 
 def load_configuration():
-  validateFileReg()
-  registry = readFileReg()
+  registry = FileReg()
+  registry.read()
 
-  config_template = resolve_registry_path(registry, "configTemplate")
-  teams_template = resolve_registry_path(registry, "teamsTemplate")
-  teams_path = resolve_registry_path(registry, "teamsPath")
+  config_template = registry.resolve_file("configTemplate")
+  teams_template = registry.resolve_file("teamsTemplate")
+  teams_path = registry.resolve_file("teamsPath")
   logger.debug(f"Returned the full path from {FileNames.FileReg} children")
 
   if not file_exists(config_path): interactive_config_setup(config_path, config_template, CalledFrom='System') 
@@ -31,52 +31,64 @@ def request_password():
   password = getpass("API Password: ")
   return password
 
-def validateFileReg():
-  base_dir = os.path.dirname(__file__)
-  logger.debug(f"Local machine OS is {os.name}")
-  if os.name != "nt":
-    fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", FileNames.FileReg))
-  else:
-    fileRegSrc = os.path.abspath(os.path.join(base_dir, "..", "templates", FileNames.FileRegWin))
+class FileReg():
+  def __init__(self):
+    base_dir = os.path.dirname(__file__)
+    self.os = os.name
+    self.fr_location = os.path.abspath(os.path.join(base_dir, "..", "config", FileNames.FileReg))
+    self.fr_template = (
+      os.path.abspath(os.path.join(base_dir, "..", "templates", FileNames.FileReg)) if self.os != "nt" else
+      os.path.abspath(os.path.join(base_dir, "..", "templates", FileNames.FileRegWin))
+    )
+    self.file_paths = {}
+  def validate(self):
+    if os.path.exists(self.fr_location):
+      return
 
-  logger.debug(f"Location of the template {FileNames.FileReg} is {fileRegSrc}")
+    logger.debug(f"This is the first startup and {FileNames.FileReg} does not exist. Generating from the templates library.")
+    self.generate()
 
-  fileRegDest = os.path.abspath(os.path.join(base_dir, "..", "config", FileNames.FileReg))
-
-  if not os.path.exists(fileRegDest):
-    logger.debug(f"This is the first startup and {FileNames.FileReg} does not exist. Pulling from the templates library.")
+  def generate(self):
     try:
-      if not os.path.exists(fileRegSrc):
-        logger.error(f"{FileNames.FileReg} cannot be found in the templates library. Exiting.")
-        FileNotFoundError()
-      shutil.copy(fileRegSrc, fileRegDest)
-      logger.debug(f"{FileNames.FileReg} has been pulled from the templates library")
-    except FileNotFoundError as e:
+      if not os.path.exists(self.fr_template):
+        logger.error(f"{FileNames.FileReg} could not be generated")
+        raise FileNotFoundError(self.fr_template)
+      shutil.copy(
+        self.fr_template,
+        self.fr_location
+      )
+      logger.debug(f"{FileNames.FileReg} has been generated")
+    except FileNotFoundError:
       raise
 
-def readFileReg(Proc=False):
-  active_logger = process if Proc else logger
-  base_dir = os.path.dirname(__file__)
-  file_path = os.path.abspath(os.path.join(base_dir, "..", "config", FileNames.FileReg))
+  def read(self):
+    try:
+      if not os.path.exists(self.fr_location):
+        raise FileNotFoundError(self.fr_location)
 
-  if not os.path.exists(file_path):
-    raise FileExistsError(f"{FileNames.FileReg} not found at {file_path}")
+      tree = ET.parse(self.fr_location)
+      root = tree.getroot()
+      for file_elem in root.findall("File"):
+        name = file_elem.get("name")
+        path = file_elem.get("path")
+        if not name or not path:
+          raise ConfigurationError(f"Missing 'name' or 'path' attribute in one of the <File> entries.")
+        self.file_paths[name] = path.strip()
 
-  try:
-    tree = ET.parse(file_path)
-    root = tree.getroot()
-    file_paths = {}
-
-    for file_elem in root.findall("File"):
-      name = file_elem.get("name")
-      path = file_elem.get("path")
-      if not name or not path:
-        raise ConfigurationError(f"Missing 'name' or 'path' attribute in one of the <File> entries.")
-      file_paths[name] = path.strip()
-    active_logger.debug(f"{FileNames.FileReg} has been loaded")
-    return file_paths
-  except ET.ParseError as e:
-    raise ConfigurationError(f"Error parsing XML: {FileNames.FileReg} {e}")
+      logger.debug(f"{FileNames.FileReg} has been loaded")
+      return self.file_paths
+    except FileNotFoundError:
+      raise
+    except ET.ParseError as e:
+      raise ConfigurationError(f"Error parsing XML: {FileNames.FileReg} {e}")
+  
+  def resolve_file(self, file):
+    if not self.file_paths:
+      raise KeyError(
+        f"FileReg.resolve_file() called before initialization. "
+        f"Requested key='{file}', file_paths is empty."
+      )
+    return os.path.join(base_dir, self.file_paths.get(file))
 
 def load_excluded_cases():
   excludedCasesFile = os.path.join(base_dir, "config", FileNames.ExCases)
@@ -238,19 +250,17 @@ def get_non_empty_input(prompt):
     print("This field cannot be empty.")
 
 def file_exists(path, fatal=False, message=None, Proc=False):
-  active_logger = process if Proc else logger
   if not os.path.exists(path):
     if fatal:
-      active_logger.error(message or f"Required file not found: {path}")
+      logger.error(message or f"Required file not found: {path}")
       handle_shutdown(1, reason="Missing required file")
     else:
-      active_logger.debug(f"File {path} does not exist, and is not required at this time.")
+      logger.debug(f"File {path} does not exist, and is not required at this time.")
       return False
-  active_logger.debug(f"File {path} exists")
+  logger.debug(f"File {path} exists")
   return True
 
 def load_json_file(path, fatal=False, context="", Proc=False):
-  active_logger = process if Proc else logger
   try:
     if os.path.exists(path):
       with open(path, "r") as f:
@@ -259,7 +269,7 @@ def load_json_file(path, fatal=False, context="", Proc=False):
     msg = f"Failed to load JSON file at {path}"
     if context:
       msg += f" during {context}"
-    active_logger.error(f"{msg}: {e}")
+    logger.error(f"{msg}: {e}")
     if fatal:
       print(f"{msg} {e}")
       handle_shutdown(1, reason=e)
@@ -273,11 +283,6 @@ def create_json_file(path, data):
     logger.error(f"Failed to write to {path}: {e}")
     raise
 
-def resolve_registry_path(registry, key, default=None, Proc=False):
-  active_logger = process if Proc else logger
-  active_logger.info(f"Resolving {key}")
-  return os.path.join(base_dir, registry.get(key, default or key))
-
 def prompt_yes_no(prompt, default=False):
   while True:
     response = input(f"{prompt} [y/n]: ").strip().lower()
@@ -289,14 +294,13 @@ def prompt_yes_no(prompt, default=False):
       return default
 
 def rewrite_configuration():
-  file_registry = readFileReg()
-  config_path = resolve_registry_path(file_registry, "configPath")
-  config_template = resolve_registry_path(file_registry, "configTemplate")
+  file_registry = FileReg()
+  config_path = file_registry.resolve_file("configPath")
+  config_template = file_registry.resolve_file("configTemplate")
 
   interactive_config_setup(config_path, config_template, CalledFrom='User')
 
 def get_config_value(key: str, Proc=False):
-  active_logger = process if Proc else logger
   child = ''
   try:
     key_components = key.split(".")
@@ -311,7 +315,7 @@ def get_config_value(key: str, Proc=False):
       if config_value_from_key == None:
         raise KeyError(f"Invalid key: {key}")
 
-      active_logger.debug(f"Returning value {config_value_from_key} from {key} ")
+      logger.debug(f"Returning value {config_value_from_key} from {key} ")
       return config_value_from_key
     return
   except KeyError as e:
@@ -329,8 +333,9 @@ def register_teams_list(teams_path, teams_template):
   handle_shutdown(0, reason=error_reason)
 
 def load_teams_list():
-  registry = readFileReg()
-  teams_file = resolve_registry_path(registry, "teamsPath")
+  file_registry = FileReg()
+  file_registry.read()
+  teams_file = file_registry.resolve_file("teamsPath")
   teams = load_json_file(teams_file, fatal=True)
   return teams
 
@@ -356,18 +361,42 @@ def print_configuration():
 
   handle_shutdown(0)
 
-def team_tool(Print=False, Update=False, Viewable=False):
-  try:
-    teams = load_teams_list()
-    registry = readFileReg()
-    team_ids = []
+class TeamTool:
+  def __init__(self, Print=False, Update=False, Viewable=False):
+    self.print_mode = Print
+    self.update = Update
+    self.viewable = Viewable
 
-    if not teams:
-      handle_shutdown(1, reason=f"Error: Teams file cannot be found. Please run the program without flags to re-build default config.")
+    self.file_registry = FileReg()
+    self.registers = self.file_registry.read()
+    self.teams = load_teams_list()
 
+    if not self.teams:
+      handle_shutdown(1, reason="Error: Teams file cannot be found. Please run without flags to rebuild config.")
+    self.team_ids = [team.upper() for team in self.teams.keys()]
+
+  def run(self):
+    try:
+      self._print_teams()
+      team_to_update = self._get_valid_team_id()
+
+      if self.update:
+        self._handle_update(team_to_update)
+
+      if self.viewable:
+        self._handle_viewable_toggle(team_to_update)
+
+      handle_shutdown(0, reason='Team list updated, must exit to reload.')
+
+    except ValueError:
+      logger.error("Invalid team ID")
+    except Exception as e:
+      logger.error("Error updating team list", exc_info=True)
+      raise
+
+  def _print_teams(self):
     print('Current team configuration:\n')
-    for team, data in teams.items():
-      team_ids.append(team.upper())
+    for team, data in self.teams.items():
       if team.upper() != 'GROUP':
         print(
           f"{team.upper()}:\n"
@@ -375,60 +404,56 @@ def team_tool(Print=False, Update=False, Viewable=False):
           f" List: {data['list']}\n"
         )
 
-    def request_team_id_from_user():
-      if Update: return get_non_empty_input('\nWhich team ID would you like to add a member to? ')
-      if Viewable: return get_non_empty_input('\nWhich team ID would you like to toggle the visibility? ')
-      handle_shutdown(0)
+  def _request_team_id(self):
+    if self.update:
+      return get_non_empty_input('\nWhich team ID would you like to add a member to? ')
+    if self.viewable:
+      return get_non_empty_input('\nWhich team ID would you like to toggle visibility? ')
+    handle_shutdown(0)
 
-    def get_valid_team_id(team_ids):
-      while True:
-        team_id = request_team_id_from_user().upper()
-        if team_id in team_ids:
-          return team_id.lower()
-        print(f"{team_id} was not found in the team list. Please provide a valid team ID.")
+  def _get_valid_team_id(self):
+    while True:
+      team_id = self._request_team_id().upper()
+      if team_id in self.team_ids:
+        return team_id.lower()
+      print(f"{team_id} not found. Please provide a valid team ID.")
 
-    def update_team_file(registry, updater):
-      teams_file = resolve_registry_path(registry, "teamsPath")
+  def _update_team_file(self, updater):
+    teams_file = self.file_registry.resolve_file("teamsPath")
 
-      with open(teams_file, "r") as f:
-        team_file_data = json.load(f)
+    with open(teams_file, "r") as f:
+      data = json.load(f)
 
-      updater(team_file_data)
+    updater(data)
 
-      with open(teams_file, "w") as f:
-        json.dump(team_file_data, f, indent=2)
+    with open(teams_file, "w") as f:
+      json.dump(data, f, indent=2)
 
-    team_to_update = get_valid_team_id(team_ids)
+  def _handle_update(self, team_id):
+    current_list = self.teams[team_id]['list']
+    print(f"\nCurrent team: {current_list}")
 
-    if Update:
-      list_to_update = teams[team_to_update]['list']
-      print(f"\nCurrent team: {list_to_update}")
+    new_member = get_non_empty_input(
+      "\nAdd team member (comma separate multiple members): "
+    )
+    updated_list = current_list + new_member + ','
 
-      new_member = get_non_empty_input("\nAdd team member (comma separate multiple members): ")
-      updated_list = list_to_update + new_member + ','
+    def updater(data):
+      data[team_id]['list'] = updated_list
 
-      def updater(data):
-        data[team_to_update]['list'] = updated_list
+    self._update_team_file(updater)
 
-      update_team_file(registry, updater)
-      print(f"Successfully added {new_member} to the {team_to_update} team!")
+    print(f"Successfully added {new_member} to the {team_id} team!")
 
-    if Viewable:
-      team_is_viewable = teams[team_to_update]['viewable']
+  def _handle_viewable_toggle(self, team_id):
+    current_state = self.teams[team_id]['viewable']
 
-      def updater(data):
-        data[team_to_update]['viewable'] = not team_is_viewable
+    def updater(data):
+      data[team_id]['viewable'] = not current_state
 
-      update_team_file(registry, updater)
-      print(f"Successfully toggled visibility of {team_to_update} team!")
+    self._update_team_file(updater)
 
-    handle_shutdown(0, reason='Team list has been updated, must exit to reload.')
-
-  except Exception as e:
-    logger.error("Error updating team list", exc_info=True)
-    raise e
-  except ValueError as e:
-    logger.error("Invalid team ID")
+    print(f"Successfully toggled visibility of {team_id} team!")
 
 def toggle_role():
   if not file_exists(config_path): raise FileNotFoundError("Config file not found")

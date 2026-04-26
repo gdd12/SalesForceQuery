@@ -29,7 +29,6 @@ from config import (
 	load_excluded_products
 )
 from logger import logger
-from analytics import processEvents
 from variables import FileNames
 
 class EngineerHandler:
@@ -72,8 +71,6 @@ class EngineerHandler:
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
 
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
-
-		events_processing_enabled = get_config_value("events.process_events")
 
 		logger.info(f"Inside engineer handler loop")
 		while True:
@@ -133,8 +130,6 @@ class EngineerHandler:
 
 				if os.name != "nt" and self.send_notification:
 					notify(team_cases, isTest, self.sound_notifications)
-
-				if events_processing_enabled: processEvents(all_cases)
 
 			num_excluded_products = len(load_excluded_products())
 			total_seconds = self.poll_interval * 60
@@ -214,7 +209,6 @@ class ManagerHandler:
 		)
 		logger.debug(f"The Manager query has been formated with configured Teams and update thresholds")
 
-		events_processing_enabled = get_config_value("events.process_events")
 		logger.debug(f"Inside manager handler loop")
 		while True:
 			clear_screen()
@@ -238,7 +232,6 @@ class ManagerHandler:
 			display_team_needs_commitment(team_needs_commitment, self.update_threshold, self.color)
 			display_queue_needs_commitment(queue_needs_commitment, self.update_threshold, self.color)
 
-			if events_processing_enabled: processEvents(cases)
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
 

@@ -2,13 +2,14 @@ import requests
 from requests.auth import HTTPBasicAuth
 from exceptions import APIError
 from logger import logger
-from config import load_json_file, file_exists, create_json_file, resolve_registry_path, readFileReg, get_config_value
+from config import load_json_file, file_exists, create_json_file, FileReg, get_config_value
 import json
 from variables import FileNames
 
 def http_handler(api_url, username, password, query, isTest=False):
-  fileReg = readFileReg()
-  last_query_result = resolve_registry_path(fileReg, "dataBuffer")
+  FR = FileReg()
+  FR.read()
+  last_query_result = FR.resolve_file("dataBuffer")
 
   def hit_api():
     logger.debug("API call invoked!")
