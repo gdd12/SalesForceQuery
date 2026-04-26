@@ -4,16 +4,11 @@ from api import (
   http_handler,
   uploadToTseBoard
 )
-from display import (
-	clear_screen,
-	display_header,
-	display_team,
-	display_personal,
-	display_opened_today,
-	display_team_needs_commitment,
-	display_queue_needs_commitment,
-	display_failed_validation_cases
-)
+
+from display.engineer import EngineerDisplay
+from display.manager import ManagerDisplay
+from display.common import CommonDisplay
+
 from utils.helper import (
   concat_team_list,
 	concat_group_list,
@@ -50,6 +45,8 @@ class EngineerHandler:
 		self.products = Products()
 		self.cases = Cases()
 		self.config = Config()
+		self.display = EngineerDisplay()
+		self.display_util = CommonDisplay()
 
 	def run(self, isTest):
 		func = "EngineerHandler.run()"
@@ -74,8 +71,8 @@ class EngineerHandler:
 
 		logger.info(f"Inside engineer handler loop")
 		while True:
-			clear_screen()
-			display_header(self.poll_interval)
+			self.display_util.clear_screen()
+			self.display_util.display_header(self.poll_interval)
 
 			excluded_products = self.products.load_excluded_products()
 
@@ -120,13 +117,13 @@ class EngineerHandler:
 					if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
 						opened_today_cases.append(case)
 
-				display_team(team_cases, self.update_threshold, self.color)
-				display_personal(personal_cases, self.update_threshold, self.color)
-				display_opened_today(opened_today_cases, self.debug, self.color)
+				self.display.queue(team_cases, self.update_threshold, self.color)
+				self.display.personal(personal_cases, self.update_threshold, self.color)
+				self.display.opened_today(opened_today_cases, self.debug, self.color)
 
 				if len(case_validation_failed_list) > 0:
 					logger.info(f"Cases failed validation: {case_validation_failed_list}")
-					display_failed_validation_cases(case_validation_failed_list, self.color)
+					self.display_util.failed_validation(case_validation_failed_list, self.color)
 
 				if os.name != "nt" and self.send_notification:
 					notify(team_cases, isTest, self.sound_notifications)
@@ -187,6 +184,8 @@ class ManagerHandler:
 		self.color = config.get("colors", None)
 		self.update_threshold = config.get("rules").get("update_threshold", 45)
 		self.config_password = None
+		self.display = ManagerDisplay()
+		self.display_util = CommonDisplay()
 
 	def run(self, isTest):
 		logger.debug(f"Class {__class__.__name__} has been invoked")
@@ -211,8 +210,8 @@ class ManagerHandler:
 
 		logger.debug(f"Inside manager handler loop")
 		while True:
-			clear_screen()
-			display_header(self.poll_interval)
+			self.display_util.clear_screen()
+			self.display_util.display_header(self.poll_interval)
 
 			cases = http_handler(api_url, username, self.config_password, manager_query, isTest)
 
@@ -229,8 +228,8 @@ class ManagerHandler:
 				elif owner_name in team_names and commitment_time is not None and commitment_time <= 1:
 					team_needs_commitment.append(case)
 
-			display_team_needs_commitment(team_needs_commitment, self.update_threshold, self.color)
-			display_queue_needs_commitment(queue_needs_commitment, self.update_threshold, self.color)
+			self.display.team_commitment(team_needs_commitment, self.update_threshold, self.color)
+			self.display.queue_commitment(queue_needs_commitment, self.update_threshold, self.color)
 
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
