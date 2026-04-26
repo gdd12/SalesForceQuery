@@ -2,11 +2,11 @@ import shutil
 import os
 from datetime import datetime
 from collections import defaultdict
-from config import get_config_value
+from config.config import Config
 from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
-from helper import convert_days_to_dhm, convert_vacation
+from utils.helper import convert_days_to_dhm, convert_vacation
 from logger import logger
 
 console = Console()
@@ -57,8 +57,8 @@ def display_personal(cases, update_threshold, color):
   sColor = color.get("secondary")
   VacationFailedValidation = False
   days_remaining_vac = 0
-  if get_config_value("rules.vacation_scheduled"):
-    vac_timeframe = get_config_value("rules.back_from_vacation")
+  if Config().get_config_value("rules.vacation_scheduled"):
+    vac_timeframe = Config().get_config_value("rules.back_from_vacation")
     days_remaining_vac = convert_vacation(vac_timeframe)
     if type(days_remaining_vac) != int:
       VacationFailedValidation = True

@@ -119,3 +119,10 @@ def convert_vacation(date):
 	
 	delta = input_date - today
 	return delta.days
+
+def get_non_empty_input(prompt):
+  while True:
+    value = input(prompt).strip()
+    if value:
+      return value
+    print("This field cannot be empty.")

@@ -1,10 +1,10 @@
-import requests
+import requests, os
 from requests.auth import HTTPBasicAuth
 from exceptions import APIError
 from logger import logger
-from config import load_json_file, file_exists, create_json_file, FileReg, get_config_value
+from config.config import Config, load_json_file, create_json_file, FileReg
 import json
-from variables import FileNames
+from utils.variables import FileNames
 
 def http_handler(api_url, username, password, query, isTest=False):
   FR = FileReg()
@@ -27,7 +27,7 @@ def http_handler(api_url, username, password, query, isTest=False):
     if response.status_code != 200:
       _handle_http_error(response, query)
 
-    max_size = get_config_value("rules.max_buffer_size_bytes")
+    max_size = Config().get_config_value("rules.max_buffer_size_bytes")
 
     content = response.content
     response_data = response.json()
@@ -39,7 +39,7 @@ def http_handler(api_url, username, password, query, isTest=False):
     create_json_file(path=last_query_result, data=response_data)
     return response_data
 
-  if isTest and file_exists(last_query_result):
+  if isTest and os.path.exists(last_query_result):
     try:
       logger.info(f"Test mode enabled. Loaded mock data from {last_query_result}")
       response_data = load_json_file(last_query_result, fatal=True)
@@ -78,9 +78,9 @@ def _handle_http_error(response, query):
   raise APIError(f"Error {response.status_code} {response.reason}. Unable to fetch data.")
 
 def uploadToTseBoard(cases):
-  tseBoardApi = get_config_value('front_end_board')
+  tseBoardApi = Config().get_config_value('front_end_board')
   payload = {
-    "nextPollSetting": get_config_value("rules.poll_interval"),
+    "nextPollSetting": Config().get_config_value("rules.poll_interval"),
     "cases": cases
   }
   try:

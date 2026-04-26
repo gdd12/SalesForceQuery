@@ -4,16 +4,12 @@ import sys
 
 from args import user_defined_args, argument_handler
 from logger import setup_logger, logger as base_logger
-from variables import VARS
+from utils.variables import VARS
 
-from config import (
-  load_configuration,
-  load_teams_list,
-  get_config_value,
-  FileReg
-)
-from helper import handle_shutdown
-import exceptions
+from config.config import Config, load_teams_list
+from config.filereg import FileReg
+from utils.helper import handle_shutdown
+import exceptions as exceptions
 from handler import role_handler
 
 def main(debug, testOn, verboseOn=False):
@@ -23,7 +19,7 @@ def main(debug, testOn, verboseOn=False):
     logger.info("******************** Config Setup ********************")
     FileReg().validate()
 
-    config = load_configuration()
+    config = Config().load()
     teamsList = load_teams_list()
 
     role = config[VARS.Role]
@@ -50,7 +46,7 @@ if __name__ == "__main__":
 
   if user_args.get(VARS.Debug):
     log_level = 'info'
-  if user_args.get(VARS.Verbose) or get_config_value('debug'):
+  if user_args.get(VARS.Verbose) or Config().get_config_value('debug'):
     log_level = 'debug'
     verboseOn = True
 
@@ -59,7 +55,7 @@ if __name__ == "__main__":
   logger = base_logger
 
   args = argument_handler(user_args)
-  debugOn = True if args.get(VARS.Debug, False) or get_config_value('debug') else False
+  debugOn = True if args.get(VARS.Debug, False) or Config().get_config_value('debug') else False
   testOn = args.get(VARS.Test, False)
 
   main(debugOn, testOn, verboseOn=verboseOn)

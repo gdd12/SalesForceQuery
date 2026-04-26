@@ -4,9 +4,9 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from logger import logger as base_logger
-from helper import handle_shutdown
-from variables import VARS, FileNames
-from config import rewrite_configuration, print_configuration, TeamTool, toggle_role, add_exclusion
+from utils.helper import handle_shutdown
+from utils.variables import VARS, FileNames
+from config.config import Config, rewrite_configuration, TeamTool
 
 def user_defined_args(args):
   arg_obj = {
@@ -108,17 +108,17 @@ def argument_handler(arg_obj):
     debug = True
 
   if arg_obj[VARS.Config]:
-    print_configuration()
+    Config().print_configuration()
 
   if arg_obj[VARS.Exclude]:
-    add_exclusion(arg_obj[VARS.Exclude])
+    Config().add_exclusion(arg_obj[VARS.Exclude])
     handle_shutdown(0, reason="Must exit to reload configuration")
 
   if arg_obj[VARS.Setup]:
     rewrite_configuration()
 
   if arg_obj[VARS.Simulate]:
-    from simulation import simulate
+    from tools.simulation import simulate
     simulate(base_logger)
 
   if arg_obj[VARS.Team]:
@@ -129,7 +129,7 @@ def argument_handler(arg_obj):
     ).run()
 
   if arg_obj[VARS.Role]:
-    toggle_role()
+    Config().toggle_role()
 
   return {VARS.Debug: debug, VARS.Test: testMode, VARS.Verbose: verboseMode}
 

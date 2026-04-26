@@ -2,16 +2,16 @@ import warnings
 warnings.filterwarnings("ignore")
 import signal
 import re
-from config import load_configuration, request_password
+from config.config import Config, request_password
 from api import http_handler
-from helper import define_query_columns
+from utils.helper import define_query_columns
 from main import signal_handler
 
 def simulate(logger):
   print("\n******************** Entering Simulation Env ********************")
   print("*****************************************************************\n")
   logger.info('Entering simulation environment!')
-  config = load_configuration()
+  config = Config().load()
   salesforce_config = {
     "url": config.get("api_url", ""),
     "username": config.get("username", ""),

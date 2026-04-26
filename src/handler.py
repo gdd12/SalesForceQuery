@@ -14,22 +14,19 @@ from display import (
 	display_queue_needs_commitment,
 	display_failed_validation_cases
 )
-from helper import (
+from utils.helper import (
   concat_team_list,
 	concat_group_list,
 	concat_support_engineer_list
 )
-from notification import notify
+from tools.notify import notify
 from exceptions import ConfigurationError, UnsupportedRole
 from datetime import datetime
-from config import (
-  load_excluded_cases,
-	get_config_value,
-	request_password,
-	load_excluded_products
-)
 from logger import logger
-from variables import FileNames
+from utils.variables import FileNames
+from config.products import Products
+from config.cases import Cases
+from config.config import Config, request_password
 
 class EngineerHandler:
 	def __init__(self, config, debug, send_notification, isTest, teamsList):
@@ -50,7 +47,10 @@ class EngineerHandler:
 		self.color = config.get("colors", None)
 		self.update_threshold = config.get("rules").get("update_threshold", 45)
 		self.config_password = None
-		
+		self.products = Products()
+		self.cases = Cases()
+		self.config = Config()
+
 	def run(self, isTest):
 		func = "EngineerHandler.run()"
 		logger.debug(f"{func} has been invoked")
@@ -77,7 +77,7 @@ class EngineerHandler:
 			clear_screen()
 			display_header(self.poll_interval)
 
-			excluded_products = load_excluded_products()
+			excluded_products = self.products.load_excluded_products()
 
 			query = self.build_query(
 				excluded_products,
@@ -92,9 +92,9 @@ class EngineerHandler:
 
 			all_cases = http_handler(api_url, username, self.config_password, query, isTest)
 
-			excluded_cases = load_excluded_cases()
+			excluded_cases = self.cases.load_excluded_cases()
 
-			if get_config_value("rules.upload_to_tse_board"): uploadToTseBoard(all_cases)
+			if self.config.get_config_value("rules.upload_to_tse_board"): uploadToTseBoard(all_cases)
 			else:
 				case_validation_failed_list = []
 				for idx, case in enumerate(all_cases):
@@ -131,7 +131,7 @@ class EngineerHandler:
 				if os.name != "nt" and self.send_notification:
 					notify(team_cases, isTest, self.sound_notifications)
 
-			num_excluded_products = len(load_excluded_products())
+			num_excluded_products = len(self.products.load_excluded_products())
 			total_seconds = self.poll_interval * 60
 			elapsed = 0
 
@@ -140,7 +140,7 @@ class EngineerHandler:
 				time.sleep(10)
 				elapsed += 10
 
-				if len(load_excluded_products()) != num_excluded_products:
+				if len(self.products.load_excluded_products()) != num_excluded_products:
 					logger.info(f"WatchDog found {FileNames.ExProducts} was updated - rebuilding query.")
 					break
 
@@ -151,7 +151,7 @@ class EngineerHandler:
 		excluded_product_list = "', '".join(excluded_products)
 		excluded_product_list = f"'{excluded_product_list}'"
 
-		upload_to_tse_board_enabled = get_config_value("rules.upload_to_tse_board")
+		upload_to_tse_board_enabled = self.config.get_config_value("rules.upload_to_tse_board")
 
 		if upload_to_tse_board_enabled:
 			return self.queries["Engineer_Forwarding"].format(
