@@ -5,8 +5,9 @@ from logger import logger
 from config.config import Config, load_json_file, create_json_file, FileReg
 import json
 from utils.variables import FileNames
+from tools.encryption import decrypt_password
 
-def http_handler(api_url, username, password, query, isTest=False):
+def http_handler(api_url, username, query, isTest=False):
   FR = FileReg()
   FR.read()
   last_query_result = FR.resolve_file("dataBuffer")
@@ -16,7 +17,7 @@ def http_handler(api_url, username, password, query, isTest=False):
     logger.debug(f"Using query: {query}")
     logger.debug(f"HTTP request to {api_url}")
 
-    auth = HTTPBasicAuth(username, password)
+    auth = HTTPBasicAuth(username, decrypt_password())
     response = requests.get(api_url, headers={"Content-Type": "application/json"}, auth=auth, params={"q": query}, timeout=30)
 
     logger.debug(f"Response took {response.elapsed} and resulted in HTTP {response.status_code}")

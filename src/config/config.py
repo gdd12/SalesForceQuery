@@ -107,10 +107,6 @@ class Config():
       Cases().add_excluded_cases(str(case_number))
     if str(type).upper() == "PRODUCT": Products().add_excluded_product()
 
-def request_password():
-  password = getpass("API Password: ")
-  return password
-
 def interactive_config_setup(config_path, config_template_path, CalledFrom=None):
   if CalledFrom == 'System':
     print("--- Configuration Setup ---")

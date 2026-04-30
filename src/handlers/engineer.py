@@ -30,7 +30,6 @@ class EngineerHandler:
 		self.role = config.get("role", "").upper()
 		self.color = config.get("colors", None)
 		self.update_threshold = config.get("rules").get("update_threshold", 45)
-		self.config_password = None
 		self.products = Products()
 		self.cases = Cases()
 		self.config = Config()
@@ -76,7 +75,7 @@ class EngineerHandler:
 			personal_cases = []
 			opened_today_cases = []
 
-			all_cases = http_handler(api_url, username, self.config_password, query, isTest)
+			all_cases = http_handler(api_url, username, query, isTest)
 
 			excluded_cases = self.cases.load_excluded_cases()
 
@@ -129,9 +128,6 @@ class EngineerHandler:
 				if len(self.products.load_excluded_products()) != num_excluded_products:
 					logger.info(f"WatchDog found {FileNames.ExProducts} was updated - rebuilding query.")
 					break
-
-	def set_password(self, password):
-		self.config_password = password
 
 	def build_query(self, excluded_products, group_list, engineer_name, support_engineer_list):
 		excluded_product_list = "', '".join(excluded_products)

@@ -2,10 +2,11 @@ import warnings
 warnings.filterwarnings("ignore")
 import signal
 import re
-from config.config import Config, request_password
+from config.config import Config
 from api import http_handler
 from utils.helper import define_query_columns
 from main import signal_handler
+from tools.encryption import generate_encrypted_passwd
 
 def simulate(logger):
   print("\n******************** Entering Simulation Env ********************")
@@ -28,8 +29,8 @@ def simulate(logger):
   if columns: print(f"Selected columns include: {columns}")
   if not debug: print(f'Using query: {query}')
 
-  password = request_password()
-  response = http_handler(api_url,username,password,query,debug)
+  generate_encrypted_passwd()
+  response = http_handler(api_url,username,query,debug)
 
   for idx, record in enumerate(response, start=1):
     print(f"----- Record {idx} -----")

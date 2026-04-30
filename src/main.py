@@ -11,6 +11,7 @@ from config.filereg import FileReg
 from utils.helper import handle_shutdown
 import exceptions as exceptions
 from handlers.handler import role_handler
+from tools.encryption import generate_encrypted_passwd
 
 def main(debug, testOn, verboseOn=False):
   logger.info("Logger initialized with debug=%s verbose=%s test=%s", debug, verboseOn, testOn)
@@ -28,6 +29,7 @@ def main(debug, testOn, verboseOn=False):
     logger.info("******************* Setup Complete *******************")
     print("\n******************* SalesForceQuery Tool *******************\n")
 
+    generate_encrypted_passwd()
     role_handler(role, debug, send_notifications, config, testOn, teamsList)
 
   except Exception as e:

@@ -31,3 +31,5 @@ class FileNames:
   FileRegWin = "fileregwin.xml"
   Teams = "teams.json"
   RunningLog = "running.log"
+  KeyFile = "key"
+  PasswordFile = "passwd" 

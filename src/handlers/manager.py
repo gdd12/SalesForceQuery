@@ -24,7 +24,6 @@ class ManagerHandler:
 		self.role = config.get("role", "").upper()
 		self.color = config.get("colors", None)
 		self.update_threshold = config.get("rules").get("update_threshold", 45)
-		self.config_password = None
 		self.display = ManagerDisplay()
 		self.display_util = CommonDisplay()
 
@@ -54,7 +53,7 @@ class ManagerHandler:
 			self.display_util.clear_screen()
 			self.display_util.display_header(self.poll_interval)
 
-			cases = http_handler(api_url, username, self.config_password, manager_query, isTest)
+			cases = http_handler(api_url, username, manager_query, isTest)
 
 			queue_needs_commitment = []
 			team_needs_commitment = []
@@ -74,6 +73,3 @@ class ManagerHandler:
 
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
-
-	def set_password(self, password):
-		self.config_password = password

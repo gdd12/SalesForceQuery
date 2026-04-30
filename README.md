@@ -9,12 +9,14 @@ This project helps automate the process of fetching SalesForce cases. It is desi
 		```python3 --version```
 	- If you don’t have Python 3 installed, you can download it from the official [Python website](https://www.python.org/downloads/).
 
-2. **Dependencies**: You need the `requests` and `rich` libraries to interact with the SalesForce API.
+2. **Dependencies**: You need the `requests` and `rich` libraries to interact with the SalesForce API. The `cryptography` is required for password encryption
 	- Install the necessary dependencies by running:
 
       ```pip3 install requests```
 
       ```pip3 install rich```
+
+      ```pip3 install cryptography```
 
 ## Installation and Setup
 
