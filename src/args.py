@@ -120,6 +120,7 @@ def argument_handler(arg_obj):
   if arg_obj[VARS.Simulate]:
     from tools.simulation import simulate
     simulate(base_logger)
+    handle_shutdown(0, reason="Simulation completed")
 
   if arg_obj[VARS.Team]:
     TeamTool(
