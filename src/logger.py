@@ -1,11 +1,9 @@
 import logging
-import os
+from pathlib import Path
+from utils.variables import FileNames
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-RUNNING_LOG_FILE = os.path.join(BASE_DIR, '..', 'running.log')
-
-logger = logging.getLogger("custom_logger")
-logger.addHandler(logging.NullHandler())
+LOG_FILE = Path(__file__).resolve().parent.parent / FileNames.RunningLog
+logger = logging.getLogger("logger")
 
 def setup_logger(log_level=None):
     global logger
@@ -19,13 +17,13 @@ def setup_logger(log_level=None):
     logger.setLevel(logging.DEBUG)
 
     if not logger.handlers or isinstance(logger.handlers[0], logging.NullHandler):
-        file_handler = logging.FileHandler(RUNNING_LOG_FILE)
+        file_handler = logging.FileHandler(LOG_FILE)
         if log_level == 'debug':
             file_handler.setLevel(logging.DEBUG)
         else:
             file_handler.setLevel(logging.INFO)
 
-        formatter = logging.Formatter('%(asctime)s [%(levelname)-7s] [%(funcName)s]: %(message)s')
+        formatter = logging.Formatter('%(asctime)s [%(levelname)-7s] [%(module)s.%(funcName)s]: %(message)s')
         file_handler.setFormatter(formatter)
 
         logger.addHandler(file_handler)

@@ -30,3 +30,4 @@ class FileNames:
   FileReg = "filereg.xml"
   FileRegWin = "fileregwin.xml"
   Teams = "teams.json"
+  RunningLog = "running.log"
