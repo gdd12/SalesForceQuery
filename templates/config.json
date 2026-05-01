@@ -1,7 +1,7 @@
 {
   "username": "",
   "api_url": "",
-  "front_end_board": "",
+  "front_end_board": null,
   "engineer_name": "",
   "debug": false,
   "role": "engineer",
