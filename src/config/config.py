@@ -32,19 +32,23 @@ class Config():
     logger.info("Configuration set up completed... Continue to main routine.")
     return config
 
-  def get_config_value(self, key: str, Proc=False):
+  def get_config_value(self, key: str, default=None):
     child = ''
     try:
       key_components = key.split(".")
       if len(key_components) > 1:
         child = key_components[1]
       parent = key.split('.')[0]
-      config_data = load_json_file(self.config_path, Proc=Proc, fatal=True)
+      config_data = load_json_file(self.config_path, fatal=True)
       if config_data:
         config_value_from_key = config_data.get(parent)
 
         if child: config_value_from_key = config_data.get(parent).get(child)
         if config_value_from_key == None:
+          if default:
+            logger.debug(f"Using default value: {config_value_from_key} for {key}")
+            return default
+
           raise KeyError(f"Invalid key: {key}")
 
         logger.debug(f"Returning value {config_value_from_key} from {key} ")

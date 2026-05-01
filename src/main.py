@@ -1,10 +1,12 @@
 import warnings
 import signal
 import sys
+import os
 
 from args import user_defined_args, argument_handler
 from logger import setup_logger, logger as base_logger
-from utils.variables import VARS
+from utils.variables import VARS, FileNames
+from pathlib import Path
 
 from config.config import Config, load_teams_list
 from config.filereg import FileReg
@@ -29,7 +31,14 @@ def main(debug, testOn, verboseOn=False):
     logger.info("******************* Setup Complete *******************")
     print("\n******************* SalesForceQuery Tool *******************\n")
 
-    generate_encrypted_passwd()
+    if Config().get_config_value("rules.passwd_required_on_startup", default=True):
+      generate_encrypted_passwd()
+
+    if (
+      not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.PasswordFile) or
+      not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.KeyFile)
+    ): generate_encrypted_passwd()
+    
     role_handler(role, debug, send_notifications, config, testOn, teamsList)
 
   except Exception as e:
