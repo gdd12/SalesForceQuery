@@ -41,9 +41,11 @@ class Config():
       parent = key.split('.')[0]
       config_data = load_json_file(self.config_path, fatal=True)
       if config_data:
-        config_value_from_key = config_data.get(parent)
+        parent_value = config_data.get(parent)
+        config_value_from_key = parent_value
 
-        if child: config_value_from_key = config_data.get(parent).get(child)
+        if parent_value is not None and child:
+          config_value_from_key = parent_value.get(child)
         if config_value_from_key == None:
           if default:
             logger.debug(f"Using default value: {config_value_from_key} for {key}")
