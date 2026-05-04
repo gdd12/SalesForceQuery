@@ -104,6 +104,7 @@ class Config():
     print(f"\nSuccessfully updated the user role to {updated_role}")
     handle_shutdown(0)
   
+  @staticmethod
   def add_exclusion(exclusion):
     type = exclusion.get('type')
 

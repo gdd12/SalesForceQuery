@@ -31,8 +31,7 @@ class Cases():
         existing_cases = {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
 
     if case_name in existing_cases:
-      print(f'\nCase {case_name} already exits in {FileNames.ExCases}')
-      logger.warning(f'Case {case_name} already exits in {FileNames.ExCases}')
+      logger.warning(f'Case {case_name} already exists in {FileNames.ExCases}')
       return
 
     if case_name.upper() == 'RESET':
@@ -58,7 +57,7 @@ class Cases():
       with open(excludedCasesFile, 'a') as file:
         file.write(case_name + '\n')
       logger.info(f"Added '{case_name}' to {excludedCasesFile}.")
-      print(f'\nCase {case_name} added to {FileNames.ExCases}')
+      print(f'Case {case_name} added to {FileNames.ExCases}')
 
     except Exception as e:
       logger.error(f"Failed to add '{case_name}' to {excludedCasesFile}: {e}")
