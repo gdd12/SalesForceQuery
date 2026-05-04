@@ -18,7 +18,8 @@ def user_defined_args(args):
     VARS.Team: False,
     VARS.Simulate: False,
     VARS.Role: False,
-    VARS.Exclude: False
+    VARS.Exclude: False,
+    VARS.Clean: False
   }
   if "-H" in args or "-h" in args:
     print_help_page()
@@ -84,6 +85,10 @@ def user_defined_args(args):
 
       else:
         handle_shutdown(1, reason=f"Error: Invalid exclusion type '{next_arg}'. Must be 'Case' or 'Product'")
+    
+    elif arg in ["-Z", "-z"]:
+      arg_obj[VARS.Clean] = True
+
     else:
       print_help_page()
       handle_shutdown(1, reason=f"Unknown argument: {arg}")
@@ -100,6 +105,9 @@ def argument_handler(arg_obj):
   if arg_obj[VARS.Debug]:
     debug = True
 
+  if arg_obj[VARS.Clean]:
+    Config().clean()
+    handle_shutdown(0, reason="Clean completed")
   if arg_obj[VARS.Test]:
     testMode = True
 
@@ -154,6 +162,7 @@ Runtime Options:
   -q                    Simulate SQL against SalesForce
   -s                    Interactive config setup
   -x                    Run in test mode, no API call is made ONLY if the ~/config/dataBuffer.json does not exist
+  -z                    Clean the system-created config files. Does not remove runtime/user defined data.
 
 Debug Options:
   -d                    Enable logging

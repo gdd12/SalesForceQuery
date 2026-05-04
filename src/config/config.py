@@ -14,7 +14,8 @@ from config.filereg import FileReg
 class Config():
   def __init__(self):
     self.base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    self.config_path = os.path.join(self.base_dir, "config", FileNames.Config)
+    self.config_dir = os.path.join(self.base_dir, "config")
+    self.config_path = os.path.join(self.config_dir, FileNames.Config)
 
   def load(self):
     registry = FileReg()
@@ -113,6 +114,25 @@ class Config():
       case_number = exclusion.get('value')
       Cases().add_excluded_cases(str(case_number))
     if str(type).upper() == "PRODUCT": Products().add_excluded_product()
+  
+  def clean(self):
+    files_to_remove = (
+      FileNames.QueryResults,
+      FileNames.KeyFile,
+      FileNames.PasswordFile,
+      FileNames.Counter,
+      FileNames.FileReg,
+    )
+    def _remove(filename):
+      try:
+        file_to_remove = os.path.join(self.config_dir, filename)
+        os.remove(file_to_remove)
+        logger.info(f"Removed {filename} successfully")
+      except Exception as e:
+        logger.warning(f"Unable to clean {filename}: {e}")
+    for file in files_to_remove:
+      _remove(file)
+    return
 
 def interactive_config_setup(config_path, config_template_path, CalledFrom=None):
   if CalledFrom == 'System':

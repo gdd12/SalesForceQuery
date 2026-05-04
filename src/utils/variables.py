@@ -21,6 +21,7 @@ class VARS:
   Simulate = 'simulate'
   Team = 'team'
   Verbose = 'debug_verbose'
+  Clean = 'clean'
 
 class FileNames:
   Config = "config.json"
