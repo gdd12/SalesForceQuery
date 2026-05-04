@@ -5,6 +5,7 @@ from utils.variables import FileNames, VARS
 from logger import logger
 from utils.helper import handle_shutdown
 from pathlib import Path
+from tools.counter import Counter
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent.parent / VARS.Config
 passwd_file = os.path.join(CONFIG_PATH, FileNames.PasswordFile)
@@ -32,6 +33,7 @@ def generate_encrypted_passwd():
 		with open(passwd_file, "wb") as f:
 			f.write(encrypted_password)
 		logger.info("API password encrypted")
+		Counter().reset()
 	except KeyboardInterrupt:
 		handle_shutdown(exit_code=0, reason="User canceled the entry")
 

@@ -33,3 +33,4 @@ class FileNames:
   RunningLog = "running.log"
   KeyFile = "key"
   PasswordFile = "passwd" 
+  Counter = "counter"

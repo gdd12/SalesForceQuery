@@ -14,6 +14,7 @@ from utils.helper import handle_shutdown
 import exceptions as exceptions
 from handlers.handler import role_handler
 from tools.encryption import generate_encrypted_passwd
+from tools.counter import Counter
 
 def main(debug, testOn, verboseOn=False):
   logger.info("Logger initialized with debug=%s verbose=%s test=%s", debug, verboseOn, testOn)
@@ -36,7 +37,8 @@ def main(debug, testOn, verboseOn=False):
 
     if (
       not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.PasswordFile) or
-      not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.KeyFile)
+      not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.KeyFile) or
+      not Counter().ok()
     ): generate_encrypted_passwd()
     
     role_handler(role, debug, send_notifications, config, testOn, teamsList)
