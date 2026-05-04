@@ -162,7 +162,7 @@ Runtime Options:
   -q                    Simulate SQL against SalesForce
   -s                    Interactive config setup
   -x                    Run in test mode, no API call is made ONLY if the ~/config/dataBuffer.json does not exist
-  -z                    Clean the system-created config files. Does not remove runtime/user defined data.
+  -z                    Clean the system-created config files. Does not remove runtime/user defined data
 
 Debug Options:
   -d                    Enable logging

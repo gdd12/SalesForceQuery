@@ -62,6 +62,7 @@ Runtime Options:
   -q                    Simulate SQL against SalesForce
   -s                    Interactive config setup
   -x                    Run in test mode
+  -z                    Clean the system-created config files. Does not remove runtime/user defined data
 
 Debug Options:
   -d                    Enable logging
