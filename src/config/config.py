@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+from pathlib import Path
 from getpass import getpass
 from exceptions import ConfigurationError
 import xml.etree.ElementTree as ET
@@ -116,23 +117,33 @@ class Config():
     if str(type).upper() == "PRODUCT": Products().add_excluded_product()
   
   def clean(self):
-    files_to_remove = (
+    self._remove_files(
       FileNames.QueryResults,
+      FileNames.FileReg,
+    )
+
+  def remove_key_files(self):
+    self._remove_files(
       FileNames.KeyFile,
       FileNames.PasswordFile,
       FileNames.Counter,
-      FileNames.FileReg,
     )
-    def _remove(filename):
-      try:
-        file_to_remove = os.path.join(self.config_dir, filename)
-        os.remove(file_to_remove)
-        logger.info(f"Removed {filename} successfully")
-      except Exception as e:
-        logger.warning(f"Unable to clean {filename}: {e}")
-    for file in files_to_remove:
-      _remove(file)
-    return
+
+  def _remove_files(self, *filenames):
+    for filename in filenames:
+      self._remove(filename)
+
+  def _remove(self, filename):
+    path = Path(self.config_dir) / filename
+    try:
+      path.unlink()
+      logger.info(f"Removed {filename} successfully")
+    except FileNotFoundError:
+      logger.debug(f"{filename} not found, skipping")
+    except PermissionError as e:
+      logger.warning(f"Permission denied removing {filename}: {e}")
+    except OSError as e:
+      logger.warning(f"OS error removing {filename}: {e}")
 
 def interactive_config_setup(config_path, config_template_path, CalledFrom=None):
   if CalledFrom == 'System':

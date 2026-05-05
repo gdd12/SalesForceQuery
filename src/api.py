@@ -62,13 +62,13 @@ def _handle_http_error(response, query):
 
   try:
     response_json = response.json()
+    Config().remove_key_files()
   except Exception:
     response_json = {}
 
   if response.status_code in error_messages:
     logger.debug(f"Received response: {response_json}")
-    logger.error(f"HTTP {response.status_code}: {error_messages[response.status_code]}")
-    raise APIError(f"HTTP {response.status_code} {response.reason}. {error_messages[response.status_code]}\n\nNested Error: {response_json}")
+    raise APIError(f"HTTP {response.status_code} {response.reason}")
 
   if response.status_code >= 500:
     logger.debug(f"Received response: {response}")
