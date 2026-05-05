@@ -38,7 +38,7 @@ class FileReg():
   def read(self):
     try:
       if not os.path.exists(self.fr_location):
-        raise FileNotFoundError(self.fr_location)
+        self.generate()
 
       tree = ET.parse(self.fr_location)
       root = tree.getroot()
