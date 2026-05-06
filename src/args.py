@@ -106,7 +106,9 @@ def argument_handler(arg_obj):
     debug = True
 
   if arg_obj[VARS.Clean]:
-    Config().clean()
+    config = Config()
+    cfg_clean = config.clean()
+    passwd_clean = config.remove_key_files()
     handle_shutdown(0, reason="Clean completed")
   if arg_obj[VARS.Test]:
     testMode = True
