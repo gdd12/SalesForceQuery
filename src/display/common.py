@@ -5,6 +5,7 @@ from logger import logger
 from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
+from rich.text import Text
 
 console = Console()
 
@@ -40,3 +41,17 @@ class CommonDisplay():
       panel = Panel(Align.center(panel_content), title=f"[bold {pColor}]Cases Failed Validation [/bold {pColor}]", border_style=f"{pColor}")
       console.print(Align.center(panel))
     return
+
+  @staticmethod
+  def main_banner():
+    title = Text("            SalesForceQuery Tool", style="bold cyan", justify="center")
+    subtitle = Text("Case Insights • Queue Monitoring • Commitments")
+
+    content = Text("\n").join((title, subtitle))
+
+    panel = Panel(
+      content,
+      border_style="cyan"
+    )
+    console.print()
+    console.print(Align.center(panel))

@@ -15,9 +15,11 @@ import exceptions as exceptions
 from handlers.handler import role_handler
 from tools.encryption import generate_encrypted_passwd
 from tools.counter import Counter
+from display.common import CommonDisplay
 
 def main(debug, testOn, verboseOn=False):
   logger.info("Logger initialized with debug=%s verbose=%s test=%s", debug, verboseOn, testOn)
+  CommonDisplay().main_banner()
 
   try:
     logger.info("******************** Config Setup ********************")
@@ -30,7 +32,6 @@ def main(debug, testOn, verboseOn=False):
     send_notifications = config[VARS.Notifications][VARS.SendNotif]
 
     logger.info("******************* Setup Complete *******************")
-    print("\n******************* SalesForceQuery Tool *******************\n")
 
     if Config().get_config_value("rules.passwd_required_on_startup", default=True):
       generate_encrypted_passwd()
