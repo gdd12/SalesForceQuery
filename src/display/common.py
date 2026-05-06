@@ -2,7 +2,7 @@ import shutil, os
 from datetime import datetime
 from logger import logger
 
-from rich.console import Console
+from rich.console import Console, Group
 from rich.panel import Panel
 from rich.align import Align
 from rich.text import Text
@@ -15,9 +15,7 @@ class CommonDisplay():
     terminal_width = shutil.get_terminal_size().columns
     timestamp = f"Fetching batch @ {(datetime.now()).strftime('%a %b %H:%M')}"
     polling_info = f"Next poll in {polling_interval} minutes..."
-
-    print(timestamp.center(terminal_width))
-    print(polling_info.center(terminal_width))
+    CommonDisplay.main_banner(extra_info=(timestamp, polling_info))
   
   @staticmethod
   def clear_screen():
@@ -43,15 +41,21 @@ class CommonDisplay():
     return
 
   @staticmethod
-  def main_banner():
-    title = Text("            SalesForceQuery Tool", style="bold cyan", justify="center")
+  def main_banner(extra_info=None):
+    title = Text("SalesForceQuery Tool", style="bold cyan")
     subtitle = Text("Case Insights • Queue Monitoring • Commitments")
 
-    content = Text("\n").join((title, subtitle))
+    items = [
+      Align.center(title),
+      Align.center(subtitle),
+    ]
 
-    panel = Panel(
-      content,
-      border_style="cyan"
-    )
+    if extra_info and len(extra_info) == 2:
+      items.append(Align.center(Text(extra_info[0], style="dim")))
+      items.append(Align.center(Text(extra_info[1], style="dim")))
+
+    content = Group(*items)
+
+    panel = Panel(content, border_style="cyan")
     console.print()
     console.print(Align.center(panel))
