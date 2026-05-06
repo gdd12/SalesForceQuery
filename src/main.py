@@ -33,9 +33,6 @@ def main(debug, testOn, verboseOn=False):
 
     logger.info("******************* Setup Complete *******************")
 
-    if Config().get_config_value("rules.passwd_required_on_startup", default=True):
-      generate_encrypted_passwd()
-
     if (
       not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.PasswordFile) or
       not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.KeyFile) or
