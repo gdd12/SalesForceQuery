@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
   if user_args.get(VARS.Debug):
     log_level = 'info'
-  if user_args.get(VARS.Verbose) or Config().get_config_value('debug'):
+  if user_args.get(VARS.Verbose) or Config().get_config_value('debug', default=False):
     log_level = 'debug'
     verboseOn = True
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
   logger = base_logger
 
   args = argument_handler(user_args)
-  debugOn = True if args.get(VARS.Debug, False) or Config().get_config_value('debug') else False
+  debugOn = True if args.get(VARS.Debug, False) or Config().get_config_value('debug', default=False) else False
   testOn = args.get(VARS.Test, False)
 
   main(debugOn, testOn, verboseOn=verboseOn)
