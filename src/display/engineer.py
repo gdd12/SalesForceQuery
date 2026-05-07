@@ -134,3 +134,34 @@ class EngineerDisplay():
     panel = Panel(panel_content, title=f"[bold {pColor}]Last 24 Hours[/bold {pColor}]", border_style=f"{pColor}")
 
     console.print(Align.center(panel))
+
+  @staticmethod
+  def case_insights(cases, color):
+    pColor = color.get("primary")
+    sColor = color.get("secondary")
+
+    missing_complexity = 0
+    other_case_reason = 0
+
+    if cases:
+      for case in cases:
+        case_reason = case.get('Case_Reason__c')
+        case_complexity = case.get('Case_Complexity__c')
+        if not case_complexity:
+          missing_complexity += 1
+        if case_reason == 'Other':
+          other_case_reason += 1
+
+    lines = []
+
+    if missing_complexity > 0:
+      lines.append(f"[bold {sColor}]{missing_complexity}[/bold {sColor}] case(s) missing a [bold]Case Complexity[/bold]")
+    if other_case_reason > 0:
+      lines.append(f"[bold {sColor}]{other_case_reason}[/bold {sColor}] case(s) opened as [bold]Other[/bold]")
+    if missing_complexity + other_case_reason == 0:
+      lines.append("No case insights available")
+    
+    panel_content = "\n".join(lines)
+    panel = Panel(panel_content, title=f"[bold {pColor}]Case Insights[/bold {pColor}]", border_style=f"{pColor}")
+
+    console.print(Align.center(panel))
