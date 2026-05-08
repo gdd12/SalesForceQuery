@@ -1,4 +1,4 @@
-import logging
+import logging, sys
 from pathlib import Path
 from utils.variables import FileNames
 
@@ -16,17 +16,26 @@ def setup_logger(log_level=None):
 
     logger.setLevel(logging.DEBUG)
 
+    formatter_file = logging.Formatter('%(asctime)s [%(levelname)-7s] [%(module)s.%(funcName)s]: %(message)s')
+    formatter_console = logging.Formatter('%(message)s')
+
+
     if not logger.handlers or isinstance(logger.handlers[0], logging.NullHandler):
         file_handler = logging.FileHandler(LOG_FILE)
+        console_handler = logging.StreamHandler(sys.stdout)
         if log_level == 'debug':
             file_handler.setLevel(logging.DEBUG)
         else:
             file_handler.setLevel(logging.INFO)
-
-        formatter = logging.Formatter('%(asctime)s [%(levelname)-7s] [%(module)s.%(funcName)s]: %(message)s')
-        file_handler.setFormatter(formatter)
+    
+        file_handler.setFormatter(formatter_file)
+        
+        console_handler.setLevel(logging.ERROR)
+        console_handler.setFormatter(formatter_console)
 
         logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
+
         logger.propagate = False
 
     return logger
