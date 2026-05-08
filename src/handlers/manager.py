@@ -7,7 +7,7 @@ from utils.helper import concat_group_list, concat_team_list
 from api import http_handler
 
 class ManagerHandler:
-	def __init__(self, config, debug, send_notification, isTest, teamsList):
+	def __init__(self, config, debug, send_notification, isTest, teamsList, display, common_display):
 		notifications = config.get("notifications", {})
 		self.send_notification = send_notification or notifications.get("send", False)
 		self.sound_notifications = notifications.get("sound", None)
@@ -24,8 +24,8 @@ class ManagerHandler:
 		self.role = config.get("role", "").upper()
 		self.color = config.get("colors", None)
 		self.update_threshold = config.get("rules").get("update_threshold", 45)
-		self.display = ManagerDisplay()
-		self.display_util = CommonDisplay()
+		self.display = display
+		self.display_util = common_display
 
 	def run(self, isTest):
 		logger.debug(f"Class {__class__.__name__} has been invoked")
