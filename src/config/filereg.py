@@ -14,26 +14,52 @@ class FileReg():
       os.path.abspath(os.path.join(self.base_dir, "templates", FileNames.FileRegWin))
     )
     self.file_paths = {}
-  def validate(self):
+
+  def init(self):
+    logger.info(f"Initialization '{__class__.__name__}' module")
+    self.exists()
+    self.is_valid()
+    self.read()
+
+    return True
+
+  def exists(self):
     if os.path.exists(self.fr_location):
       return
 
     logger.debug(f"This is the first startup and {FileNames.FileReg} does not exist. Generating from the templates library.")
     self.generate()
 
-  def generate(self):
+    return os.path.exists(self.fr_location)
+
+  def is_valid(self):
     try:
-      
-      if not os.path.exists(self.fr_template):
-        logger.error(f"{FileNames.FileReg} could not be generated")
-        raise FileNotFoundError(self.fr_template)
-      shutil.copy(
-        self.fr_template,
-        self.fr_location
-      )
-      logger.debug(f"{FileNames.FileReg} has been generated")
-    except FileNotFoundError:
-      raise
+      tree = ET.parse(self.fr_location)
+      root = tree.getroot()
+
+      if root.tag != "Files":
+        raise ConfigurationError(f"Invalid root tag '{root.tag}' in {FileNames.FileReg}")
+
+      for file_elem in root.findall("File"):
+        name = file_elem.get("name")
+        path = file_elem.get("path")
+
+        if not name or not path:
+          raise ConfigurationError("Each <File> entry requires 'name' and 'path'")
+
+      return True
+
+    except ET.ParseError as e:
+      raise ConfigurationError(f"Malformed XML in {FileNames.FileReg}: {e}")
+
+  def generate(self):
+    if not os.path.exists(self.fr_template):
+      raise FileNotFoundError(f"A missing template for {FileNames.FileReg} has caused system panic")
+    shutil.copy(
+      self.fr_template,
+      self.fr_location
+    )
+    logger.debug(f"{FileNames.FileReg} has been generated")
 
   def read(self):
     try:
@@ -58,8 +84,11 @@ class FileReg():
   
   def resolve_file(self, file):
     if not self.file_paths:
-      raise KeyError(
-        f"FileReg.resolve_file() called before initialization. "
-        f"Requested key='{file}', file_paths is empty."
-      )
-    return os.path.join(self.base_dir, self.file_paths.get(file))
+      raise RuntimeError("FileReg not initialized. Call init() first.")
+
+    path = self.file_paths.get(file)
+
+    if path is None:
+      raise KeyError(f"Unknown file key: '{file}'")
+
+    return os.path.join(self.base_dir, path)

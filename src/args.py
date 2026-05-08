@@ -6,7 +6,8 @@ warnings.filterwarnings("ignore")
 from logger import logger as base_logger
 from utils.helper import handle_shutdown
 from utils.variables import VARS, FileNames
-from config.config import Config, rewrite_configuration, TeamTool
+from config.config import Config, rewrite_configuration
+from config.team import Team
 
 def user_defined_args(args):
   arg_obj = {
@@ -133,11 +134,15 @@ def argument_handler(arg_obj):
     handle_shutdown(0, reason="Simulation completed")
 
   if arg_obj[VARS.Team]:
-    TeamTool(
-      Print=(True if type(arg_obj[VARS.Team]) == bool else False),
-      Update=(True if str(arg_obj[VARS.Team]).lower() == 'add' else False),
-      Viewable=(True if str(arg_obj[VARS.Team]).lower() == 'view' else False)
-    ).run()
+    value = arg_obj[VARS.Team]
+
+    TeamTool = Team.bootstrap(
+      Print=(value is True),
+      Update=(str(value).lower() == "add"),
+      Viewable=(str(value).lower() == "view"),
+    )
+
+    TeamTool.run()
 
   if arg_obj[VARS.Role]:
     Config().toggle_role()

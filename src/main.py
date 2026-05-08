@@ -8,7 +8,8 @@ from logger import setup_logger, logger as base_logger
 from utils.variables import VARS, FileNames
 from pathlib import Path
 
-from config.config import Config, load_teams_list
+from config.config import Config
+from config.team import Team
 from config.filereg import FileReg
 from utils.helper import handle_shutdown
 import exceptions as exceptions
@@ -23,15 +24,30 @@ def main(debug, testOn, verboseOn=False):
 
   try:
     logger.info("******************** Config Setup ********************")
-    FileReg().validate()
 
-    config = Config().load()
-    teamsList = load_teams_list()
+    INSTANCES = {
+      FileReg(),
+      Config(),
+      Team()
+    }
+
+    for inst in INSTANCES:
+      inst.init()
+
+  except Exception as e:
+    logger.error(f"FATAL - Configuration validation failed")
+    logger.error(f"{type(e).__name__}: {e}")
+    print("\nThe above exception(s) may be recoverable by performing a clean operation: main.py -z\n")
+    raise
+
+  try:
+    logger.info("******************* Setup Complete *******************")
+
+    config = Config().load_file()
+    teamsList = Team().load_teams_list()
 
     role = config[VARS.Role]
     send_notifications = config[VARS.Notifications][VARS.SendNotif]
-
-    logger.info("******************* Setup Complete *******************")
 
     if (
       not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.PasswordFile) or

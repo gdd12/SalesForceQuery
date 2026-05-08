@@ -15,54 +15,96 @@ from config.filereg import FileReg
 class Config():
   def __init__(self):
     self.base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    self.config_dir = os.path.join(self.base_dir, "config")
+    self.config_dir = os.path.join(self.base_dir, VARS.Config)
     self.config_path = os.path.join(self.config_dir, FileNames.Config)
+    self.required_keys = [
+      'username',
+      'api_url',
+      'engineer_name',
+      'debug',
+      'role',
+      'rules.poll_interval',
+      'rules.update_threshold',
+      'rules.vacation_scheduled',
+      'rules.back_from_vacation',
+      'rules.upload_to_tse_board',
+      'rules.max_buffer_size_bytes',
+      'colors.primary',
+      'colors.secondary',
+      'notifications.send',
+      'notifications.sound',
+      'queries.Engineer',
+      'queries.Engineer_Forwarding',
+      'queries.Manager'
+    ]
+    self.fileregistry = FileReg()
 
-  def load(self):
-    registry = FileReg()
-    registry.read()
+  def init(self):
+    logger.info(f"Initialization '{__class__.__name__}' module")
+    self.fileregistry.read()
 
-    config_template = registry.resolve_file("configTemplate")
-    teams_template = registry.resolve_file("teamsTemplate")
-    teams_path = registry.resolve_file("teamsPath")
-    logger.debug(f"Returned the full path from {FileNames.FileReg} children")
+    config_template = self.fileregistry.resolve_file("configTemplate")    
 
-    if not os.path.exists(self.config_path): interactive_config_setup(self.config_path, config_template, CalledFrom='System') 
-    if not os.path.exists(teams_path): register_teams_list(teams_path, teams_template)
+    if not os.path.exists(self.config_path):
+      if not os.path.exists(config_template): raise FileNotFoundError(config_template)
+      interactive_config_setup(self.config_path, config_template, CalledFrom='System') 
 
+    self.validate_items(self.load_file())
+
+  def load_file(self):
+    if not os.path.exists(self.config_path):
+      raise FileNotFoundError(self.config_path)
     config = load_json_file(self.config_path, fatal=True)
-    logger.info("Configuration set up completed... Continue to main routine.")
     return config
+  
+  def validate_items(self, config):
+    logger.info(f"Recursively verifying the keys within {FileNames.Config}")
+    missing_keys = []
+    
+    for key in self.required_keys:
+      if not self._has_nested_key(config, key):
+        missing_keys.append(key)
+
+    if len(missing_keys) > 0:
+      raise ConfigurationError(f"Missing required keys: {missing_keys}")
+
+  def _has_nested_key(self, data, path):
+    keys = path.split('.')
+    current = data
+    for key in keys:
+      if not isinstance(current, dict):
+        return False
+      if key not in current:
+        return False
+      current = current[key]
+    return True
 
   def get_config_value(self, key: str, default=None):
     child = ''
-    try:
-      key_components = key.split(".")
-      if len(key_components) > 1:
-        child = key_components[1]
-      parent = key.split('.')[0]
-      config_data = load_json_file(self.config_path, fatal=True)
-      if config_data:
-        parent_value = config_data.get(parent)
-        config_value_from_key = parent_value
+    key_components = key.split(".")
+    if len(key_components) > 1:
+      child = key_components[1]
+    parent = key.split('.')[0]
+    config_data = load_json_file(self.config_path, fatal=True)
+    if config_data:
+      parent_value = config_data.get(parent)
+      config_value_from_key = parent_value
 
-        if parent_value is not None and child:
-          config_value_from_key = parent_value.get(child)
-        if config_value_from_key == None:
-          if default:
-            logger.debug(f"Using default value: {config_value_from_key} for {key}")
-            return default
+      if parent_value is not None and child:
+        config_value_from_key = parent_value.get(child)
+      if config_value_from_key == None:
+        if default:
+          logger.debug(f"Using default value: {config_value_from_key} for {key}")
+          return default
 
-          raise KeyError(f"Invalid key: {key}")
+        raise KeyError(f"Invalid key: {key}")
 
-        logger.debug(f"Returning value {config_value_from_key} from {key} ")
-        return config_value_from_key
-      return
-    except KeyError as e:
-      raise e
+      logger.debug(f"Returning value {config_value_from_key} from {key} ")
+      return config_value_from_key
+    return
   
   def print_configuration(self):
-    config = self.load()
+    config = self.load_file()
 
     notifications = config[VARS.Notifications]
     colors = config[VARS.Colors]
@@ -148,7 +190,7 @@ class Config():
 def interactive_config_setup(config_path, config_template_path, CalledFrom=None):
   if CalledFrom == 'System':
     print("--- Configuration Setup ---")
-    logger.info(f"Config does not exist. Starting interactive setup for {FileNames.Config}")
+    logger.info(f"Starting interactive setup due to missing {FileNames.Config} file")
   if CalledFrom == 'User': print("\n--- Re-writing configuration ---")
 
   if os.path.exists(config_path):
@@ -183,7 +225,7 @@ def interactive_config_setup(config_path, config_template_path, CalledFrom=None)
     json.dump(config, f, indent=2)
 
   logger.info(f"Initial configuration completed and saved to {FileNames.Config}")
-  print("\nConfiguration saved successfully.\n")
+  handle_shutdown(reason="\nConfiguration saved successfully.\n")
 
 def load_json_file(path, fatal=False, context="", Proc=False):
   try:
@@ -225,115 +267,3 @@ def rewrite_configuration():
   config_template = file_registry.resolve_file("configTemplate")
 
   interactive_config_setup(config_path, config_template, CalledFrom='User')
-
-def register_teams_list(teams_path, teams_template):
-  with open(teams_template, 'r') as template_file:
-    template_data = json.load(template_file)
-
-  with open(teams_path, 'w') as teams_file:
-    json.dump(template_data, teams_file, indent=2)
-
-  error_reason = "Teams list is empty, the program cannot run without it. \nRun the program with -t to update. Consult with the help page via the -h arguments for assistance."
-  logger.error(error_reason)
-  handle_shutdown(0, reason=error_reason)
-
-def load_teams_list():
-  file_registry = FileReg()
-  file_registry.read()
-  teams_file = file_registry.resolve_file("teamsPath")
-  teams = load_json_file(teams_file, fatal=True)
-  return teams
-
-class TeamTool:
-  def __init__(self, Print=False, Update=False, Viewable=False):
-    self.print_mode = Print
-    self.update = Update
-    self.viewable = Viewable
-
-    self.file_registry = FileReg()
-    self.registers = self.file_registry.read()
-    self.teams = load_teams_list()
-
-    if not self.teams:
-      handle_shutdown(1, reason="Error: Teams file cannot be found. Please run without flags to rebuild config.")
-    self.team_ids = [team.upper() for team in self.teams.keys()]
-
-  def run(self):
-    try:
-      self._print_teams()
-      team_to_update = self._get_valid_team_id()
-
-      if self.update:
-        self._handle_update(team_to_update)
-
-      if self.viewable:
-        self._handle_viewable_toggle(team_to_update)
-
-      handle_shutdown(0, reason='Team list updated, must exit to reload.')
-
-    except ValueError:
-      logger.error("Invalid team ID")
-    except Exception as e:
-      logger.error("Error updating team list", exc_info=True)
-      raise
-
-  def _print_teams(self):
-    print('Current team configuration:\n')
-    for team, data in self.teams.items():
-      if team.upper() != 'GROUP':
-        print(
-          f"{team.upper()}:\n"
-          f" Viewable: {'Y' if data['viewable'] else 'N'}\n"
-          f" List: {data['list']}\n"
-        )
-
-  def _request_team_id(self):
-    if self.update:
-      return get_non_empty_input('\nWhich team ID would you like to add a member to? ')
-    if self.viewable:
-      return get_non_empty_input('\nWhich team ID would you like to toggle visibility? ')
-    handle_shutdown(0)
-
-  def _get_valid_team_id(self):
-    while True:
-      team_id = self._request_team_id().upper()
-      if team_id in self.team_ids:
-        return team_id.lower()
-      print(f"{team_id} not found. Please provide a valid team ID.")
-
-  def _update_team_file(self, updater):
-    teams_file = self.file_registry.resolve_file("teamsPath")
-
-    with open(teams_file, "r") as f:
-      data = json.load(f)
-
-    updater(data)
-
-    with open(teams_file, "w") as f:
-      json.dump(data, f, indent=2)
-
-  def _handle_update(self, team_id):
-    current_list = self.teams[team_id]['list']
-    print(f"\nCurrent team: {current_list}")
-
-    new_member = get_non_empty_input(
-      "\nAdd team member (comma separate multiple members): "
-    )
-    updated_list = current_list + new_member + ','
-
-    def updater(data):
-      data[team_id]['list'] = updated_list
-
-    self._update_team_file(updater)
-
-    print(f"Successfully added {new_member} to the {team_id} team!")
-
-  def _handle_viewable_toggle(self, team_id):
-    current_state = self.teams[team_id]['viewable']
-
-    def updater(data):
-      data[team_id]['viewable'] = not current_state
-
-    self._update_team_file(updater)
-
-    print(f"Successfully toggled visibility of {team_id} team!")
