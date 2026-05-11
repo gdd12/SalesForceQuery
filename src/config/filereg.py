@@ -16,6 +16,7 @@ class FileReg():
     self.file_paths = {}
 
   def init(self):
+    logger.debug(f"Initializing class %s", __class__.__name__)
     self.exists()
     self.is_valid()
     self.read()
