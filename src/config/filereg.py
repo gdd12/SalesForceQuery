@@ -16,11 +16,10 @@ class FileReg():
     self.file_paths = {}
 
   def init(self):
-    logger.info(f"Initialization '{__class__.__name__}' module")
     self.exists()
     self.is_valid()
     self.read()
-
+    logger.info(f"{__class__.__name__} initialized successfully")
     return True
 
   def exists(self):

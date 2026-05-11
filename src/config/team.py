@@ -25,8 +25,6 @@ class Team:
     return obj
   
   def init(self):
-    logger.info(f"Initialization '{__class__.__name__}' module")
-
     self.registers = self.fileregistry.read()
 
     teams_template = self.fileregistry.resolve_file("teamsTemplate")
@@ -43,6 +41,7 @@ class Team:
     concat_support_engineer_list(self.teams)
 
     self.team_ids = [t.upper() for t in self.teams.keys()]
+    logger.info(f"{__class__.__name__} initialized successfully")
 
   def run(self):
     try:

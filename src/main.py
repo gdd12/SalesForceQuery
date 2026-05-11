@@ -18,7 +18,7 @@ from tools.encryption import generate_encrypted_passwd
 from tools.counter import Counter
 from display.common import CommonDisplay
 
-def main(debug, testOn, verboseOn=False):
+def startup(debug, testOn, verboseOn=False):
   logger.info("Logger initialized with debug=%s verbose=%s test=%s", debug, verboseOn, testOn)
   CommonDisplay().main_banner()
 
@@ -32,6 +32,7 @@ def main(debug, testOn, verboseOn=False):
     }
 
     for inst in INSTANCES:
+      logger.debug(f"Initializing class %s", inst.__class__.__name__)
       inst.init()
 
   except Exception as e:
@@ -85,4 +86,4 @@ if __name__ == "__main__":
   debugOn = True if args.get(VARS.Debug, False) or Config().get_config_value('debug', default=False) else False
   testOn = args.get(VARS.Test, False)
 
-  main(debugOn, testOn, verboseOn=verboseOn)
+  startup(debugOn, testOn, verboseOn=verboseOn)

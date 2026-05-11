@@ -40,7 +40,6 @@ class Config():
     self.fileregistry = FileReg()
 
   def init(self):
-    logger.info(f"Initialization '{__class__.__name__}' module")
     self.fileregistry.read()
 
     config_template = self.fileregistry.resolve_file("configTemplate")    
@@ -50,6 +49,7 @@ class Config():
       interactive_config_setup(self.config_path, config_template, CalledFrom='System') 
 
     self.validate_items(self.load_file())
+    logger.info(f"{__class__.__name__} initialized successfully")
 
   def load_file(self):
     if not os.path.exists(self.config_path):
