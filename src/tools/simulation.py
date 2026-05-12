@@ -3,6 +3,7 @@ warnings.filterwarnings("ignore")
 import signal
 import re
 from config.config import Config
+from config.filereg import FileReg
 from api import http_handler
 from utils.helper import define_query_columns
 from main import signal_handler
@@ -12,7 +13,14 @@ def simulate(logger):
   print("\n******************** Entering Simulation Env ********************")
   print("*****************************************************************\n")
   logger.info('Entering simulation environment!')
-  config = Config().load()
+
+  filereg_class = FileReg()
+
+  filereg_init = filereg_class.init()
+
+  config_class = Config(filereg_class)
+  config = config_class.load_file()
+
   salesforce_config = {
     "url": config.get("api_url", ""),
     "username": config.get("username", ""),
@@ -30,7 +38,7 @@ def simulate(logger):
   if not debug: print(f'Using query: {query}')
 
   generate_encrypted_passwd()
-  response = http_handler(api_url,username,query,debug)
+  response = http_handler(api_url,username,query,debug, config_cls=config_class, filereg_cls=filereg_class)
 
   for idx, record in enumerate(response, start=1):
     print(f"----- Record {idx} -----")
