@@ -113,7 +113,7 @@ def argument_handler(arg_obj):
     Config(FileReg()).print_configuration()
 
   if arg_obj[VARS.Exclude]:
-    Config().add_exclusion(arg_obj[VARS.Exclude])
+    Config(FileReg()).add_exclusion(arg_obj[VARS.Exclude])
     handle_shutdown(0, reason="Must exit to reload configuration")
 
   if arg_obj[VARS.Setup]:
@@ -140,7 +140,7 @@ def argument_handler(arg_obj):
     TeamTool.run()
 
   if arg_obj[VARS.Role]:
-    Config().toggle_role()
+    Config(FileReg()).toggle_role()
 
   return {VARS.Debug: debug, VARS.Test: testMode}
 
