@@ -64,7 +64,7 @@ def concat_group_list(teams_list):
 
 def concat_support_engineer_list(teams_list):
 	from config.team import Team
-	return Team.validate_teams_list(teams_list)
+	return Team.validate_teams_list(teams_list, exit_if_misconfigured=True)
 
 def handle_shutdown(exit_code=0, reason=''):
 	if exit_code == 0:
@@ -105,8 +105,11 @@ def convert_vacation(date):
 	return delta.days
 
 def get_non_empty_input(prompt):
-  while True:
-    value = input(prompt).strip()
-    if value:
-      return value
-    print("This field cannot be empty.")
+	try:
+		while True:
+			value = input(prompt).strip()
+			if value:
+				return value
+			print("This field cannot be empty.")
+	except KeyboardInterrupt:
+		handle_shutdown(0)

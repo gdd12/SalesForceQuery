@@ -21,10 +21,10 @@ class Team:
   def bootstrap(cls, filereg, Print=False, Update=False, Viewable=False):
     logger.info("Bootstrapping the Team module for argument handling")
     obj = cls(filereg=filereg, Print=Print, Update=Update, Viewable=Viewable)
-    obj.init()
+    obj.init(misconfigured=False)
     return obj
   
-  def init(self):
+  def init(self, misconfigured=True):
     logger.debug(f"Initializing class %s", __class__.__name__)
 
     teams_template = self.fileregistry.resolve_file("teamsTemplate")
@@ -38,7 +38,7 @@ class Team:
 
     self.teams = self.load_teams_list()
 
-    concat_support_engineer_list(self.teams)
+    self.validate_teams_list(self.teams, exit_if_misconfigured=misconfigured)
 
     self.team_ids = [t.upper() for t in self.teams.keys()]
     logger.info(f"{__class__.__name__} initialized successfully")
@@ -139,7 +139,7 @@ class Team:
     return load_json_file(teams_file, fatal=True)
 
   @staticmethod
-  def validate_teams_list(teams_list):
+  def validate_teams_list(teams_list, exit_if_misconfigured=True):
     try:
       other_names = []
       for k, v in teams_list.items():
@@ -151,8 +151,8 @@ class Team:
         logger.warning(f"Team list is empty, query may return no results")
 
       quoted_names = [f"'{name.strip()}'" for name in other_names]
-      if len(quoted_names) < 1:
-        failure_reason = "No 'Viewable' team list configured. Must exit as the query will be malformed!"
+      if len(quoted_names) < 1 and exit_if_misconfigured:
+        failure_reason = f"No 'Viewable' team list configured. Please utilize the '-t view' flag to update or manually update the {FileNames.Teams}"
         raise exceptions.MalformedTeamConfiguration(failure_reason)
       logger.debug(f"TSE list has undergone formating for SQL query")
       return ", ".join(quoted_names)
