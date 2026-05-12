@@ -227,7 +227,7 @@ def interactive_config_setup(config_path, config_template_path, CalledFrom=None)
     json.dump(config, f, indent=2)
 
   logger.info(f"Initial configuration completed and saved to {FileNames.Config}")
-  handle_shutdown(reason="\nConfiguration saved successfully.\n")
+  handle_shutdown(reason="\nConfiguration saved successfully. Please re-run the program to continue\n")
 
 def load_json_file(path, fatal=False, context="", Proc=False):
   try:
