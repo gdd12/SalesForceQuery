@@ -102,7 +102,7 @@ def argument_handler(arg_obj):
     debug = True
 
   if arg_obj[VARS.Clean]:
-    config = Config()
+    config = Config(FileReg())
     cfg_clean = config.clean()
     passwd_clean = config.remove_key_files()
     handle_shutdown(0, reason="Clean completed")
