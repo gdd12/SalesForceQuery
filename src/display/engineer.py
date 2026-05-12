@@ -105,7 +105,7 @@ class EngineerDisplay():
           lines.append(f"Vacation config validation failed. Check config.json")
 
         panel_content = "\n".join(lines)
-        panel = Panel(panel_content, title=f"[bold {pColor}]Personal Queue[/bold {pColor}]", border_style=f"{pColor}")
+        panel = Panel(panel_content, title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
 
     console.print(Align.center(panel))
 
