@@ -7,25 +7,25 @@ from config.config import load_json_file
 import exceptions
 
 class Team:
-  def __init__(self, Print=False, Update=False, Viewable=False):
+  def __init__(self, filereg, Print=False, Update=False, Viewable=False):
     self.print_mode = Print
     self.update = Update
     self.viewable = Viewable
 
-    self.fileregistry = FileReg()
+    self.fileregistry = filereg
     self.registers = None
     self.teams = None
     self.team_ids = []
 
   @classmethod
-  def bootstrap(cls, Print=False, Update=False, Viewable=False):
+  def bootstrap(cls, filereg, Print=False, Update=False, Viewable=False):
     logger.info("Bootstrapping the Team module for argument handling")
-    obj = cls(Print=Print, Update=Update, Viewable=Viewable)
+    obj = cls(filereg=filereg, Print=Print, Update=Update, Viewable=Viewable)
     obj.init()
     return obj
   
   def init(self):
-    self.registers = self.fileregistry.read()
+    logger.debug(f"Initializing class %s", __class__.__name__)
 
     teams_template = self.fileregistry.resolve_file("teamsTemplate")
     teams_path = self.fileregistry.resolve_file("teamsPath")
@@ -135,11 +135,8 @@ class Team:
     handle_shutdown(0, reason=error_reason)
 
   def load_teams_list(self):
-    file_registry = FileReg()
-    file_registry.read()
-    teams_file = file_registry.resolve_file("teamsPath")
-    teams = load_json_file(teams_file, fatal=True)
-    return teams
+    teams_file = self.fileregistry.resolve_file("teamsPath")
+    return load_json_file(teams_file, fatal=True)
 
   @staticmethod
   def validate_teams_list(teams_list):

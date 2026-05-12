@@ -8,12 +8,12 @@ from utils.helper import handle_shutdown
 from utils.variables import VARS, FileNames
 from config.config import Config, rewrite_configuration
 from config.team import Team
+from config.filereg import FileReg
 
 def user_defined_args(args):
   arg_obj = {
     VARS.Config: False,
     VARS.Debug: False,
-    VARS.Verbose: False,
     VARS.Test: False,
     VARS.Setup: False,
     VARS.Team: False,
@@ -37,10 +37,6 @@ def user_defined_args(args):
     
     elif arg in ["-D", "-d"]:
       arg_obj[VARS.Debug] = True
-
-    elif arg.lower() in ["-dv", "-vd"]:
-      arg_obj[VARS.Debug] = True
-      arg_obj[VARS.Verbose] = True
 
     elif arg in ["-X", "-x"]:
       arg_obj[VARS.Test] = True
@@ -98,7 +94,6 @@ def user_defined_args(args):
 def argument_handler(arg_obj):
   debug = False
   testMode = False
-  verboseMode = False
   forceNotifications = False
 
   base_logger.info(f"Arguments passed in include: {arg_obj}")
@@ -113,10 +108,6 @@ def argument_handler(arg_obj):
     handle_shutdown(0, reason="Clean completed")
   if arg_obj[VARS.Test]:
     testMode = True
-
-  if arg_obj[VARS.Verbose]:
-    verboseMode = True
-    debug = True
 
   if arg_obj[VARS.Config]:
     Config().print_configuration()
@@ -136,7 +127,11 @@ def argument_handler(arg_obj):
   if arg_obj[VARS.Team]:
     value = arg_obj[VARS.Team]
 
+    filereg = FileReg()
+    filereg.init()
+
     TeamTool = Team.bootstrap(
+      filereg=filereg,
       Print=(value is True),
       Update=(str(value).lower() == "add"),
       Viewable=(str(value).lower() == "view"),
@@ -147,7 +142,7 @@ def argument_handler(arg_obj):
   if arg_obj[VARS.Role]:
     Config().toggle_role()
 
-  return {VARS.Debug: debug, VARS.Test: testMode, VARS.Verbose: verboseMode}
+  return {VARS.Debug: debug, VARS.Test: testMode}
 
 def print_help_page():
   print("""
@@ -172,7 +167,6 @@ Runtime Options:
   -z                    Clean the system-created config files. Does not remove runtime/user defined data
 
 Debug Options:
-  -d                    Enable logging
-  -dv                   Enable verbose logging
+  -d                    Enable debug logging
 """)
   return

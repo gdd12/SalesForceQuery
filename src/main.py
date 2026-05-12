@@ -13,77 +13,100 @@ from config.team import Team
 from config.filereg import FileReg
 from utils.helper import handle_shutdown
 import exceptions as exceptions
-from handlers.handler import role_handler
+from handlers.handler import Handler
 from tools.encryption import generate_encrypted_passwd
 from tools.counter import Counter
 from display.common import CommonDisplay
 
-def startup(debug, testOn, verboseOn=False):
-  logger.info("Logger initialized with debug=%s verbose=%s test=%s", debug, verboseOn, testOn)
-  CommonDisplay().main_banner()
+class AppContext:
+  def __init__(self):
+    self.filereg = FileReg()
+    self.config = Config(self.filereg)
+    self.team = Team(self.filereg)
+    self.counter = Counter(self.config)
+    self.handler = Handler(
+      self.config,
+      self.filereg,
+      self.team,
+      self.counter
+    )
 
-  try:
-    logger.info("******************** Config Setup ********************")
+class AppStartup:
+  def __init__(self, argv):
+    self.argv = argv
+    self.logger = None
 
-    INSTANCES = {
-      FileReg(),
-      Config(),
-      Team()
-    }
+    self.debug = False
+    self.verbose = False
+    self.test = False
 
-    for inst in INSTANCES:
-      logger.debug(f"Initializing class %s", inst.__class__.__name__)
-      inst.init()
+    self.ctx = None
 
-  except Exception as e:
-    logger.error(f"FATAL - Configuration validation failed")
-    logger.error(f"{type(e).__name__}: {e}")
-    print("\nThe above exception(s) may be recoverable by performing a clean operation: main.py -z\n")
-    raise
-
-  try:
-    logger.info("******************* Setup Complete *******************")
-
-    config = Config().load_file()
-    teamsList = Team().load_teams_list()
-
-    role = config[VARS.Role]
-    send_notifications = config[VARS.Notifications][VARS.SendNotif]
-
-    if (
-      not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.PasswordFile) or
-      not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.KeyFile) or
-      not Counter().ok()
-    ): generate_encrypted_passwd()
+    self.setup()
     
-    role_handler(role, debug, send_notifications, config, testOn, teamsList)
+  def setup(self):
+    user_args = user_defined_args(self.argv)
+    args = argument_handler(user_args)
 
-  except Exception as e:
-    logger.exception(f"{type(e).__name__}: {e}")
-    print(f"{type(e).__name__}: {e}")
+    self.debug = bool(args.get(VARS.Debug, False))
+    self.test = bool(args.get(VARS.Test, False))
+
+    log_level = "info"
+
+    if self.debug:
+      log_level = "debug"
+    
+    # Need to check if there is debug enabled through config.json
+
+    setup_logger(log_level)
+    self.logger = base_logger
+
+    signal.signal(signal.SIGINT, signal_handler)
+
+  def run(self):
+    self.logger.info("Logger initialized with debug=%s test=%s", self.debug, self.test)
+    CommonDisplay().main_banner()
+
+    ctx = AppContext()
+
+    try:
+      self.logger.info("******************** Config Setup ********************")
+
+      ctx.filereg.init()
+      ctx.config.init()
+      ctx.team.init()
+      ctx.counter.init()
+      ctx.handler.init()
+
+    except Exception as e:
+      self.logger.error(f"FATAL - Configuration validation failed")
+      self.logger.error(f"{type(e).__name__}: {e}")
+      print("\nThe above exception(s) may be recoverable by performing a clean operation: main.py -z\n")
+      raise
+
+    try:
+      self.logger.info("******************* Setup Complete *******************")
+
+      config_data = ctx.config.load_file()
+      teamsList = ctx.team.load_teams_list()
+
+      role = config_data[VARS.Role]
+      send_notifications = config_data[VARS.Notifications][VARS.SendNotif]
+
+      if (
+        not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.PasswordFile) or
+        not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.KeyFile) or
+        not ctx.counter.ok()
+      ): generate_encrypted_passwd()
+
+      ctx.handler.run(role, self.debug, send_notifications, config_data, self.test, teamsList)
+
+    except Exception as e:
+      self.logger.exception(f"{type(e).__name__}: {e}")
+      print(f"{type(e).__name__}: {e}")
 
 def signal_handler(sig, frame):
   handle_shutdown(0)
 
-signal.signal(signal.SIGINT, signal_handler)
-
 if __name__ == "__main__":
-  user_args = user_defined_args(sys.argv)
-  verboseOn = False
-  log_level = None
-
-  if user_args.get(VARS.Debug):
-    log_level = 'info'
-  if user_args.get(VARS.Verbose) or Config().get_config_value('debug', default=False):
-    log_level = 'debug'
-    verboseOn = True
-
-  setup_logger(log_level)
-
-  logger = base_logger
-
-  args = argument_handler(user_args)
-  debugOn = True if args.get(VARS.Debug, False) or Config().get_config_value('debug', default=False) else False
-  testOn = args.get(VARS.Test, False)
-
-  startup(debugOn, testOn, verboseOn=verboseOn)
+  AppStartup(sys.argv).run()

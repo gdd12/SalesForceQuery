@@ -13,7 +13,7 @@ from config.products import Products
 from config.filereg import FileReg
 
 class Config():
-  def __init__(self):
+  def __init__(self, filereg):
     self.base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     self.config_dir = os.path.join(self.base_dir, VARS.Config)
     self.config_path = os.path.join(self.config_dir, FileNames.Config)
@@ -37,9 +37,10 @@ class Config():
       'queries.Engineer_Forwarding',
       'queries.Manager'
     ]
-    self.fileregistry = FileReg()
+    self.fileregistry = filereg
 
   def init(self):
+    logger.debug(f"Initializing class %s", __class__.__name__)
     self.fileregistry.read()
 
     config_template = self.fileregistry.resolve_file("configTemplate")    
@@ -170,6 +171,7 @@ class Config():
       FileNames.PasswordFile,
       FileNames.Counter,
     )
+    logger.info("Key files have been removed successfully")
 
   def _remove_files(self, *filenames):
     for filename in filenames:

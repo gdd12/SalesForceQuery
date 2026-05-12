@@ -18,25 +18,40 @@ ROLE_CONFIG = {
 	}
 }
 
-def role_handler(role, debug, send_notification, config, isTest, teamsList):
-	func = "role_handler()"
-	role = role.upper()
-	role_config = ROLE_CONFIG.get(role)
-	
-	if not role_config:
-		logger.error(f"Unsupported role '{role.lower()}'")
-		raise exceptions.UnsupportedRole(f'{func} failure due to unsupported role "{role.lower()}"')
+class Handler():
+	def __init__(self, config, filereg, team, counter):
+		self.config = config
+		self.filereg = filereg
+		self.team = team
+		self.counter = counter
 
-	handler_class = role_config["handler"]
-	display = role_config["display"]()
-	
-	handler = handler_class(
-		common_display=CommonDisplay(),
-		display=display,
-		config=config,
-		debug=debug,
-		send_notification=send_notification,
-		isTest=isTest,
-		teamsList=teamsList
-	)
-	handler.run(isTest)
+	def init(self):
+		logger.info(f"{__class__.__name__} initialized successfully")
+
+	def run(self, role, debug, send_notifications, config_data, isTest, teamsList):
+		if type(role) != str:
+			raise TypeError(f"Role must be of type 'string'")
+		
+		role = str(role).upper()
+		role_config = ROLE_CONFIG.get(role)
+
+		if not role_config:
+			logger.error(f"Unsupported role '{role.lower()}'")
+			raise exceptions.UnsupportedRole(f'{__class__.__name__} failure due to unsupported role "{role.lower()}"')
+
+		handler_class = role_config["handler"]
+		display = role_config["display"]()
+
+		handler = handler_class(
+			common_display=CommonDisplay(),
+			config_cls = self.config,
+			filereg_cls = self.filereg,
+			team_cls = self.team,
+			display=display,
+			config_data=config_data,
+			debug=debug,
+			send_notification=send_notifications,
+			isTest=isTest,
+			teamsList=teamsList
+		)
+		handler.run(isTest)

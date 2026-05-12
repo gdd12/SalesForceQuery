@@ -16,9 +16,8 @@ def setup_logger(log_level=None):
 
     logger.setLevel(logging.DEBUG)
 
-    formatter_file = logging.Formatter('%(asctime)s [%(levelname)-7s] [%(module)s.%(funcName)s]: %(message)s')
+    formatter_file = logging.Formatter('%(asctime)s - %(levelname)-6s [%(module)s] (%(funcName)s) - %(message)s')
     formatter_console = logging.Formatter('%(message)s')
-
 
     if not logger.handlers or isinstance(logger.handlers[0], logging.NullHandler):
         file_handler = logging.FileHandler(LOG_FILE)

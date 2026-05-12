@@ -2,15 +2,13 @@ import requests, os
 from requests.auth import HTTPBasicAuth
 from exceptions import APIError
 from logger import logger
-from config.config import Config, load_json_file, create_json_file, FileReg
+from config.config import Config, load_json_file, create_json_file
 import json
 from utils.variables import FileNames
 from tools.encryption import decrypt_password
 
-def http_handler(api_url, username, query, isTest=False):
-  FR = FileReg()
-  FR.read()
-  last_query_result = FR.resolve_file("dataBuffer")
+def http_handler(api_url, username, query, isTest, config_cls, filereg_cls):
+  last_query_result = filereg_cls.resolve_file("dataBuffer")
 
   def hit_api():
     logger.debug("API call invoked!")
@@ -26,9 +24,9 @@ def http_handler(api_url, username, query, isTest=False):
   def fetch_from_api():
     response = hit_api()
     if response.status_code != 200:
-      _handle_http_error(response, query)
+      _handle_http_error(response, query, config_cls)
 
-    max_size = Config().get_config_value("rules.max_buffer_size_bytes")
+    max_size = config_cls.get_config_value("rules.max_buffer_size_bytes")
 
     content = response.content
     response_data = response.json()
@@ -54,7 +52,7 @@ def http_handler(api_url, username, query, isTest=False):
 
   return response_data.get('records', [])
 
-def _handle_http_error(response, query):
+def _handle_http_error(response, query, config_class):
   error_messages = {
     400: f"Query is possibly wrong or malformed.\nUsing query '{query}'",
     401: "Bad credentials",
@@ -62,7 +60,7 @@ def _handle_http_error(response, query):
 
   try:
     response_json = response.json()
-    Config().remove_key_files()
+    config_class.remove_key_files()
   except Exception:
     response_json = {}
 

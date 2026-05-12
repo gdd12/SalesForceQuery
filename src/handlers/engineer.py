@@ -13,47 +13,40 @@ from datetime import datetime
 from tools.notify import notify
 
 class EngineerHandler:
-	def __init__(self, config, debug, send_notification, isTest, teamsList, display, common_display):
-		notifications = config.get("notifications", {})
+	def __init__(self, config_data, config_cls, filereg_cls, team_cls, debug, send_notification, isTest, teamsList, display, common_display):
+		self.config_cls = config_cls
+		self.filereg_cls = filereg_cls
+		self.config_data = config_data
+		self.debug = debug
+		self.isTest = isTest
+		self.display = display
+		self.teams_list = teamsList
+		notifications = config_data.get("notifications", {})
 		self.send_notification = send_notification or notifications.get("send", False)
 		self.sound_notifications = notifications.get("sound", None)
-		self.salesforce_config = {
-			"url": config.get("api_url", ""),
-			"username": config.get("username", ""),
-			"engineer_name": config.get("engineer_name", "")
-		}
-		self.poll_interval = config.get("rules").get("poll_interval", 30)
-		self.queries = config.get("queries", {})
-		self.debug = debug or config.get("debug", False)
-		self.isTest = isTest
-		self.teams_list = teamsList
-		self.role = config.get("role", "").upper()
-		self.color = config.get("colors", None)
-		self.update_threshold = config.get("rules").get("update_threshold", 45)
-		self.display = display
+		self.poll_interval = config_data.get("rules").get("poll_interval", 30)
+		self.queries = config_data.get("queries", {})
+		self.color = config_data.get("colors", None)
+		self.update_threshold = config_data.get("rules").get("update_threshold", 45)
 		self.products = Products()
 		self.cases = Cases()
-		self.config = Config()
 		self.display_util = common_display
+		self.vacation_scheduled = None
+		self.vacation_return_date = None
 
 	def run(self, isTest):
 		func = "EngineerHandler.run()"
 		logger.debug(f"{func} has been invoked")
 
-		api_url = self.salesforce_config.get("url")
-		username = self.salesforce_config.get("username")
-		engineer_name = self.salesforce_config.get("engineer_name")
-
-		if not api_url:
-			logger.error(f"API url is missing from the {FileNames.Config}")
-			raise ConfigurationError(f"{func}; Missing Salesforce API in the configuration file.")
-		if not username:
-			raise ConfigurationError(f"{func}; Missing username in the configuration file.")
-		if not engineer_name:
-			raise ConfigurationError(f"{func}; Missing engineer name in the configuration file.")
+		api_url = self.config_data.get("api_url")
+		username = self.config_data.get("username")
+		engineer_name = self.config_data.get("engineer_name")
 
 		group_list = concat_group_list(self.teams_list)
 		support_engineer_list = concat_support_engineer_list(self.teams_list)
+
+		self.vacation_scheduled = self.config_cls.get_config_value("rules.vacation_scheduled")
+		self.vacation_return_date = self.config_cls.get_config_value("rules.back_from_vacation")
 
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
@@ -75,11 +68,11 @@ class EngineerHandler:
 			personal_cases = []
 			opened_today_cases = []
 
-			all_cases = http_handler(api_url, username, query, isTest)
+			all_cases = http_handler(api_url, username, query, isTest, self.config_cls, self.filereg_cls)
 
 			excluded_cases = self.cases.load_excluded_cases()
 
-			if self.config.get_config_value("rules.upload_to_tse_board"): uploadToTseBoard(all_cases)
+			if self.config_cls.get_config_value("rules.upload_to_tse_board"): uploadToTseBoard(all_cases)
 			else:
 				case_validation_failed_list = []
 				for idx, case in enumerate(all_cases):
@@ -106,7 +99,7 @@ class EngineerHandler:
 						opened_today_cases.append(case)
 
 				self.display.queue(team_cases, self.update_threshold, self.color)
-				self.display.personal(personal_cases, self.update_threshold, self.color)
+				self.display.personal(personal_cases, self.update_threshold, self.color, self.vacation_scheduled, self.vacation_return_date)
 				self.display.opened_today(opened_today_cases, self.debug, self.color)
 
 				if len(case_validation_failed_list) > 0:
@@ -133,7 +126,7 @@ class EngineerHandler:
 		excluded_product_list = "', '".join(excluded_products)
 		excluded_product_list = f"'{excluded_product_list}'"
 
-		upload_to_tse_board_enabled = self.config.get_config_value("rules.upload_to_tse_board")
+		upload_to_tse_board_enabled = self.config_cls.get_config_value("rules.upload_to_tse_board")
 
 		if upload_to_tse_board_enabled:
 			return self.queries["Engineer_Forwarding"].format(

@@ -41,13 +41,13 @@ class EngineerDisplay():
       console.print('\n',Align.center(panel))
   
   @staticmethod
-  def personal(cases, update_threshold, color):
+  def personal(cases, update_threshold, color, vacation_scheduled, vacation_return_date):
     pColor = color.get("primary")
     sColor = color.get("secondary")
     VacationFailedValidation = False
     days_remaining_vac = 0
-    if Config().get_config_value("rules.vacation_scheduled"):
-      vac_timeframe = Config().get_config_value("rules.back_from_vacation")
+    if vacation_scheduled:
+      vac_timeframe = vacation_return_date
       days_remaining_vac = convert_vacation(vac_timeframe)
       if type(days_remaining_vac) != int:
         VacationFailedValidation = True

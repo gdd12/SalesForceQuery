@@ -6,9 +6,13 @@ from config.config import load_json_file, create_json_file
 from utils.helper import logger
 
 class Counter():
-	def __init__(self):
+	def __init__(self, config):
 		self.path = Path(__file__).resolve().parent.parent.parent / VARS.Config / FileNames.Counter
+		self.config = config
 	
+	def init(self):
+		self.validate()
+
 	def validate(self, force_rebuild=False):
 		try:
 			if not self.path.exists() or force_rebuild:
@@ -46,7 +50,7 @@ class Counter():
 			return False
 		
 		if ctr_count >= 20:
-			logger.info("Counter limit reached, resetting for today")
+			logger.error("Counter limit reached, resetting for today")
 			self.reset()
 			return False
 
@@ -59,6 +63,7 @@ class Counter():
 		return True
 	
 	def reset(self):
+		self.config.remove_key_files()
 		self.validate(force_rebuild=True)
 		return
 	

@@ -33,7 +33,6 @@ def generate_encrypted_passwd():
 		with open(passwd_file, "wb") as f:
 			f.write(encrypted_password)
 		logger.info("API password encrypted")
-		Counter().reset()
 	except KeyboardInterrupt:
 		handle_shutdown(exit_code=0, reason="User canceled the entry")
 

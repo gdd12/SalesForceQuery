@@ -66,7 +66,6 @@ Runtime Options:
 
 Debug Options:
   -d                    Enable logging
-  -dv                   Enable verbose logging
 ```
 
 ### Technical Documentation
@@ -149,6 +148,4 @@ When using this program on Mac, the ability to receive pop-up notifications for 
 
 **Debugging**
 
-Turn on logging capabilities either through the ```config.json``` file, specifically the 'debug' flag. Or call the program with:
-1. ```-d``` for info level debug
-2. ```-dv``` for verbose level debug
+Turn on logging capabilities either through the ```config.json``` file, specifically the 'debug' flag. Or call the program with the ```-d``` flag for debug logging.
