@@ -18,10 +18,3 @@ class MalformedTeamConfiguration(Exception):
   """Raised when there is an issue with the teams list configuration"""
   pass
 
-class EventError(Exception):
-  """Raised when there is an issue with the event"""
-  pass
-
-class EventPurgeError(Exception):
-  """Raised when there is an issue with purging events"""
-  pass
