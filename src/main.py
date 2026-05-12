@@ -46,20 +46,18 @@ class AppStartup:
     
   def setup(self):
     user_args = user_defined_args(self.argv)
-    args = argument_handler(user_args)
+  
+    self.debug = bool(user_args.get(VARS.Debug, False))
+    self.test = bool(user_args.get(VARS.Test, False))
 
-    self.debug = bool(args.get(VARS.Debug, False))
-    self.test = bool(args.get(VARS.Test, False))
+    log_level = "debug" if self.debug else "info"
 
-    log_level = "info"
-
-    if self.debug:
-      log_level = "debug"
-    
     # Need to check if there is debug enabled through config.json
 
     setup_logger(log_level)
     self.logger = base_logger
+
+    args = argument_handler(user_args)
 
     signal.signal(signal.SIGINT, signal_handler)
 
