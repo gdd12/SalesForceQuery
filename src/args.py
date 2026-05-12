@@ -110,7 +110,7 @@ def argument_handler(arg_obj):
     testMode = True
 
   if arg_obj[VARS.Config]:
-    Config().print_configuration()
+    Config(FileReg()).print_configuration()
 
   if arg_obj[VARS.Exclude]:
     Config().add_exclusion(arg_obj[VARS.Exclude])
