@@ -77,10 +77,13 @@ class AppStartup:
       ctx.handler.init()
 
     except Exception as e:
-      self.logger.error(f"FATAL - Configuration validation failed")
+      self.logger.error(f"FATAL - Configuration validation failed due to the below exception:")
       self.logger.error(f"{type(e).__name__}: {e}")
-      print("\nThe above exception(s) may be recoverable by performing a clean operation: main.py -z\n")
-      raise
+      if self.debug:
+        raise
+      handle_shutdown(
+        exit_code=1,
+        reason='\nThe above exception(s) may be recoverable by performing a clean operation: main.py -z\nThere may be additional information with the -d flag')
 
     try:
       self.logger.info("******************* Setup Complete *******************")
