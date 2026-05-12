@@ -72,7 +72,7 @@ class EngineerHandler:
 
 			excluded_cases = self.cases.load_excluded_cases()
 
-			if self.config_cls.get_config_value("rules.upload_to_tse_board"): uploadToTseBoard(all_cases)
+			if self.config_cls.get_config_value("rules.upload_to_tse_board"): uploadToTseBoard(all_cases, self.config_cls)
 			else:
 				case_validation_failed_list = []
 				for idx, case in enumerate(all_cases):

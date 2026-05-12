@@ -76,10 +76,10 @@ def _handle_http_error(response, query, config_class):
   logger.error(f"Unexpected error: {response.status_code} {response.reason} - {response.text}")
   raise APIError(f"Error {response.status_code} {response.reason}. Unable to fetch data.")
 
-def uploadToTseBoard(cases):
-  tseBoardApi = Config().get_config_value('front_end_board', default="http://localhost:3000/api/v1/uploadCases")
+def uploadToTseBoard(cases, config_class):
+  tseBoardApi = config_class.get_config_value('front_end_board', default="http://localhost:3000/api/v1/uploadCases")
   payload = {
-    "nextPollSetting": Config().get_config_value("rules.poll_interval"),
+    "nextPollSetting": config_class.get_config_value("rules.poll_interval"),
     "cases": cases
   }
   try:
