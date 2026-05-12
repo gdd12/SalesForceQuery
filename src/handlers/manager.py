@@ -7,31 +7,23 @@ from utils.helper import concat_group_list, concat_team_list
 from api import http_handler
 
 class ManagerHandler:
-	def __init__(self, config, debug, send_notification, isTest, teamsList, display, common_display):
-		notifications = config.get("notifications", {})
-		self.send_notification = send_notification or notifications.get("send", False)
-		self.sound_notifications = notifications.get("sound", None)
-		self.salesforce_config = {
-			"url": config.get("api_url", ""),
-			"username": config.get("username", ""),
-			"engineer_name": config.get("engineer_name", "")
-		}
-		self.poll_interval = config.get("rules").get("poll_interval", 30)
-		self.queries = config.get("queries", {})
-		self.debug = debug or config.get("debug", False)
-		self.isTest = isTest
+	def __init__(self, config_data, config_cls, filereg_cls, team_cls, debug, send_notification, isTest, teamsList, display, common_display):
+		self.config_cls = config_cls
+		self.filereg_cls = filereg_cls
+		self.config_data = config_data
+		self.poll_interval = config_data.get("rules").get("poll_interval", 30)
+		self.queries = config_data.get("queries", {})
 		self.teams_list = teamsList
-		self.role = config.get("role", "").upper()
-		self.color = config.get("colors", None)
-		self.update_threshold = config.get("rules").get("update_threshold", 45)
+		self.color = config_data.get("colors", None)
+		self.update_threshold = config_data.get("rules").get("update_threshold", 45)
 		self.display = display
 		self.display_util = common_display
 
 	def run(self, isTest):
 		logger.debug(f"Class {__class__.__name__} has been invoked")
 
-		api_url = self.salesforce_config.get("url")
-		username = self.salesforce_config.get("username")
+		api_url = self.config_data.get("api_url")
+		username = self.config_data.get("username")
 
 		if not api_url:
 			raise ConfigurationError(f"Missing Salesforce API in the configuration file.")
@@ -53,7 +45,7 @@ class ManagerHandler:
 			self.display_util.clear_screen()
 			self.display_util.display_header(self.poll_interval)
 
-			cases = http_handler(api_url, username, manager_query, isTest)
+			cases = http_handler(api_url, username, manager_query, isTest, self.config_cls, self.filereg_cls)
 
 			queue_needs_commitment = []
 			team_needs_commitment = []
