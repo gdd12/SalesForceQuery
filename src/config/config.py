@@ -263,9 +263,12 @@ def prompt_yes_no(prompt, default=False):
       return default
 
 def rewrite_configuration():
-  file_registry = FileReg()
-  file_registry.read()
-  config_path = file_registry.resolve_file("configPath")
-  config_template = file_registry.resolve_file("configTemplate")
+  try:
+    file_registry = FileReg()
+    file_registry.read()
+    config_path = file_registry.resolve_file("configPath")
+    config_template = file_registry.resolve_file("configTemplate")
 
-  interactive_config_setup(config_path, config_template, CalledFrom='User')
+    interactive_config_setup(config_path, config_template, CalledFrom='User')
+  except KeyboardInterrupt:
+    handle_shutdown(0)
