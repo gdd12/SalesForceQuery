@@ -37,7 +37,6 @@ class AppStartup:
     self.logger = None
 
     self.debug = False
-    self.verbose = False
     self.test = False
 
     self.ctx = None
