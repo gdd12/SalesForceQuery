@@ -4,7 +4,7 @@ import signal
 import re
 from config.config import Config
 from config.filereg import FileReg
-from api import http_handler
+from api.api_handler import APIHandler
 from utils.helper import define_query_columns
 from main import signal_handler
 from tools.encryption import generate_encrypted_passwd
@@ -38,7 +38,15 @@ def simulate(logger):
   if not debug: print(f'Using query: {query}')
 
   generate_encrypted_passwd()
-  response = http_handler(api_url,username,query,debug, config_cls=config_class, filereg_cls=filereg_class)
+
+  response = APIHandler(
+    api_url=api_url,
+    username=username,
+    query=query,
+    test=False,
+    config_cls=config_class,
+    filereg_cls=filereg_class
+  ).run()
 
   for idx, record in enumerate(response, start=1):
     print(f"----- Record {idx} -----")

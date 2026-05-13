@@ -8,7 +8,7 @@ from logger import logger
 from exceptions import ConfigurationError
 from utils.variables import FileNames
 from utils.helper import concat_group_list, concat_support_engineer_list
-from api import http_handler, uploadToTseBoard
+from api.api_handler import APIHandler, uploadToTseBoard
 from datetime import datetime
 from tools.alert import alert
 from dataclasses import dataclass
@@ -53,6 +53,7 @@ class EngineerHandler:
 		logger.debug(f"The Engineer query has been formated with configured Teams, Engineers, Products, and main TSE")
 
 		logger.info(f"Inside engineer handler loop")
+
 		while True:
 			self.display_util.clear_screen()
 			self.display_util.display_header(self.poll_interval)
@@ -66,11 +67,18 @@ class EngineerHandler:
 				support_engineer_list
 			)
 
+			all_cases = APIHandler(
+				api_url=api_url,
+				username=username,
+				query=query,
+				test=isTest,
+				config_cls=self.config_cls,
+				filereg_cls=self.filereg_cls
+			).run()
+
 			team_cases = []
 			personal_cases = []
 			opened_today_cases = []
-
-			all_cases = http_handler(api_url, username, query, isTest, self.config_cls, self.filereg_cls)
 
 			excluded_cases = self.cases.load_excluded_cases(log_event=False)
 

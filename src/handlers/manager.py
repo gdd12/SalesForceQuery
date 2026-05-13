@@ -4,7 +4,7 @@ from display.common import CommonDisplay
 from logger import logger
 from exceptions import ConfigurationError
 from utils.helper import concat_group_list, concat_team_list
-from api import http_handler
+from api.api_handler import APIHandler
 from dataclasses import dataclass
 from typing import List
 
@@ -43,11 +43,21 @@ class ManagerHandler:
 		logger.debug(f"The Manager query has been formated with configured Teams and update thresholds")
 
 		logger.info(f"Inside manager handler loop")
+
+		api_handler = APIHandler(
+			api_url=api_url,
+			username=username,
+			query=manager_query,
+			test=isTest,
+			config_cls=self.config_cls,
+			filereg_cls=self.filereg_cls
+		)
+
 		while True:
 			self.display_util.clear_screen()
 			self.display_util.display_header(self.poll_interval)
 
-			cases = http_handler(api_url, username, manager_query, isTest, self.config_cls, self.filereg_cls)
+			cases = api_handler.run()
 
 			queue_needs_commitment = []
 			team_needs_commitment = []
