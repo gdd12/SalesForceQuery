@@ -6,7 +6,7 @@ class Cases():
   def __init__(self):
     self.base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-  def load_excluded_cases(self):
+  def load_excluded_cases(self, log_event=True):
     excludedCasesFile = os.path.join(self.base_dir, "config", FileNames.ExCases)
     try:
       with open(excludedCasesFile, 'r') as file:
@@ -15,7 +15,8 @@ class Cases():
           line.strip() for line in lines
           if line.strip() and not line.strip().startswith('#')
         }
-        logger.info(f"Loaded {len(excluded)} excluded cases from {excludedCasesFile}")
+        if log_event:
+          logger.info(f"Loaded {len(excluded)} excluded cases from {excludedCasesFile}")
         logger.debug(f"Excluded cases include: {excluded}")
         return excluded
     except FileNotFoundError:

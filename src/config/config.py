@@ -243,11 +243,12 @@ def load_json_file(path, fatal=False, context="", Proc=False):
       print(f"{msg} {e}")
       handle_shutdown(1, reason=e)
   
-def create_json_file(path, data):
+def create_json_file(path, data, log_event=True):
   try:
     with open(path, "w") as f:
       json.dump(data, f, indent=2)
-    logger.info(f"Successfully wrote {os.path.split(path)[1]} to {path}")
+    if log_event:
+      logger.info(f"Successfully wrote {os.path.split(path)[1]} to {path}")
   except Exception as e:
     logger.error(f"Failed to write to {path}: {e}")
     raise

@@ -72,7 +72,7 @@ class EngineerHandler:
 
 			all_cases = http_handler(api_url, username, query, isTest, self.config_cls, self.filereg_cls)
 
-			excluded_cases = self.cases.load_excluded_cases()
+			excluded_cases = self.cases.load_excluded_cases(log_event=False)
 
 			if self.config_cls.get_config_value("rules.upload_to_tse_board"): uploadToTseBoard(all_cases, self.config_cls)
 			else:

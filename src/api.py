@@ -35,7 +35,7 @@ def http_handler(api_url, username, query, isTest, config_cls, filereg_cls):
       logger.error(f"Response size {len(content)} exceeds {max_size}. {FileNames.QueryResults} will not be written to.")
       return response_data
     
-    create_json_file(path=last_query_result, data=response_data)
+    create_json_file(path=last_query_result, data=response_data, log_event=False)
     return response_data
 
   if isTest and os.path.exists(last_query_result):
