@@ -24,7 +24,8 @@ class CommonDisplay():
       os.system('cls')
     else:
       os.system('clear')
-  
+
+  @staticmethod
   def failed_validation(cases, color):
     pColor = color.get("primary")
     sColor = color.get("secondary")
