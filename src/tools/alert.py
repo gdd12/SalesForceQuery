@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 from logger import logger
 
-def notify(cases, isTest: False, sound):
+def alert(cases, isTest: False, sound):
   product_count = defaultdict(int)
 
   if isTest:
@@ -23,6 +23,6 @@ def notify(cases, isTest: False, sound):
 
     try:
       os.system(f"osascript -e '{script}'")
-      logger.info(f"Sent notification: {message_parts} with {'no' if not sound else f'{sound}'} sound")
+      logger.info(f"Sent alert: {message_parts} with {'no' if not sound else f'{sound}'} sound")
     except Exception as e:
-      logger.error(f"Error sending notification: {e}")
+      logger.error(f"Error sending alert: {e}")

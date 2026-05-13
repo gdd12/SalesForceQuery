@@ -10,12 +10,12 @@ from utils.variables import FileNames
 from utils.helper import concat_group_list, concat_support_engineer_list
 from api import http_handler, uploadToTseBoard
 from datetime import datetime
-from tools.notify import notify
+from tools.alert import alert
 from dataclasses import dataclass
 from typing import List
 
 class EngineerHandler:
-	def __init__(self, config_data, config_cls, filereg_cls, team_cls, debug, send_notification, isTest, teamsList, display, common_display):
+	def __init__(self, config_data, config_cls, filereg_cls, team_cls, debug, send_alerts, isTest, teamsList, display, common_display):
 		self.config_cls = config_cls
 		self.filereg_cls = filereg_cls
 		self.config_data = config_data
@@ -23,9 +23,9 @@ class EngineerHandler:
 		self.isTest = isTest
 		self.display = display
 		self.teams_list = teamsList
-		notifications = config_data.get("notifications", {})
-		self.send_notification = send_notification or notifications.get("send", False)
-		self.sound_notifications = notifications.get("sound", None)
+		alerts = config_data.get("alerts", {})
+		self.send_alerts = send_alerts or alerts.get("send", False)
+		self.sound_alerts = alerts.get("sound", None)
 		self.poll_interval = config_data.get("rules").get("poll_interval", 30)
 		self.queries = config_data.get("queries", {})
 		self.color = config_data.get("colors", None)
@@ -116,8 +116,8 @@ class EngineerHandler:
 					logger.info(f"Cases failed validation: {case_validation_failed_list}")
 					self.display_util.failed_validation(case_validation_failed_list, self.color)
 
-				if os.name != "nt" and self.send_notification:
-					notify(team_cases, isTest, self.sound_notifications)
+				if os.name != "nt" and self.send_alerts:
+					alert(team_cases, isTest, self.sound_alerts)
 
 			num_excluded_products = len(self.products.load_excluded_products())
 			total_seconds = self.poll_interval * 60

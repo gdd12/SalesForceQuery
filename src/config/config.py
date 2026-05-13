@@ -31,8 +31,8 @@ class Config():
       'rules.max_buffer_size_bytes',
       'colors.primary',
       'colors.secondary',
-      'notifications.send',
-      'notifications.sound',
+      'alerts.send',
+      'alerts.sound',
       'queries.Engineer',
       'queries.Engineer_Forwarding',
       'queries.Manager'
@@ -107,7 +107,7 @@ class Config():
   def print_configuration(self):
     config = self.load_file()
 
-    notifications = config[VARS.Notifications]
+    alerts = config[VARS.Alerts]
     colors = config[VARS.Colors]
     rules = config[VARS.Rules]
 
@@ -118,8 +118,8 @@ class Config():
     print(f"  API: {config[VARS.ApiUrl]}")
     print(f"  Polling Interval: {rules[VARS.Polling]}")
     print(f"  Debug: {config[VARS.Debug]}")
-    print(f"  Send Notifications: {notifications[VARS.SendNotif]}")
-    print(f"  Notification Sound: {notifications[VARS.SoundNotif]}")
+    print(f"  Send alerts: {alerts[VARS.Send]}")
+    print(f"  Alerts sound: {alerts[VARS.Sound]}")
     print(f"  Role: {config[VARS.Role]}")
     print(f"  Colors: {colors[VARS.Primary]} & {colors[VARS.Secondary]}")
     print(f"  Forwarding Engine: {rules['upload_to_tse_board']}")
@@ -204,7 +204,7 @@ def interactive_config_setup(config_path, config_template_path, CalledFrom=None)
   else:
     raise ConfigurationError("No configuration file or template available for setup.")
 
-  send_notifications = config.get("notifications", {}).get("send", False)
+  send_alerts = config.get("alerts", {}).get("send", False)
 
   while True:
     role_response = input("Are you an Engineer or Manager: ").strip().lower()
@@ -214,11 +214,11 @@ def interactive_config_setup(config_path, config_template_path, CalledFrom=None)
 
   config["role"] = role_response
 
-  response_notifications = input(f"Enable notifications? [y/n]: ").strip().lower()
-  send_notifications = response_notifications in ("y", "yes")
+  response_alerts = input(f"Enable alerts? [y/n]: ").strip().lower()
+  send_alerts = response_alerts in ("y", "yes")
 
-  config.setdefault("notifications", {})
-  config["notifications"]["send"] = send_notifications
+  config.setdefault("alerts", {})
+  config["alerts"]["send"] = send_alerts
   config["api_url"] = get_non_empty_input("Enter the API URL: ")
   config["username"] = get_non_empty_input("Enter your email: ")
   config["engineer_name"] = get_non_empty_input("Enter your full name: ")

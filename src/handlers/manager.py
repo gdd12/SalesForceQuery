@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import List
 
 class ManagerHandler:
-	def __init__(self, config_data, config_cls, filereg_cls, team_cls, debug, send_notification, isTest, teamsList, display, common_display):
+	def __init__(self, config_data, config_cls, filereg_cls, team_cls, debug, send_alerts, isTest, teamsList, display, common_display):
 		self.config_cls = config_cls
 		self.filereg_cls = filereg_cls
 		self.config_data = config_data

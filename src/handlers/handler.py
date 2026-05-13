@@ -28,7 +28,7 @@ class Handler():
 	def init(self):
 		logger.info(f"{__class__.__name__} initialized successfully")
 
-	def run(self, role, debug, send_notifications, config_data, isTest, teamsList):
+	def run(self, role, debug, send_alerts, config_data, isTest, teamsList):
 		if type(role) != str:
 			raise TypeError(f"Role must be of type 'string'")
 		
@@ -50,7 +50,7 @@ class Handler():
 			display=display,
 			config_data=config_data,
 			debug=debug,
-			send_notification=send_notifications,
+			send_alerts=send_alerts,
 			isTest=isTest,
 			teamsList=teamsList
 		)

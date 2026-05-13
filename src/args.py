@@ -94,7 +94,6 @@ def user_defined_args(args):
 def argument_handler(arg_obj):
   debug = False
   testMode = False
-  forceNotifications = False
 
   base_logger.info(f"Arguments passed in include: {arg_obj}")
 

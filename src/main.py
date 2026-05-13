@@ -91,7 +91,7 @@ class AppStartup:
       teamsList = ctx.team.load_teams_list()
 
       role = config_data[VARS.Role]
-      send_notifications = config_data[VARS.Notifications][VARS.SendNotif]
+      send_alerts = config_data[VARS.Alerts][VARS.Send]
 
       if (
         not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.PasswordFile) or
@@ -99,7 +99,7 @@ class AppStartup:
         not ctx.counter.ok()
       ): generate_encrypted_passwd()
 
-      ctx.handler.run(role, self.debug, send_notifications, config_data, self.test, teamsList)
+      ctx.handler.run(role, self.debug, send_alerts, config_data, self.test, teamsList)
 
     except Exception as e:
       self.logger.exception(f"{type(e).__name__}: {e}")
