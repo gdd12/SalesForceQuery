@@ -19,7 +19,7 @@ class CommonDisplay():
   
   @staticmethod
   def clear_screen():
-    logger.debug("Cleaing screen from startup")
+    logger.debug("Clearing screen from startup")
     if os.name == 'nt':
       os.system('cls')
     else:
