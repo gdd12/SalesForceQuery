@@ -12,45 +12,53 @@ from logger import logger
 console = Console()
 
 class EngineerDisplay():
+  def __init__(self, dashboard):
+    self.data = dashboard
 
-  @staticmethod
-  def queue(cases, update_threshold, color):
-    pColor = color.get("primary")
-    sColor = color.get("secondary")
+    self.p_color = dashboard.color.get("primary")
+    self.s_color = dashboard.color.get("secondary")
+
+  def render(self):
+    self.queue()
+    self.personal()
+    self.case_insights()
+    self.opened_today()
+
+  def queue(self):
     product_count = defaultdict(int)
     needs_commitment = 0
+    cases = self.data.team_cases
 
     for case in cases:
       product = case.get('Product__r', {}).get('Name', 'No Product')
       commitment = case.get('Time_Before_Next_Update_Commitment__c')
 
-      if commitment and (commitment < (update_threshold / (24 * 60))):
+      if commitment and (commitment < (self.data.update_threshold / (24 * 60))):
         needs_commitment += 1
       product_count[product] += 1
 
     if not cases:
-        panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Team Queue[/bold {pColor}]", border_style=f"{pColor}")
+        panel = Panel("None, you're looking good!", title=f"[bold {self.p_color}]Team Queue[/bold {self.p_color}]", border_style=f"{self.p_color}")
         console.print('\n',Align.center(panel))
     else:
       lines = []
       for product, count in product_count.items():
-        lines.append(f"[bold {sColor}]{count}[/bold {sColor}] new [bold]{product}[/bold] case(s)")
+        lines.append(f"[bold {self.s_color}]{count}[/bold {self.s_color}] new [bold]{product}[/bold] case(s)")
         if needs_commitment > 0 : lines.append(f"[bold red]{needs_commitment}[/bold red] case(s) needs commitment!")
       panel_content = "\n".join(lines)
-      panel = Panel(panel_content, title=f"[bold {pColor}]Team Queue[/bold {pColor}]", border_style=f"{pColor}")
+      panel = Panel(panel_content, title=f"[bold {self.p_color}]Team Queue[/bold {self.p_color}]", border_style=f"{self.p_color}")
       console.print('\n',Align.center(panel))
   
-  @staticmethod
-  def personal(cases, update_threshold, color, vacation_scheduled, vacation_return_date):
-    pColor = color.get("primary")
-    sColor = color.get("secondary")
+  def personal(self):
     VacationFailedValidation = False
     days_remaining_vac = 0
-    if vacation_scheduled:
-      vac_timeframe = vacation_return_date
+    if self.data.vacation_scheduled:
+      vac_timeframe = self.data.vacation_return_date
       days_remaining_vac = convert_vacation(vac_timeframe)
       if type(days_remaining_vac) != int:
         VacationFailedValidation = True
+
+    cases = self.data.personal_cases
 
     InSupport = 0
     New = 0
@@ -60,7 +68,7 @@ class EngineerDisplay():
     MissOverWeekend = 0
 
     if not cases:
-      panel = Panel("You have no assigned cases!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
+      panel = Panel("You have no assigned cases!", title=f"[bold {self.p_color}]Your Cases[/bold {self.p_color}]", border_style=f"{self.p_color}")
     else:
       for case in cases:
         status = case.get('Status')
@@ -68,7 +76,7 @@ class EngineerDisplay():
         commitment_time = case.get('Time_Before_Next_Update_Commitment__c')
 
         if commitment_time and (commitment_time < 1 and status not in ['NEW', 'CLOSED']):
-          if commitment_time < (update_threshold / (24 * 60)):
+          if commitment_time < (self.data.update_threshold / (24 * 60)):
             AboutToMiss += 1
           else:
             NeedsCommitment += 1
@@ -86,35 +94,32 @@ class EngineerDisplay():
           MissOverWeekend += 1
 
       if (InSupport + New + NeedsCommitment + MissOverWeekend + AboutToMiss == 0) and MissDuringVacation < 1:
-        panel = Panel("None, you're looking good!", title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
+        panel = Panel("None, you're looking good!", title=f"[bold {self.p_color}]Your Cases[/bold {self.p_color}]", border_style=f"{self.p_color}")
       else:
         lines = []
         if InSupport > 0:
-          lines.append(f"[bold {sColor}]{InSupport}[/bold {sColor}] case(s) are [bold]In Support[/bold]")
+          lines.append(f"[bold {self.s_color}]{InSupport}[/bold {self.s_color}] case(s) are [bold]In Support[/bold]")
         if New > 0:
-          lines.append(f"[bold {sColor}]{New}[/bold {sColor}] case(s) need an [bold]IC[/bold]")
+          lines.append(f"[bold {self.s_color}]{New}[/bold {self.s_color}] case(s) need an [bold]IC[/bold]")
         if NeedsCommitment > 0:
-          lines.append(f"[bold {sColor}]{NeedsCommitment}[/bold {sColor}] case(s) need an [bold]update in 24 hours[/bold]")
+          lines.append(f"[bold {self.s_color}]{NeedsCommitment}[/bold {self.s_color}] case(s) need an [bold]update in 24 hours[/bold]")
         if AboutToMiss > 0:
-          lines.append(f"[bold {sColor}]{AboutToMiss}[/bold {sColor}] case(s) need an [bold red]update right now[/bold red]")
+          lines.append(f"[bold {self.s_color}]{AboutToMiss}[/bold {self.s_color}] case(s) need an [bold red]update right now[/bold red]")
         if MissDuringVacation > 0:
-          lines.append(f"[bold {sColor}]{MissDuringVacation}[/bold {sColor}] case(s) will be missed during your vacation!")
+          lines.append(f"[bold {self.s_color}]{MissDuringVacation}[/bold {self.s_color}] case(s) will be missed during your vacation!")
         if MissOverWeekend > 0:
-          lines.append(f"[bold {sColor}]{MissOverWeekend}[/bold {sColor}] commitments(s) are due on/before Monday!")
+          lines.append(f"[bold {self.s_color}]{MissOverWeekend}[/bold {self.s_color}] commitments(s) are due on/before Monday!")
         if VacationFailedValidation:
           lines.append(f"Vacation config validation failed. Check config.json")
 
         panel_content = "\n".join(lines)
-        panel = Panel(panel_content, title=f"[bold {pColor}]Your Cases[/bold {pColor}]", border_style=f"{pColor}")
+        panel = Panel(panel_content, title=f"[bold {self.p_color}]Your Cases[/bold {self.p_color}]", border_style=f"{self.p_color}")
 
     console.print(Align.center(panel))
 
-  @staticmethod
-  def opened_today(cases, debug, color):
-    pColor = color.get("primary")
-    sColor = color.get("secondary")
-
+  def opened_today(self):
     total_case = 0
+    cases = self.data.opened_today_cases
 
     lines = []
     if cases:
@@ -124,24 +129,22 @@ class EngineerDisplay():
         engineer = case.get('Owner', {}).get('Name', 'n/a')
         priority = case.get('Severity__c')
         total_case += 1
-        lines.append(f"[bold {sColor}]{case_num}[/bold {sColor}] - {product} (P{priority.split(' ')[0]}) - {engineer.split(' ')[0]}")
+        lines.append(f"[bold {self.s_color}]{case_num}[/bold {self.s_color}] - {product} (P{priority.split(' ')[0]}) - {engineer.split(' ')[0]}")
 
       panel_content = "\n".join(lines)
-      panel = Panel(panel_content, title=f"[bold {pColor}]Last 24 Hours[/bold {pColor}]", border_style=f"{pColor}")
+      panel = Panel(panel_content, title=f"[bold {self.p_color}]Last 24 Hours[/bold {self.p_color}]", border_style=f"{self.p_color}")
     else:
       panel_content = "No cases created today"
 
-    panel = Panel(panel_content, title=f"[bold {pColor}]Last 24 Hours[/bold {pColor}]", border_style=f"{pColor}")
+    panel = Panel(panel_content, title=f"[bold {self.p_color}]Last 24 Hours[/bold {self.p_color}]", border_style=f"{self.p_color}")
 
     console.print(Align.center(panel))
 
-  @staticmethod
-  def case_insights(cases, color):
-    pColor = color.get("primary")
-    sColor = color.get("secondary")
-
+  def case_insights(self):
     missing_complexity = 0
     other_case_reason = 0
+
+    cases = self.data.personal_cases
 
     if cases:
       for case in cases:
@@ -155,13 +158,13 @@ class EngineerDisplay():
     lines = []
 
     if missing_complexity > 0:
-      lines.append(f"[bold {sColor}]{missing_complexity}[/bold {sColor}] case(s) missing a [bold]Case Complexity[/bold]")
+      lines.append(f"[bold {self.s_color}]{missing_complexity}[/bold {self.s_color}] case(s) missing a [bold]Case Complexity[/bold]")
     if other_case_reason > 0:
-      lines.append(f"[bold {sColor}]{other_case_reason}[/bold {sColor}] case(s) opened as [bold]Other[/bold]")
+      lines.append(f"[bold {self.s_color}]{other_case_reason}[/bold {self.s_color}] case(s) opened as [bold]Other[/bold]")
     if missing_complexity + other_case_reason == 0:
       lines.append("No case insights available")
     
     panel_content = "\n".join(lines)
-    panel = Panel(panel_content, title=f"[bold {pColor}]Case Insights[/bold {pColor}]", border_style=f"{pColor}")
+    panel = Panel(panel_content, title=f"[bold {self.p_color}]Case Insights[/bold {self.p_color}]", border_style=f"{self.p_color}")
 
     console.print(Align.center(panel))

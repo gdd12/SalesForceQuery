@@ -11,6 +11,8 @@ from utils.helper import concat_group_list, concat_support_engineer_list
 from api import http_handler, uploadToTseBoard
 from datetime import datetime
 from tools.notify import notify
+from dataclasses import dataclass
+from typing import List
 
 class EngineerHandler:
 	def __init__(self, config_data, config_cls, filereg_cls, team_cls, debug, send_notification, isTest, teamsList, display, common_display):
@@ -98,9 +100,17 @@ class EngineerHandler:
 					if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
 						opened_today_cases.append(case)
 
-				self.display.queue(team_cases, self.update_threshold, self.color)
-				self.display.personal(personal_cases, self.update_threshold, self.color, self.vacation_scheduled, self.vacation_return_date)
-				self.display.opened_today(opened_today_cases, self.debug, self.color)
+				dashboard = DashboardData(
+					team_cases = team_cases,
+					personal_cases = personal_cases,
+					opened_today_cases = opened_today_cases,
+					update_threshold = self.update_threshold,
+					color = self.color,
+					vacation_scheduled = self.vacation_scheduled,
+					vacation_return_date = self.vacation_return_date
+				)
+
+				self.display(dashboard).render()
 
 				if len(case_validation_failed_list) > 0:
 					logger.info(f"Cases failed validation: {case_validation_failed_list}")
@@ -142,3 +152,13 @@ class EngineerHandler:
 				engineer_name=engineer_name,
 				support_engineer_list=support_engineer_list
 			)
+
+@dataclass
+class DashboardData:
+	team_cases: List[dict]
+	personal_cases: List[dict]
+	opened_today_cases: List[dict]
+	update_threshold: int
+	vacation_scheduled: bool
+	vacation_return_date: str
+	color: List[dict]

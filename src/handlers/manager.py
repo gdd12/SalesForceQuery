@@ -5,6 +5,8 @@ from logger import logger
 from exceptions import ConfigurationError
 from utils.helper import concat_group_list, concat_team_list
 from api import http_handler
+from dataclasses import dataclass
+from typing import List
 
 class ManagerHandler:
 	def __init__(self, config_data, config_cls, filereg_cls, team_cls, debug, send_notification, isTest, teamsList, display, common_display):
@@ -40,7 +42,7 @@ class ManagerHandler:
 		)
 		logger.debug(f"The Manager query has been formated with configured Teams and update thresholds")
 
-		logger.debug(f"Inside manager handler loop")
+		logger.info(f"Inside manager handler loop")
 		while True:
 			self.display_util.clear_screen()
 			self.display_util.display_header(self.poll_interval)
@@ -59,9 +61,22 @@ class ManagerHandler:
 
 				elif owner_name in team_names and commitment_time is not None and commitment_time <= 1:
 					team_needs_commitment.append(case)
+			
+			dashboard = DashboardData(
+				queue_needs_commitment = queue_needs_commitment,
+				team_needs_commitment = team_needs_commitment,
+				update_threshold = self.update_threshold,
+				color = self.color
+			)
 
-			self.display.team_commitment(team_needs_commitment, self.update_threshold, self.color)
-			self.display.queue_commitment(queue_needs_commitment, self.update_threshold, self.color)
+			self.display(dashboard).render()
 
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
+
+@dataclass
+class DashboardData:
+	team_needs_commitment: List[dict]
+	queue_needs_commitment: List[dict]
+	update_threshold: int
+	color: List[dict]

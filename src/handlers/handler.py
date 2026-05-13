@@ -40,7 +40,7 @@ class Handler():
 			raise exceptions.UnsupportedRole(f'{__class__.__name__} failure due to unsupported role "{role.lower()}"')
 
 		handler_class = role_config["handler"]
-		display = role_config["display"]()
+		display = role_config["display"]
 
 		handler = handler_class(
 			common_display=CommonDisplay(),
