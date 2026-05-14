@@ -9,7 +9,7 @@ from utils.variables import FileNames
 from tools.encryption import decrypt_password
 
 class APIHandler():
-  def __init__(self, api_url, username, query, test: bool, config_cls: Config, filereg_cls: FileReg):
+  def __init__(self, api_url, username, query, test: bool, config_cls: Config, filereg_cls: FileReg, rerender: bool = False):
     self.api_url = api_url
     self.username = username
     self.query = query
@@ -17,22 +17,27 @@ class APIHandler():
     self.config_cls = config_cls
     self.filereg_cls = filereg_cls
     self.last_query_result = filereg_cls.resolve_file("dataBuffer")
+    self.rerender = rerender or False
 
   def run(self) -> dict:
-    logger.debug(f"{__class__.__name__} run method invoked")
-    if (self.test_mode()):
-      response_data = self.load_test_data()
+    if ((self.test_mode() or self.rerender) and self.cached_file_exists()):
+      logger.debug(f"{__class__.__name__}.run() invoked to perform a rerender OR is currently in TEST mode")
+      response_data = self.load_previous_data()
     else:
+      logger.debug(f"{__class__.__name__}.run() invoked to call the API")
       response_data = self.fetch_from_api()
 
     return response_data.get('records', [])
   
   def test_mode(self) -> bool:
-    return self.test and os.path.exists(self.last_query_result)
+    return self.test and self.cached_file_exists()
 
-  def load_test_data(self) -> dict:
+  def cached_file_exists(self) -> bool:
+    return os.path.exists(self.last_query_result)
+
+  def load_previous_data(self) -> dict:
     try:
-      logger.info(f"Test mode enabled. Loaded mock data from {self.last_query_result}")
+      logger.info(f"Loading data from the previous successful API call")
       return load_json_file(self.last_query_result, fatal=True)
     except json.JSONDecodeError as e:
       logger.error(f"Failed to decode JSON from {self.last_query_result}: {e}")
@@ -50,7 +55,7 @@ class APIHandler():
     return response
 
   def fetch_from_api(self) -> dict:
-    logger.debug("Fetching the data from the SalesForce API")
+    logger.info("Fetching the data from the SalesForce API")
     response = self.hit_api()
 
     self.validate_response(response)
