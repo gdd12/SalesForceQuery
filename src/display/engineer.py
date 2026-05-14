@@ -6,7 +6,7 @@ from config.config import Config
 from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
-from utils.helper import convert_days_to_dhm, convert_vacation
+from utils.helper import convert_days_to_dhm, calculate_days_delta
 from logger import logger
 from display.common import EngineerDashboardData, display_placard
 
@@ -50,15 +50,14 @@ class EngineerDisplay():
     display_placard(content=panel_content, title="Team Queue", p_color=self.p_color)
   
   def personal(self):
-    VacationFailedValidation = False
+    vacation_validation_failed = False
     vacation_days_remaining = 0
 
-    if self.data.vacation_scheduled:
-      vacation_return_date = self.data.vacation_return_date
-      vacation_days_remaining = convert_vacation(vacation_return_date)
+    if self.data.vacation_scheduled_until:
+      vacation_days_remaining = calculate_days_delta(self.data.vacation_scheduled_until)
 
       if type(vacation_days_remaining) != int:
-        VacationFailedValidation = True
+        vacation_validation_failed = True
 
     cases = self.data.personal_cases
 
@@ -88,7 +87,7 @@ class EngineerDisplay():
         if status == "NEW":
           New += 1
         
-        if (not VacationFailedValidation) and vacation_days_remaining > 0 and (vacation_days_remaining > commitment_time):
+        if (not vacation_validation_failed) and vacation_days_remaining > 0 and (vacation_days_remaining > commitment_time):
           MissDuringVacation += 1
 
         if (datetime.today().strftime('%A').lower() == 'friday' and commitment_time < 3):
@@ -110,8 +109,8 @@ class EngineerDisplay():
           lines.append(f"[bold {self.s_color}]{MissDuringVacation}[/bold {self.s_color}] commitments will be [bold]missed[/bold] on vacation!")
         if MissOverWeekend > 0:
           lines.append(f"[bold {self.s_color}]{MissOverWeekend}[/bold {self.s_color}] commitments(s) are due on/before Monday!")
-        if VacationFailedValidation:
-          lines.append(f"\n! Please fix vacation config in config.json !")
+        if vacation_validation_failed:
+          lines.append(f"\n   Invalid 'rules.vacation_scheduled_until'")
 
         panel_content = "\n".join(lines)
 

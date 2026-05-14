@@ -8,8 +8,7 @@
   "rules": {
     "poll_interval": 30,
     "update_threshold": 45,
-    "vacation_scheduled": false,
-    "back_from_vacation": "",
+    "vacation_scheduled_until": "",
     "upload_to_tse_board": false,
     "max_buffer_size_bytes": 40000
   },

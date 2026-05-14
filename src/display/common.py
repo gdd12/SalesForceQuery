@@ -81,6 +81,5 @@ class EngineerDashboardData:
 	personal_cases: List[dict]
 	opened_today_cases: List[dict]
 	update_threshold: int
-	vacation_scheduled: bool
-	vacation_return_date: str
+	vacation_scheduled_until: str
 	color: List[dict]

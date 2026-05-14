@@ -91,14 +91,13 @@ role               string                    Determines which query logic us use
 Controls runtime behavior and polling logic.
 
 ```bash
-Key                       Type                      Description
+Key                         Type                      Description
 
-poll_interval             int (seconds)             Frequency at which the program polls SalesForce for updates
-update_threshold          int (minutes)             Threshold before a case is flagged as nearing SLA breach
-vacation_scheduled        boolean                   Enables vacation mode logic
-back_from_vacation        string (date)             Date when the engineer returns; used to allow for alerts. Ex: May 19 or December 4
-upload_to_tse_board       boolean                   Toggles whether results are pushed to a frontend dashboard
-max_buffer_size_bytes     int (bytes)               Maximum size for on-disk response buffering
+poll_interval               int (seconds)             Frequency at which the program polls SalesForce for updates
+update_threshold            int (minutes)             Threshold before a case is flagged as nearing SLA breach
+vacation_scheduled_until    string (date)             Date when the engineer returns; used to allow for alerts. Ex: May 19 or December 4
+upload_to_tse_board         boolean                   Toggles whether results are pushed to a frontend dashboard
+max_buffer_size_bytes       int (bytes)               Maximum size for on-disk response buffering
 ```
 
 ```colors``` Object

@@ -33,8 +33,6 @@ class EngineerHandler:
 		self.products = Products()
 		self.cases = Cases()
 		self.display_util = common_display
-		self.vacation_scheduled = config_data.get("rules").get("vacation_scheduled", False)
-		self.vacation_return_date = config_data.get("rules").get("back_from_vacation", None)
 
 	def run(self, isTest):
 		logger.debug(f"{__class__.__name__}.run() invoked")
@@ -126,8 +124,7 @@ class EngineerHandler:
 				opened_today_cases = case_results.get("opened_today_cases"),
 				update_threshold = self.update_threshold,
 				color = self.color,
-				vacation_scheduled = self.vacation_scheduled,
-				vacation_return_date = self.vacation_return_date
+				vacation_scheduled_until = self.config_cls.get_config_value("rules.vacation_scheduled_until")
 			)
 			logger.debug("Rendering the display for the engineer flow")
 			self.display(dashboard).render()

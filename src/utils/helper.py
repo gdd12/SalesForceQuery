@@ -76,7 +76,8 @@ def handle_shutdown(exit_code=0, reason=''):
 		if reason: print(reason)
 		sys.exit(1)
 
-def convert_vacation(date):
+def calculate_days_delta(date):
+	logger.debug(f"Vacation return date was set to {date}, calculating the delta")
 	months = [
 		"January", "February", "March", "April", "May", "June",
 		"July", "August", "September", "October", "November", "December"
