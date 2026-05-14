@@ -78,7 +78,7 @@ The ```config.json``` file is the core configuration layer of the application. I
 ```bash
 Key                Type                      Description
 
-Username           string                    SalesForce username used for authentication (typically your email)
+username           string                    SalesForce username used for authentication (typically your email)
 api_url            string                    Base URL for the SalesForce API endpoint
 front_end_board    string                    Optional endpoint for pushing data to a frontend dashboard
 engineer_name      string                    Used for filtering queries specific to the logged-in engineer
@@ -107,8 +107,19 @@ Defines UI themeing using the ```rich``` library. For the full list of colors, c
 ```bash
 Key              Type                Description
 
+primary             string           Sets the primary color of the display
+secondary           string           Sets the secondary color of the display
+```
+
+```alerts``` Object
+
+Allows for notification alerts to pop-up in the top right corner of the screen, however, This is only enabled on Mac.
+
+```bash
+Key              Type                Description
+
 send             boolean             Enables/disables notifications (Only on Mac)
-color            string              Notification sound identifier (only on Mac)
+sound            string              Notification sound identifier (only on Mac)
 ```
 **config/teams.json**
 
