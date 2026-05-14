@@ -8,14 +8,13 @@ from rich.panel import Panel
 from rich.align import Align
 from utils.helper import convert_days_to_dhm, convert_vacation
 from logger import logger
-from display.common import EngineerDashboardData
+from display.common import EngineerDashboardData, display_placard
 
 console = Console()
 
 class EngineerDisplay():
   def __init__(self, dashboard: EngineerDashboardData):
     self.data = dashboard
-
     self.p_color = dashboard.color.get("primary")
     self.s_color = dashboard.color.get("secondary")
 
@@ -30,6 +29,8 @@ class EngineerDisplay():
     needs_commitment = 0
     cases = self.data.team_cases
 
+    panel_content = "None, you're looking good!"
+
     for case in cases:
       product = case.get('Product__r', {}).get('Name', 'No Product')
       commitment = case.get('Time_Before_Next_Update_Commitment__c')
@@ -38,25 +39,25 @@ class EngineerDisplay():
         needs_commitment += 1
       product_count[product] += 1
 
-    if not cases:
-        panel = Panel("None, you're looking good!", title=f"[bold {self.p_color}]Team Queue[/bold {self.p_color}]", border_style=f"{self.p_color}")
-        console.print('\n',Align.center(panel))
-    else:
+    if cases:
       lines = []
       for product, count in product_count.items():
         lines.append(f"[bold {self.s_color}]{count}[/bold {self.s_color}] new [bold]{product}[/bold] case(s)")
-        if needs_commitment > 0 : lines.append(f"[bold red]{needs_commitment}[/bold red] case(s) needs commitment!")
+        if needs_commitment > 0:
+          lines.append(f"[bold red]{needs_commitment}[/bold red] case(s) needs commitment!")
       panel_content = "\n".join(lines)
-      panel = Panel(panel_content, title=f"[bold {self.p_color}]Team Queue[/bold {self.p_color}]", border_style=f"{self.p_color}")
-      console.print('\n',Align.center(panel))
+
+    display_placard(content=panel_content, title="Team Queue", p_color=self.p_color)
   
   def personal(self):
     VacationFailedValidation = False
-    days_remaining_vac = 0
+    vacation_days_remaining = 0
+
     if self.data.vacation_scheduled:
-      vac_timeframe = self.data.vacation_return_date
-      days_remaining_vac = convert_vacation(vac_timeframe)
-      if type(days_remaining_vac) != int:
+      vacation_return_date = self.data.vacation_return_date
+      vacation_days_remaining = convert_vacation(vacation_return_date)
+
+      if type(vacation_days_remaining) != int:
         VacationFailedValidation = True
 
     cases = self.data.personal_cases
@@ -68,12 +69,11 @@ class EngineerDisplay():
     MissDuringVacation = 0
     MissOverWeekend = 0
 
-    if not cases:
-      panel = Panel("You have no assigned cases!", title=f"[bold {self.p_color}]Your Cases[/bold {self.p_color}]", border_style=f"{self.p_color}")
-    else:
+    panel_content = "You have no assigned cases!"
+
+    if cases:
       for case in cases:
-        status = case.get('Status')
-        status = status.upper()
+        status = str(case.get('Status')).upper()
         commitment_time = case.get('Time_Before_Next_Update_Commitment__c')
 
         if commitment_time and (commitment_time < 1 and status not in ['NEW', 'CLOSED']):
@@ -88,14 +88,14 @@ class EngineerDisplay():
         if status == "NEW":
           New += 1
         
-        if (not VacationFailedValidation) and days_remaining_vac > 0 and (days_remaining_vac > commitment_time):
+        if (not VacationFailedValidation) and vacation_days_remaining > 0 and (vacation_days_remaining > commitment_time):
           MissDuringVacation += 1
 
         if (datetime.today().strftime('%A').lower() == 'friday' and commitment_time < 3):
           MissOverWeekend += 1
 
       if (InSupport + New + NeedsCommitment + MissOverWeekend + AboutToMiss == 0) and MissDuringVacation < 1:
-        panel = Panel("None, you're looking good!", title=f"[bold {self.p_color}]Your Cases[/bold {self.p_color}]", border_style=f"{self.p_color}")
+        panel_content = "No attention is required, you're looking good!"
       else:
         lines = []
         if InSupport > 0:
@@ -107,22 +107,23 @@ class EngineerDisplay():
         if AboutToMiss > 0:
           lines.append(f"[bold {self.s_color}]{AboutToMiss}[/bold {self.s_color}] case(s) need an [bold red]update right now[/bold red]")
         if MissDuringVacation > 0:
-          lines.append(f"[bold {self.s_color}]{MissDuringVacation}[/bold {self.s_color}] case(s) will be missed during your vacation!")
+          lines.append(f"[bold {self.s_color}]{MissDuringVacation}[/bold {self.s_color}] commitments will be [bold]missed[/bold] on vacation!")
         if MissOverWeekend > 0:
           lines.append(f"[bold {self.s_color}]{MissOverWeekend}[/bold {self.s_color}] commitments(s) are due on/before Monday!")
         if VacationFailedValidation:
-          lines.append(f"Vacation config validation failed. Check config.json")
+          lines.append(f"\n! Please fix vacation config in config.json !")
 
         panel_content = "\n".join(lines)
-        panel = Panel(panel_content, title=f"[bold {self.p_color}]Your Cases[/bold {self.p_color}]", border_style=f"{self.p_color}")
 
-    console.print(Align.center(panel))
+    display_placard(content=panel_content, title="Your Cases", p_color=self.p_color)
 
   def opened_today(self):
     total_case = 0
     cases = self.data.opened_today_cases
 
     lines = []
+    panel_content = "No cases created today"
+
     if cases:
       for case in cases:
         case_num = case.get("CaseNumber")
@@ -133,13 +134,8 @@ class EngineerDisplay():
         lines.append(f"[bold {self.s_color}]{case_num}[/bold {self.s_color}] - {product} (P{priority.split(' ')[0]}) - {engineer.split(' ')[0]}")
 
       panel_content = "\n".join(lines)
-      panel = Panel(panel_content, title=f"[bold {self.p_color}]Last 24 Hours[/bold {self.p_color}]", border_style=f"{self.p_color}")
-    else:
-      panel_content = "No cases created today"
 
-    panel = Panel(panel_content, title=f"[bold {self.p_color}]Last 24 Hours[/bold {self.p_color}]", border_style=f"{self.p_color}")
-
-    console.print(Align.center(panel))
+    display_placard(content=panel_content, title="Last 24 Hours", p_color=self.p_color)
 
   def case_insights(self):
     missing_complexity = 0
@@ -159,13 +155,11 @@ class EngineerDisplay():
     lines = []
 
     if missing_complexity > 0:
-      lines.append(f"[bold {self.s_color}]{missing_complexity}[/bold {self.s_color}] case(s) missing a [bold]Case Complexity[/bold]")
+      lines.append(f"[bold {self.s_color}]{missing_complexity}[/bold {self.s_color}] case(s) are missing a [bold]Case Complexity[/bold]")
     if other_case_reason > 0:
-      lines.append(f"[bold {self.s_color}]{other_case_reason}[/bold {self.s_color}] case(s) opened as [bold]Other[/bold]")
+      lines.append(f"[bold {self.s_color}]{other_case_reason}[/bold {self.s_color}] case(s) are opened as [bold]Other[/bold]")
     if missing_complexity + other_case_reason == 0:
       lines.append("No case insights available")
     
     panel_content = "\n".join(lines)
-    panel = Panel(panel_content, title=f"[bold {self.p_color}]Case Insights[/bold {self.p_color}]", border_style=f"{self.p_color}")
-
-    console.print(Align.center(panel))
+    display_placard(content=panel_content, title="Case Insights", p_color=self.p_color)

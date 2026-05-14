@@ -63,6 +63,10 @@ class CommonDisplay():
     panel = Panel(content, border_style="cyan")
     console.print()
     console.print(Align.center(panel))
+  
+def display_placard(content, title, p_color):
+  panel = Panel(content, title=f"[bold {p_color}]{title}[/bold {p_color}]", border_style=f"{p_color}", width=50)
+  console.print(Align.center(panel))
 
 @dataclass
 class ManagerDashboardData:
