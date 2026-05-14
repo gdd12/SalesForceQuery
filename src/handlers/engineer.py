@@ -33,8 +33,8 @@ class EngineerHandler:
 		self.products = Products()
 		self.cases = Cases()
 		self.display_util = common_display
-		self.vacation_scheduled = None
-		self.vacation_return_date = None
+		self.vacation_scheduled = config_data.get("rules").get("vacation_scheduled", False)
+		self.vacation_return_date = config_data.get("rules").get("back_from_vacation", None)
 
 	def run(self, isTest):
 		logger.debug(f"{__class__.__name__}.run() invoked")
