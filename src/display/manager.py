@@ -2,12 +2,12 @@ from utils.helper import convert_days_to_dhm
 from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
-from handlers.manager import DashboardData
+from display.common import ManagerDashboardData
 
 console = Console()
 
 class ManagerDisplay():
-  def __init__(self, dashboard: DashboardData):
+  def __init__(self, dashboard: ManagerDashboardData):
     self.data = dashboard
 
     self.p_color = dashboard.color.get("primary")

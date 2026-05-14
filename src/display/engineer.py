@@ -8,12 +8,12 @@ from rich.panel import Panel
 from rich.align import Align
 from utils.helper import convert_days_to_dhm, convert_vacation
 from logger import logger
-from handlers.engineer import DashboardData
+from display.common import EngineerDashboardData
 
 console = Console()
 
 class EngineerDisplay():
-  def __init__(self, dashboard: DashboardData):
+  def __init__(self, dashboard: EngineerDashboardData):
     self.data = dashboard
 
     self.p_color = dashboard.color.get("primary")

@@ -4,7 +4,7 @@ from config.cases import Cases
 from config.config import Config
 from config.filereg import FileReg
 from display.engineer import EngineerDisplay
-from display.common import CommonDisplay
+from display.common import CommonDisplay, EngineerDashboardData
 from logger import logger
 from exceptions import ConfigurationError
 from utils.variables import FileNames
@@ -12,8 +12,6 @@ from utils.helper import concat_group_list, concat_support_engineer_list
 from api.api_handler import APIHandler, uploadToTseBoard
 from datetime import datetime
 from tools.alert import alert
-from dataclasses import dataclass
-from typing import List
 
 class EngineerHandler:
 	def __init__(self, config_data, config_cls: Config, filereg_cls: FileReg, team_cls, debug, send_alerts, isTest, teamsList, display, common_display: CommonDisplay):
@@ -122,7 +120,7 @@ class EngineerHandler:
 			logger.debug("Display canceled, the system is acting as a forwarding agent")
 			uploadToTseBoard(case_results, self.config_cls)
 		else:
-			dashboard = DashboardData(
+			dashboard = EngineerDashboardData(
 				team_cases = case_results.get("team_cases"),
 				personal_cases = case_results.get("personal_cases"),
 				opened_today_cases = case_results.get("opened_today_cases"),
@@ -213,13 +211,3 @@ class EngineerHandler:
 				engineer_name=engineer_name,
 				support_engineer_list=support_engineer_list
 			)
-
-@dataclass
-class DashboardData:
-	team_cases: List[dict]
-	personal_cases: List[dict]
-	opened_today_cases: List[dict]
-	update_threshold: int
-	vacation_scheduled: bool
-	vacation_return_date: str
-	color: List[dict]

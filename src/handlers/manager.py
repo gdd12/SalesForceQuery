@@ -1,12 +1,10 @@
 import time
 from display.manager import ManagerDisplay
-from display.common import CommonDisplay
+from display.common import CommonDisplay, ManagerDashboardData
 from logger import logger
 from exceptions import ConfigurationError
 from utils.helper import concat_group_list, concat_team_list
 from api.api_handler import APIHandler
-from dataclasses import dataclass
-from typing import List
 
 class ManagerHandler:
 	def __init__(self, config_data, config_cls, filereg_cls, team_cls, debug, send_alerts, isTest, teamsList, display, common_display):
@@ -72,7 +70,7 @@ class ManagerHandler:
 				elif owner_name in team_names and commitment_time is not None and commitment_time <= 1:
 					team_needs_commitment.append(case)
 			
-			dashboard = DashboardData(
+			dashboard = ManagerDashboardData(
 				queue_needs_commitment = queue_needs_commitment,
 				team_needs_commitment = team_needs_commitment,
 				update_threshold = self.update_threshold,
@@ -83,10 +81,3 @@ class ManagerHandler:
 
 			logger.debug(f"Sleeping for {self.poll_interval} minutes.")
 			time.sleep(self.poll_interval * 60)
-
-@dataclass
-class DashboardData:
-	team_needs_commitment: List[dict]
-	queue_needs_commitment: List[dict]
-	update_threshold: int
-	color: List[dict]
