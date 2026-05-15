@@ -87,17 +87,40 @@ class AppStartup:
     try:
       self.logger.info("******************* Setup Complete *******************")
 
+      config_dir = Path(__file__).resolve().parent.parent / VARS.Config
+
+      cached_buffer_exists = (config_dir / FileNames.QueryResults).exists()
+      passwd_file_exists = (config_dir / FileNames.PasswordFile).exists()
+      key_file_exists = (config_dir / FileNames.KeyFile).exists()
+
+      counter_ok = ctx.counter.ok()
+
+      test_mode_with_cache = self.test and (
+        not cached_buffer_exists or not counter_ok
+      )
+
+      needs_password_generated = (
+        not passwd_file_exists or
+        not key_file_exists or
+        not counter_ok
+      )
+
+      if test_mode_with_cache:
+        print(
+          f"You are entering Test mode but "
+          f"{FileNames.QueryResults} was not previously cached.\n"
+          f"Please ensure your password is correctly entered "
+          f"as the API will be hit!"
+        )
+      
+      if needs_password_generated or test_mode_with_cache:
+        generate_encrypted_passwd()
+
       config_data = ctx.config.load_file()
       teamsList = ctx.team.load_teams_list()
 
       role = config_data[VARS.Role]
       send_alerts = config_data[VARS.Alerts][VARS.Send]
-
-      if (
-        not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.PasswordFile) or
-        not os.path.exists(Path(__file__).resolve().parent.parent / VARS.Config / FileNames.KeyFile) or
-        not ctx.counter.ok()
-      ): generate_encrypted_passwd()
 
       ctx.handler.run(role, self.debug, send_alerts, config_data, self.test, teamsList)
 
