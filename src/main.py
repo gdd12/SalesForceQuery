@@ -2,6 +2,7 @@ import warnings
 import signal
 import sys
 import os
+import json
 
 from args import user_defined_args, argument_handler
 from logger import setup_logger, logger as base_logger
@@ -40,18 +41,26 @@ class AppStartup:
     self.test = False
 
     self.ctx = None
+    self.config_dir = Path(__file__).resolve().parent.parent / VARS.Config
 
     self.setup()
     
   def setup(self):
     user_args = user_defined_args(self.argv)
   
-    self.debug = bool(user_args.get(VARS.Debug, False))
+    config_debug_flag = False
+
+    config_file_path = self.config_dir / FileNames.Config
+
+    if (config_file_path).exists():
+      with open(config_file_path, 'r') as f:
+        config_data = json.load(f)
+      config_debug_flag = config_data[VARS.Debug]
+
+    self.debug = bool(user_args.get(VARS.Debug, False)) or config_debug_flag
     self.test = bool(user_args.get(VARS.Test, False))
 
     log_level = "debug" if self.debug else "info"
-
-    # Need to check if there is debug enabled through config.json
 
     setup_logger(log_level)
     self.logger = base_logger
@@ -87,11 +96,9 @@ class AppStartup:
     try:
       self.logger.info("******************* Setup Complete *******************")
 
-      config_dir = Path(__file__).resolve().parent.parent / VARS.Config
-
-      cached_buffer_exists = (config_dir / FileNames.QueryResults).exists()
-      passwd_file_exists = (config_dir / FileNames.PasswordFile).exists()
-      key_file_exists = (config_dir / FileNames.KeyFile).exists()
+      cached_buffer_exists = (self.config_dir / FileNames.QueryResults).exists()
+      passwd_file_exists = (self.config_dir / FileNames.PasswordFile).exists()
+      key_file_exists = (self.config_dir / FileNames.KeyFile).exists()
 
       counter_ok = ctx.counter.ok()
 
