@@ -2,7 +2,7 @@ import sys
 import warnings
 
 from logger import logger
-from utils.helper import handle_shutdown
+from utils.helper import handle_shutdown, calculate_days_delta
 from utils.variables import VARS, FileNames
 
 from config.config import Config, rewrite_configuration
@@ -12,8 +12,8 @@ from config.filereg import FileReg
 class Tools():
   def __init__(self, config_with_filereg):
     self.config: Config = config_with_filereg
+
   def run(self, type: str, extras=None):
-  
     if type == None: handle_shutdown(1, reason="Invalid Tool")
 
     elif type == VARS.Vacation: result = self.VACATION_TOOL(extras)
@@ -34,13 +34,17 @@ class Tools():
     passwd_clean = self.config.remove_key_files()
 
     return f"{tool_name} completed the clean operation"
-  
-  def VACATION_TOOL(self, extras):
+
+  def VACATION_TOOL(self, date):
     tool_name = self.VACATION_TOOL.__name__
     logger.info(f"{tool_name} is connected to the program")
-    print(extras)
 
-    return f"{tool_name} completed the vacation setup"
+    if date and type(calculate_days_delta(date)) != int:
+      return f"Unable to set vacation return date {date} as it is invalid."
+
+    result = self.config.set_vacation_return_date(date)
+
+    return f"{tool_name} completed the vacation setup with the date {result}"
   
   def CONFIG_TOOL(self):
     tool_name = self.CONFIG_TOOL.__name__
@@ -60,6 +64,7 @@ class Tools():
     tool_name = self.SETUP_TOOL.__name__
     logger.info(f"{tool_name} is connected to the program")
     rewrite_configuration()
+
     return f"{tool_name} completed"
   
   def SIMULATE_TOOL(self, extras):
@@ -91,6 +96,6 @@ class Tools():
       Update=(str(extra).lower() == "add"),
       Viewable=(str(extra).lower() == "view"),
     )
-
     TeamTool.run()
+
     return f"{tool_name} completed the {extra.upper()} operation"

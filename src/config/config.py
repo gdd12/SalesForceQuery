@@ -145,6 +145,19 @@ class Config():
 
     return updated_role
   
+  def set_vacation_return_date(self, date: str):
+    if not os.path.exists(self.config_path): raise FileNotFoundError("Config file not found")
+
+    with open(self.config_path, "r") as f:
+      config_data = json.load(f)
+    
+    config_data["rules"]["vacation_scheduled_until"] = date
+
+    with open(self.config_path, "w") as f:
+      json.dump(config_data, f, indent=2)
+
+    return date
+  
   @staticmethod
   def add_exclusion(exclusion):
     type = exclusion.get('type')
