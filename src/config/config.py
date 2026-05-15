@@ -175,7 +175,7 @@ class Config():
     with open(self.config_path, "w") as f:
       json.dump(config_data, f, indent=2)
 
-    logger.info(f"{key} has been updated to {value}")
+    logger.info(f'{key} has been updated to "{value}"')
     return value
   
   @staticmethod

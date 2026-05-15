@@ -33,6 +33,7 @@ class Tools():
     logger.info(f"{tool_name} is connected to the program")
     cfg_clean = self.config.clean()
     passwd_clean = self.config.remove_key_files()
+    vacation_clean = self.config.update_config_value("rules.vacation_scheduled_until", value="")
 
     return f"{tool_name} completed the clean operation"
 
