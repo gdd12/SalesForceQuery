@@ -36,7 +36,7 @@ class Config():
       'queries.Engineer_Forwarding',
       'queries.Manager'
     ]
-    self.fileregistry = filereg
+    self.fileregistry: FileReg = filereg
 
   def init(self):
     logger.debug(f"Initializing class %s", __class__.__name__)
@@ -68,7 +68,7 @@ class Config():
     if len(missing_keys) > 0:
       raise ConfigurationError(f"Missing required keys: {missing_keys}")
 
-  def _has_nested_key(self, data, path):
+  def _has_nested_key(self, data, path: str):
     keys = path.split('.')
     current = data
     for key in keys:
@@ -85,7 +85,7 @@ class Config():
     if len(key_components) > 1:
       child = key_components[1]
     parent = key.split('.')[0]
-    config_data = load_json_file(self.config_path, fatal=True)
+    config_data: dict = load_json_file(self.config_path, fatal=True)
     if config_data:
       parent_value = config_data.get(parent)
       config_value_from_key = parent_value
@@ -145,18 +145,38 @@ class Config():
 
     return updated_role
   
-  def set_vacation_return_date(self, date: str):
-    if not os.path.exists(self.config_path): raise FileNotFoundError("Config file not found")
+  def update_config_value(self, key, value):
+    allowed_keys = [
+      "username",
+      "api_url",
+      "front_end_board",
+      "engineer_name",
+      "rules.update_threshold",
+      "rules.vacation_scheduled_until",
+      "colors.primary",
+      "colors.secondary",
+      "alerts.send",
+      "alerts.sound",
+    ]
 
-    with open(self.config_path, "r") as f:
-      config_data = json.load(f)
-    
-    config_data["rules"]["vacation_scheduled_until"] = date
+    if key not in allowed_keys:
+      raise PermissionError(f"Unable to update key {key} in the {FileNames.Config}")
+
+    config_data = self.load_file()
+
+    key_components = str(key).split(".")
+
+    if len(key_components) > 1:
+      config_data[key_components[0]][key_components[1]] = value
+      
+    else:
+      config_data[key] = value
 
     with open(self.config_path, "w") as f:
       json.dump(config_data, f, indent=2)
 
-    return date
+    logger.info(f"{key} has been updated to {value}")
+    return value
   
   @staticmethod
   def add_exclusion(exclusion):

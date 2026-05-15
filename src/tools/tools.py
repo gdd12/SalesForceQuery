@@ -25,7 +25,8 @@ class Tools():
     elif type == VARS.Team:     result = self.TEAM_TOOL(extras)
     
     logger.info(result)
-    handle_shutdown(exit_code=0, reason=result)
+    print(result)
+    handle_shutdown(exit_code=0)
 
   def CLEAN_TOOL(self):
     tool_name = self.CLEAN_TOOL.__name__
@@ -42,7 +43,7 @@ class Tools():
     if date and type(calculate_days_delta(date)) != int:
       return f"Unable to set vacation return date {date} as it is invalid."
 
-    result = self.config.set_vacation_return_date(date)
+    result = self.config.update_config_value(key="rules.vacation_scheduled_until", value=date)
 
     return f"{tool_name} completed the vacation setup with the date {result}"
   
