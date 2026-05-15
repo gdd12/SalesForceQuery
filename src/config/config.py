@@ -104,7 +104,11 @@ class Config():
     return
   
   def print_configuration(self):
-    config = self.load_file()
+    try:
+      config = self.load_file()
+    except Exception as e:
+      logger.exception(f"{type(e).__name__}: {e}")
+      return
 
     alerts = config[VARS.Alerts]
     colors = config[VARS.Colors]
