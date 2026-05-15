@@ -32,7 +32,7 @@ class Cases():
         existing_cases = {line.strip() for line in file if line.strip() and not line.strip().startswith('#')}
 
     if case_name in existing_cases:
-      logger.warning(f'Case {case_name} already exists in {FileNames.ExCases}')
+      logger.error(f'Case {case_name} already exists in {FileNames.ExCases}')
       return
 
     if case_name.upper() == 'RESET':
