@@ -54,7 +54,7 @@ class Team:
       if self.viewable:
         self._handle_viewable_toggle(team_to_update)
 
-      handle_shutdown(0, reason='Team list updated, must exit to reload.')
+      logger.info('Team list updated, system must exit to reload.')
 
     except ValueError:
       logger.error("Invalid team ID")

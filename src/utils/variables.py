@@ -20,6 +20,7 @@ class VARS:
   Simulate = 'simulate'
   Team = 'team'
   Clean = 'clean'
+  Vacation = 'vacation'
 
 class FileNames:
   Config = "config.json"

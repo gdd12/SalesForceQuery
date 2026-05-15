@@ -122,8 +122,6 @@ class Config():
     print(f"  Role: {config[VARS.Role]}")
     print(f"  Colors: {colors[VARS.Primary]} & {colors[VARS.Secondary]}")
     print(f"  Forwarding Engine: {rules['upload_to_tse_board']}")
-
-    handle_shutdown(0)
   
   def toggle_role(self):
     if not os.path.exists(self.config_path): raise FileNotFoundError("Config file not found")
@@ -145,8 +143,7 @@ class Config():
     with open(self.config_path, "w") as f:
       json.dump(config_data, f, indent=2)
 
-    print(f"\nSuccessfully updated the user role to {updated_role}")
-    handle_shutdown(0)
+    return updated_role
   
   @staticmethod
   def add_exclusion(exclusion):

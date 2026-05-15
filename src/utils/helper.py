@@ -114,3 +114,36 @@ def get_non_empty_input(prompt):
 			print("This field cannot be empty.")
 	except KeyboardInterrupt:
 		handle_shutdown(0)
+
+def print_help_page():
+  print("""
+Usage: main.py [any of the below arguments]
+
+Configuration:
+  -c                  Display the current config.json settings
+
+  -r                  Change active role
+
+  -t <add|view>       Manage the teams list
+                        Ex: -t view
+                        Ex: -t add
+
+  -e <case|product> <VALUE>
+                      Add an exclusion to the ignore list. 
+                        Ex: -e case 0156872
+                        Ex: -e case RESET
+                        Ex: -e product
+
+  -v <MONTH> <DAY>    Set a scheduled vacation return date to
+                      validate pending commitments
+
+Runtime Options:
+  -q                    Simulate SQL queries against Salesforce
+  -s                    Run interactive configuration setup
+  -x                    Run in test mode. Skips API calls if ~/config/dataBuffer.json does not exist
+  -z                    Remove system-generated config files without deleting user data.
+
+Debug Options:
+  -d                    Enable debug logging
+""")
+  return

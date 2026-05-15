@@ -4,11 +4,12 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from logger import logger as base_logger
-from utils.helper import handle_shutdown
+from utils.helper import handle_shutdown, print_help_page
 from utils.variables import VARS, FileNames
 from config.config import Config, rewrite_configuration
 from config.team import Team
 from config.filereg import FileReg
+from tools.tools import Tools
 
 def user_defined_args(args):
   arg_obj = {
@@ -20,7 +21,8 @@ def user_defined_args(args):
     VARS.Simulate: False,
     VARS.Role: False,
     VARS.Exclude: False,
-    VARS.Clean: False
+    VARS.Clean: False,
+    VARS.Vacation: False
   }
   if "-H" in args or "-h" in args:
     print_help_page()
@@ -37,6 +39,14 @@ def user_defined_args(args):
     
     elif arg in ["-D", "-d"]:
       arg_obj[VARS.Debug] = True
+    
+    elif arg in ["-V", "-v"]:
+      if idx + 2 >= len(args[1:]):
+        handle_shutdown(1, reason="Error: '-v' must be followed by a Month (str) and Day (int)")
+
+      month_arg = str(args[idx + 2])
+      day_arg = str(args[idx + 3])
+      arg_obj[VARS.Vacation] = f"{month_arg} {day_arg}"
 
     elif arg in ["-X", "-x"]:
       arg_obj[VARS.Test] = True
@@ -94,78 +104,20 @@ def user_defined_args(args):
 def argument_handler(arg_obj):
   debug = False
   testMode = False
+  tool_class = Tools(Config(FileReg()))
+
+  if arg_obj[VARS.Debug]: debug = True
+  if arg_obj[VARS.Test]:  testMode = True
+
+  if arg_obj[VARS.Vacation]: tool_class.run(type=VARS.Vacation, extras=arg_obj[VARS.Vacation])
+  if arg_obj[VARS.Simulate]: tool_class.run(type=VARS.Simulate, extras=base_logger)
+  if arg_obj[VARS.Exclude]:  tool_class.run(type=VARS.Exclude, extras=arg_obj[VARS.Exclude])
+  if arg_obj[VARS.Config]:   tool_class.run(type=VARS.Config, extras=None)
+  if arg_obj[VARS.Clean]:    tool_class.run(type=VARS.Clean, extras=None)
+  if arg_obj[VARS.Setup]:    tool_class.run(type=VARS.Setup, extras=None)
+  if arg_obj[VARS.Role]:     tool_class.run(type=VARS.Role, extras=None)
+  if arg_obj[VARS.Team]:     tool_class.run(type=VARS.Team, extras=arg_obj[VARS.Team])
 
   base_logger.info(f"Arguments passed in include: {arg_obj}")
 
-  if arg_obj[VARS.Debug]:
-    debug = True
-
-  if arg_obj[VARS.Clean]:
-    config = Config(FileReg())
-    cfg_clean = config.clean()
-    passwd_clean = config.remove_key_files()
-    handle_shutdown(0, reason="Clean completed")
-  if arg_obj[VARS.Test]:
-    testMode = True
-
-  if arg_obj[VARS.Config]:
-    Config(FileReg()).print_configuration()
-
-  if arg_obj[VARS.Exclude]:
-    Config(FileReg()).add_exclusion(arg_obj[VARS.Exclude])
-    handle_shutdown(0, reason="Must exit to reload configuration")
-
-  if arg_obj[VARS.Setup]:
-    rewrite_configuration()
-
-  if arg_obj[VARS.Simulate]:
-    from tools.simulation import simulate
-    simulate(base_logger)
-    handle_shutdown(0, reason="Simulation completed")
-
-  if arg_obj[VARS.Team]:
-    value = arg_obj[VARS.Team]
-
-    filereg = FileReg()
-    filereg.init()
-
-    TeamTool = Team.bootstrap(
-      filereg=filereg,
-      Print=(value is True),
-      Update=(str(value).lower() == "add"),
-      Viewable=(str(value).lower() == "view"),
-    )
-
-    TeamTool.run()
-
-  if arg_obj[VARS.Role]:
-    Config(FileReg()).toggle_role()
-
   return {VARS.Debug: debug, VARS.Test: testMode}
-
-def print_help_page():
-  print("""
-Usage: main.py [any of the below arguments]
-
-Configuration:
-  -c                    Print the current config.json configuration
-  -r                    Change role
-  -t <OPTION>           Edit the teams list ('add' or 'view')
-                          Ex: -t view
-                          Ex: -t add
-  -e <TYPE> <OPT>       Add an exclusion of a case or product. The 'case' option must be followed by a case #.
-                        Use the 'RESET' option to reset the file
-                          Ex: -e Case 0156872
-                          Ex: -e Case RESET
-                          Ex: -e Product
-
-Runtime Options:
-  -q                    Simulate SQL against SalesForce
-  -s                    Interactive config setup
-  -x                    Run in test mode, no API call is made ONLY if the ~/config/dataBuffer.json does not exist
-  -z                    Clean the system-created config files. Does not remove runtime/user defined data
-
-Debug Options:
-  -d                    Enable debug logging
-""")
-  return
