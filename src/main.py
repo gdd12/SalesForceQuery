@@ -102,9 +102,7 @@ class AppStartup:
 
       counter_ok = ctx.counter.ok()
 
-      test_mode_with_cache = self.test and (
-        not cached_buffer_exists or not counter_ok
-      )
+      test_mode_without_cache = self.test and not cached_buffer_exists
 
       needs_password_generated = (
         not passwd_file_exists or
@@ -112,7 +110,7 @@ class AppStartup:
         not counter_ok
       )
 
-      if test_mode_with_cache:
+      if test_mode_without_cache:
         print(
           f"You are entering Test mode but "
           f"{FileNames.QueryResults} was not previously cached.\n"
@@ -120,7 +118,7 @@ class AppStartup:
           f"as the API will be hit!"
         )
       
-      if needs_password_generated or test_mode_with_cache:
+      if needs_password_generated or test_mode_without_cache:
         generate_encrypted_passwd()
 
       config_data = ctx.config.load_file()
