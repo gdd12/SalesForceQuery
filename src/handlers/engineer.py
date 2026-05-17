@@ -8,7 +8,7 @@ from display.common import CommonDisplay, EngineerDashboardData
 from logger import logger
 from exceptions import ConfigurationError
 from utils.variables import FileNames
-from utils.helper import concat_group_list, concat_support_engineer_list
+from utils.helper import concat_group_list, concat_team_list
 from api.api_handler import APIHandler, uploadToTseBoard
 from datetime import datetime
 from tools.alert import alert
@@ -21,7 +21,7 @@ class EngineerHandler:
 		self.debug = debug
 		self.isTest = isTest
 		self.display = display
-		self.teams_list = teamsList
+		self.teams_list: dict = teamsList
 		alerts = config_data.get("alerts", {})
 		self.send_alerts = send_alerts or alerts.get("send", False)
 		self.sound_alerts = alerts.get("sound", None)
@@ -39,7 +39,7 @@ class EngineerHandler:
 
 		engineer_name = self.engineer_name
 		group_list = concat_group_list(self.teams_list)
-		support_engineer_list = concat_support_engineer_list(self.teams_list)
+		engineer_list = concat_team_list(self.teams_list)
 		excluded_products = self.products.load_excluded_products()
 		excluded_cases = self.cases.load_excluded_cases(log_event=False)
 
@@ -47,7 +47,7 @@ class EngineerHandler:
 			excluded_products = excluded_products,
 			group_list = group_list,
 			engineer_name = engineer_name,
-			support_engineer_list = support_engineer_list
+			engineer_list = engineer_list
 		)
 
 		self.main_loop(
@@ -55,10 +55,10 @@ class EngineerHandler:
 			excluded_products=excluded_products,
 			excluded_cases=excluded_cases,
 			group_list=group_list,
-			support_engineer_list=support_engineer_list
+			engineer_list=engineer_list
 		)
 
-	def main_loop(self, query: str, excluded_products: set, excluded_cases: set, group_list, support_engineer_list):
+	def main_loop(self, query: str, excluded_products: set, excluded_cases: set, group_list, engineer_list):
 		logger.debug("Entering the structured loop")
 
 		rerender_due_to_update = False
@@ -72,7 +72,7 @@ class EngineerHandler:
 				excluded_products=excluded_products,
 				excluded_cases=excluded_cases,
 				group_list=group_list,
-				support_engineer_list=support_engineer_list
+				engineer_list=engineer_list
 			)
 
 			self.display_results(case_results=sorted_case_results)
@@ -137,7 +137,7 @@ class EngineerHandler:
 			
 			self.send_alert(case_results.get("team_cases"))
 	
-	def sort_cases(self, cases: dict, engineer_name: str, excluded_products: dict, excluded_cases: dict, group_list: dict, support_engineer_list: dict):
+	def sort_cases(self, cases: dict, engineer_name: str, excluded_products: dict, excluded_cases: dict, group_list: dict, engineer_list: dict):
 		logger.debug("Sorting the cases into their resepective list based on the response from the API")
 
 		team_cases = []
@@ -166,7 +166,7 @@ class EngineerHandler:
 			if engineer_name.lower() in owner_name.lower():
 				personal_cases.append(case)
 
-			if owner_name in support_engineer_list and created_date.month == today.month and created_date.day == today.day:
+			if owner_name in engineer_list and created_date.month == today.month and created_date.day == today.day:
 				opened_today_cases.append(case)
 
 		logger.debug("Sort of cases has completed, returning the listings")
@@ -185,7 +185,7 @@ class EngineerHandler:
 	def forwarding_agent(self) -> bool:
 		return self.config_cls.get_config_value("rules.upload_to_tse_board", default=False)
 
-	def build_query(self, excluded_products, group_list, engineer_name, support_engineer_list):
+	def build_query(self, excluded_products, group_list, engineer_name, engineer_list):
 		logger.debug(f"Building the query for the engineer role")
 		excluded_product_list = "', '".join(excluded_products)
 		excluded_product_list = f"'{excluded_product_list}'"
@@ -198,7 +198,7 @@ class EngineerHandler:
 				excluded_product_list=excluded_product_list,
 				support_group=group_list,
 				engineer_name=engineer_name,
-				support_engineer_list=support_engineer_list
+				engineer_list=engineer_list
 			)
 		else:
 			logger.debug("Query built for the engineer flow")
@@ -206,5 +206,5 @@ class EngineerHandler:
 				excluded_product_list=excluded_product_list,
 				support_group=group_list,
 				engineer_name=engineer_name,
-				support_engineer_list=support_engineer_list
+				engineer_list=engineer_list
 			)

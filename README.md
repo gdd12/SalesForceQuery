@@ -47,25 +47,33 @@ The help page can be found through the -h argument.
 Usage: main.py [any of the below arguments]
 
 Configuration:
-  -c                    Print the current config.json configuration
-  -r                    Change role
-  -t <OPTION>           Edit the teams list ('add' or 'view')
-                          Ex: -t view
-                          Ex: -t add
-  -e <TYPE> <OPT>       Add an exclusion of a case or product. The 'case' option must be followed by a case #.
-                        Use the 'RESET' option to reset the file
-                          Ex: -e Case 0156872
-                          Ex: -e Case RESET
-                          Ex: -e Product
+  -c                  Display the current config.json settings
+
+  -r                  Change active role
+
+  -t <add|remove|toggle>
+											Manage the teams list
+                        Ex: -t add
+                        Ex: -t remove
+												Ex: -t toggle
+
+  -e <case|product> <VALUE>
+                      Add an exclusion to the ignore list. 
+                        Ex: -e case 0156872
+                        Ex: -e case RESET
+                        Ex: -e product
+
+  -v <MONTH> <DAY>    Set a scheduled vacation return date to
+                      validate pending commitments
 
 Runtime Options:
-  -q                    Simulate SQL against SalesForce
-  -s                    Interactive config setup
-  -x                    Run in test mode
-  -z                    Clean the system-created config files. Does not remove runtime/user defined data
+  -q                    Simulate SQL queries against Salesforce
+  -s                    Run interactive configuration setup
+  -x                    Run in test mode. Skips API calls if ~/config/dataBuffer.json does not exist
+  -z                    Remove system-generated config files without deleting user data.
 
 Debug Options:
-  -d                    Enable logging
+  -d                    Enable debug logging
 ```
 
 ### Technical Documentation
@@ -128,9 +136,12 @@ This file can be edited manually or managed via CLI flags:
 
 -t add → Add team members
 
--t view → Toggle whether a team is included in queries
+-t remove → Remove team members
 
-The ```viewable``` flag must be a boolean type and the ```list``` flag must be comma separated with full engineer names as seen in SalesForce.
+-t toggle → Toggle whether a team is included in queries
+
+The ```viewable``` flag must be a boolean type
+The ```members``` flag must contain a list of comma separated engineer names as seen in SalesForce. SalesForce is case sensitive, engineer names must be set exactly how they are seen in the CRM.
 
 **config/excludedCases.cfg**
 

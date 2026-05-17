@@ -21,20 +21,6 @@ def define_query_columns(query):
 		print(f"BadQuery error: {e}")
 		return []
 
-def concat_team_list(names_list):
-	name_list = []
-
-	for data in names_list.values():
-		if data.get("viewable"):
-			raw_list = data.get("list", "")
-			name_list += [name.strip() for name in raw_list.split(',') if name.strip()]
-
-	if not name_list:
-		raise ConfigurationError(f"Must have at least one 'viewable' team with names in the configuration file.")
-
-	name_string = ", ".join(f"'{name}'" for name in name_list)
-	return name_string
-
 def convert_days_to_dhm(day_value):
 	if day_value is None:
 		return "0M"
@@ -55,14 +41,13 @@ def convert_days_to_dhm(day_value):
 
 	return " ".join(parts)
 
-def concat_group_list(teams_list):
-	group_list_raw = teams_list.get("group", {}).get("list", "")
-	group_names = group_list_raw.split(",")
-	quoted_group = [f"'{group.strip()}'" for group in group_names]
-	logger.debug(f"Group list has undergone formating for SQL query")
+def concat_group_list(teams_list: dict) -> str:
+	group_list_raw = teams_list.get("teams", {}).get("group", {}).get("members", "")
+	quoted_group = [f"'{group.strip()}'" for group in group_list_raw]
+	logger.debug(f"Group list has been formated for the downstream SQL")
 	return ", ".join(quoted_group)
 
-def concat_support_engineer_list(teams_list):
+def concat_team_list(teams_list):
 	from config.team import Team
 	return Team.validate_teams_list(teams_list, exit_if_misconfigured=True)
 
@@ -124,9 +109,11 @@ Configuration:
 
   -r                  Change active role
 
-  -t <add|view>       Manage the teams list
-                        Ex: -t view
+  -t <add|remove|toggle>
+											Manage the teams list
                         Ex: -t add
+                        Ex: -t remove
+												Ex: -t toggle
 
   -e <case|product> <VALUE>
                       Add an exclusion to the ignore list. 

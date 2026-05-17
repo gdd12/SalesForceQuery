@@ -12,6 +12,7 @@ from config.filereg import FileReg
 class Tools():
   def __init__(self, config_with_filereg):
     self.config: Config = config_with_filereg
+    self.msg = "is connected to the program"
 
   def run(self, type: str, extras=None):
     if type == None: handle_shutdown(1, reason="Invalid Tool")
@@ -50,21 +51,21 @@ class Tools():
   
   def CONFIG_TOOL(self):
     tool_name = self.CONFIG_TOOL.__name__
-    logger.info(f"{tool_name} is connected to the program")
+    logger.info(f"{tool_name} {self.msg}")
     self.config.print_configuration()
 
     return f"{tool_name} completed the print operation"
   
   def EXCLUSION_TOOL(self, extras):
     tool_name = self.EXCLUSION_TOOL.__name__
-    logger.info(f"{tool_name} is connected to the program")
+    logger.info(f"{tool_name} {self.msg}")
     self.config.add_exclusion(extras)
 
     return f"{tool_name} completed the exclusion of {extras}"
   
   def SETUP_TOOL(self):
     tool_name = self.SETUP_TOOL.__name__
-    logger.info(f"{tool_name} is connected to the program")
+    logger.info(f"{tool_name} {self.msg}")
     rewrite_configuration()
 
     return f"{tool_name} completed"
@@ -73,30 +74,30 @@ class Tools():
     from tools.simulation import simulate
 
     tool_name = self.SIMULATE_TOOL.__name__
-    logger.info(f"{tool_name} is connected to the program")
+    logger.info(f"{tool_name} {self.msg}")
     simulate(logger=extras)
 
     return f"{tool_name} completed the simulation of the query"
   
   def ROLE_TOOL(self):
     tool_name = self.ROLE_TOOL.__name__
-    logger.info(f"{tool_name} is connected to the program")
+    logger.info(f"{tool_name} {self.msg}")
     new_role = self.config.toggle_role()
 
     return f"{tool_name} completed the switch to {new_role} role"
 
   def TEAM_TOOL(self, extra):
     tool_name = self.TEAM_TOOL.__name__
-    logger.info(f"{tool_name} is connected to the program")
+    logger.info(f"{tool_name} {self.msg}")
 
     filereg = FileReg()
     filereg.init()
 
     TeamTool = Team.bootstrap(
       filereg=filereg,
-      Print=(extra is True),
-      Update=(str(extra).lower() == "add"),
-      Viewable=(str(extra).lower() == "view"),
+      Add=(str(extra).lower() == "add"),
+      Toggle=(str(extra).lower() == "toggle"),
+      Remove=(str(extra).lower() == "remove"),
     )
     TeamTool.run()
 

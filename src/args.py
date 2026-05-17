@@ -64,8 +64,10 @@ def user_defined_args(args):
         val = args[idx + 2].lower()
         if val == 'add':
           arg_obj[VARS.Team] = 'add'
-        elif val == 'view':
-          arg_obj[VARS.Team] = 'view'
+        elif val == 'remove':
+          arg_obj[VARS.Team] = 'remove'
+        elif val == 'toggle':
+          arg_obj[VARS.Team] = 'toggle'
         else:
           arg_obj[VARS.Team] = True
 
