@@ -91,7 +91,7 @@ class AppStartup:
         raise
       handle_shutdown(
         exit_code=1,
-        reason='\nThe above exception(s) may be recoverable by performing a clean operation: main.py -z\nThere may be additional information with the -d flag')
+        reason='\nThe above exception(s) may be recoverable by performing a clean operation: main.py -clean\nThere may be additional information with the -d flag')
 
     try:
       self.logger.info("******************* Setup Complete *******************")

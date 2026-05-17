@@ -95,7 +95,7 @@ def user_defined_args(args):
       else:
         handle_shutdown(1, reason=f"Error: Invalid exclusion type '{next_arg}'. Must be 'Case' or 'Product'")
     
-    elif arg in ["-Z", "-z"]:
+    elif str(arg).upper() == "-CLEAN":
       arg_obj[VARS.Clean] = True
 
     else:
