@@ -4,6 +4,7 @@
   "front_end_board": null,
   "engineer_name": "",
   "debug": false,
+  "test_mode": false,
   "role": "engineer",
   "rules": {
     "poll_interval": 30,

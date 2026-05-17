@@ -49,6 +49,7 @@ class AppStartup:
     user_args = user_defined_args(self.argv)
   
     config_debug_flag = False
+    config_test_flag = False
 
     config_file_path = self.config_dir / FileNames.Config
 
@@ -56,9 +57,10 @@ class AppStartup:
       with open(config_file_path, 'r') as f:
         config_data = json.load(f)
       config_debug_flag = config_data[VARS.Debug]
+      config_test_flag =  config_data[VARS.TestMode]
 
     self.debug = bool(user_args.get(VARS.Debug, False)) or config_debug_flag
-    self.test = bool(user_args.get(VARS.Test, False))
+    self.test = bool(user_args.get(VARS.Test, False)) or config_test_flag
 
     log_level = "debug" if self.debug else "info"
 

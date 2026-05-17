@@ -69,7 +69,7 @@ Configuration:
 Runtime Options:
   -q                    Simulate SQL queries against Salesforce
   -s                    Run interactive configuration setup
-  -x                    Run in test mode. Skips API calls if ~/config/dataBuffer.json does not exist
+  -test                 Run in test mode. Skips API calls if ~/config/dataBuffer.json does not exist
   -clean                Remove system-generated config files without deleting user data.
 
 Debug Options:

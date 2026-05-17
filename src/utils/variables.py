@@ -21,6 +21,7 @@ class VARS:
   Team = 'team'
   Clean = 'clean'
   Vacation = 'vacation'
+  TestMode = 'test_mode'
 
 class FileNames:
   Config = "config.json"

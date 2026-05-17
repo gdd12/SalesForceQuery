@@ -48,7 +48,7 @@ def user_defined_args(args):
       day_arg = str(args[idx + 3])
       arg_obj[VARS.Vacation] = f"{month_arg} {day_arg}"
 
-    elif arg in ["-X", "-x"]:
+    elif str(arg).upper() == "-TEST":
       arg_obj[VARS.Test] = True
     
     elif arg in ["-S", "-s"]:
