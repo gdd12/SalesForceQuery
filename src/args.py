@@ -28,19 +28,13 @@ def user_defined_args(args):
     print_help_page()
     handle_shutdown()
   for idx, arg in enumerate(args[1:]):
-    arg = arg.strip()
+    arg = str(arg).strip().upper()
     if '-' not in arg: continue
 
-    if arg in ["-C", "-c"]:
-      arg_obj[VARS.Config] = True
-
-    elif arg in ["-R", "-r"]:
-      arg_obj[VARS.Role] = True
-    
-    elif arg in ["-D", "-d"]:
-      arg_obj[VARS.Debug] = True
-    
-    elif arg in ["-V", "-v"]:
+    if arg == "-C":   arg_obj[VARS.Config] = True
+    elif arg == "-R": arg_obj[VARS.Role]   = True
+    elif arg == "-D": arg_obj[VARS.Debug]  = True
+    elif arg == "-V":
       if idx + 2 >= len(args[1:]):
         handle_shutdown(1, reason="Error: '-v' must be followed by a Month (str) and Day (int)")
 
@@ -48,30 +42,21 @@ def user_defined_args(args):
       day_arg = str(args[idx + 3])
       arg_obj[VARS.Vacation] = f"{month_arg} {day_arg}"
 
-    elif str(arg).upper() == "-TEST":
-      arg_obj[VARS.Test] = True
+    elif arg == "-TEST": arg_obj[VARS.Test] = True
+    elif arg == "-S":    arg_obj[VARS.Setup] = True
+    elif arg == "-Q":    arg_obj[VARS.Simulate] = True
     
-    elif arg in ["-S", "-s"]:
-      arg_obj[VARS.Setup] = True
-    
-    elif arg in ["-Q", "-q"]:
-      arg_obj[VARS.Simulate] = True
-    
-    elif arg in ["-T", "-t"]:
+    elif arg == "-T":
       if idx + 2 >= len(args):
         arg_obj[VARS.Team] = True
       else:
         val = args[idx + 2].lower()
-        if val == 'add':
-          arg_obj[VARS.Team] = 'add'
-        elif val == 'remove':
-          arg_obj[VARS.Team] = 'remove'
-        elif val == 'toggle':
-          arg_obj[VARS.Team] = 'toggle'
-        else:
-          arg_obj[VARS.Team] = True
+        if val ==   'add': arg_obj[VARS.Team]    = 'add'
+        elif val == 'remove': arg_obj[VARS.Team] = 'remove'
+        elif val == 'toggle': arg_obj[VARS.Team] = 'toggle'
+        else: arg_obj[VARS.Team] = True
 
-    elif arg in ["-E", "-e"]:
+    elif arg == "-E":
       if idx + 1 >= len(args[1:]):
         handle_shutdown(1, reason="Error: '-e' must be followed by 'case' or 'product'!")
 
@@ -95,8 +80,7 @@ def user_defined_args(args):
       else:
         handle_shutdown(1, reason=f"Error: Invalid exclusion type '{next_arg}'. Must be 'Case' or 'Product'")
     
-    elif str(arg).upper() == "-CLEAN":
-      arg_obj[VARS.Clean] = True
+    elif arg == "-CLEAN": arg_obj[VARS.Clean] = True
 
     else:
       print_help_page()
