@@ -42,7 +42,7 @@ class EngineerDisplay():
     if cases:
       lines = []
       for product, count in product_count.items():
-        lines.append(f"[bold {self.s_color}]{count}[/bold {self.s_color}] new [bold]{product}[/bold] case(s)")
+        lines.append(f"[bold {self.s_color}]{count}[/bold {self.s_color}] [bold]{product}[/bold] case(s)")
         if needs_commitment > 0:
           lines.append(f"[bold red]{needs_commitment}[/bold red] case(s) needs commitment!")
       panel_content = "\n".join(lines)
@@ -130,7 +130,7 @@ class EngineerDisplay():
         engineer = case.get('Owner', {}).get('Name', 'n/a')
         priority = case.get('Severity__c')
         total_case += 1
-        lines.append(f"[bold {self.s_color}]{case_num}[/bold {self.s_color}] - {product} (P{priority.split(' ')[0]}) - {engineer.split(' ')[0]}")
+        lines.append(f"[bold {self.s_color}]{case_num}[/bold {self.s_color}] (P{priority.split(' ')[0]}) {product} - {engineer.split(' ')[0]}")
 
       panel_content = "\n".join(lines)
 
