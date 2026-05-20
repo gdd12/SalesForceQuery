@@ -56,12 +56,12 @@ class Tools():
 
     return f"{tool_name} completed the print operation"
   
-  def EXCLUSION_TOOL(self, extras):
+  def EXCLUSION_TOOL(self, extras: dict):
     tool_name = self.EXCLUSION_TOOL.__name__
     logger.info(f"{tool_name} {self.msg}")
     self.config.add_exclusion(extras)
 
-    return f"{tool_name} completed the exclusion of {extras}"
+    return f"{tool_name} completed the exclusion of type {str(extras.get('type')).upper()}"
   
   def SETUP_TOOL(self):
     tool_name = self.SETUP_TOOL.__name__
