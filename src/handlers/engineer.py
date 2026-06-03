@@ -41,7 +41,6 @@ class EngineerHandler:
 		group_list = concat_group_list(self.teams_list)
 		engineer_list = concat_team_list(self.teams_list)
 		excluded_products = self.products.load_excluded_products()
-		excluded_cases = self.cases.load_excluded_cases(log_event=False)
 
 		query = self.build_query(
 			excluded_products = excluded_products,
@@ -53,18 +52,18 @@ class EngineerHandler:
 		self.main_loop(
 			query=query,
 			excluded_products=excluded_products,
-			excluded_cases=excluded_cases,
 			group_list=group_list,
 			engineer_list=engineer_list
 		)
 
-	def main_loop(self, query: str, excluded_products: set, excluded_cases: set, group_list, engineer_list):
+	def main_loop(self, query: str, excluded_products: set, group_list, engineer_list):
 		logger.debug("Entering the structured loop")
 
 		rerender_due_to_update = False
 
 		while True:
 			case_results = self.invoke_api(query, rerender = rerender_due_to_update)
+			excluded_cases = self.cases.load_excluded_cases(log_event=False)
 
 			sorted_case_results = self.sort_cases(
 				cases=case_results,
