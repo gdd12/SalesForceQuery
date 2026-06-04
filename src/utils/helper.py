@@ -52,7 +52,7 @@ def concat_team_list(teams_list):
 	return Team.validate_teams_list(teams_list, exit_if_misconfigured=True)
 
 def handle_shutdown(exit_code=0, reason='', module="Main"):
-	logger.info(f"{module} module shutdown code: {exit_code} {reason.capitalize()}")
+	logger.info(f"{module} module shutdown code: {exit_code} {reason}")
 	if reason:
 		print(reason)
 	if exit_code == 0:
