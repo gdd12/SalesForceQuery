@@ -51,14 +51,13 @@ def concat_team_list(teams_list):
 	from config.team import Team
 	return Team.validate_teams_list(teams_list, exit_if_misconfigured=True)
 
-def handle_shutdown(exit_code=0, reason=''):
+def handle_shutdown(exit_code=0, reason='', module="Main"):
+	logger.info(f"{module} module shutdown code: {exit_code} {reason.capitalize()}")
+	if reason:
+		print(reason)
 	if exit_code == 0:
-		logger.info(f"Shutdown code: {exit_code}. {reason.capitalize()}")
-		if reason: print(reason)
 		sys.exit(0)
 	if exit_code == 1:
-		logger.info(f"Shutdown code: {exit_code}. {reason.capitalize()}")
-		if reason: print(reason)
 		sys.exit(1)
 
 def calculate_days_delta(date):
