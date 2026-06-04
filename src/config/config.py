@@ -211,7 +211,7 @@ class Config():
       self._remove(filename)
 
   def _remove(self, filename):
-    path = Path(self.config_dir) / filename
+    path: Path = Path(self.config_dir) / filename
     try:
       path.unlink()
       logger.info(f"Removed {filename} successfully")
