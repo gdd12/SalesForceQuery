@@ -21,7 +21,8 @@ def setup_logger(
 
     logger.setLevel(logging.DEBUG)
 
-    formatter_file = logging.Formatter('%(asctime)s - %(levelname)-6s [%(module)s] (%(funcName)s) - %(message)s')
+    formatter_file = logging.Formatter('%(asctime)s | %(levelname)-6s | %(module)-11s | (%(funcName)s) - %(message)s')
+
     formatter_console = logging.Formatter('%(message)s')
 
     max_bytes = max_mb * 1024 * 1024
