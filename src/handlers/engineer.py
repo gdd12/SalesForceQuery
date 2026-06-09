@@ -145,8 +145,12 @@ class EngineerHandler:
 		case_validation_failed_list = []
 
 		for idx, case in enumerate(cases):
-			owner_name = case.get("Owner", {}).get("Name", "")
-			product = case.get("Product__r", {}).get("Name", "")
+			owner_name_ref = case.get("Owner")
+			owner_name = owner_name_ref.get("Name", "") if owner_name_ref else ""
+
+			product_ref = case.get("Product__r")
+			product = product_ref.get("Name", "") if product_ref else ""
+
 			created_date_str = case.get("CreatedDate", "")
 			case_number = (case.get("CaseNumber", "") or "").strip()
 			
